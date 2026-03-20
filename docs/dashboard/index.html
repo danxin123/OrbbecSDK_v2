@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbbec SDK Quality Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #13223a;
+      --muted: #5f6b7a;
+      --good: #1f9d55;
+      --warn: #e9a23b;
+      --bad: #df3f3f;
+      --accent: #0f5cc0;
+      --line: #dce3ee;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at 20% 10%, #e9f2ff 0%, var(--bg) 45%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+    .sub {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(16, 38, 66, 0.06);
+    }
+    .c1 { grid-column: span 4; }
+    .c2 { grid-column: span 8; }
+    .c3 { grid-column: span 12; }
+    .label { color: var(--muted); font-size: 13px; }
+    .v { font-size: 28px; font-weight: 700; margin-top: 8px; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; color: #fff; }
+    .g { background: var(--good); }
+    .w { background: var(--warn); }
+    .b { background: var(--bad); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    @media (max-width: 900px) {
+      .c1, .c2, .c3 { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Orbbec SDK Quality Dashboard</h1>
+    <div class="sub">Auto-updated from CI reports</div>
+
+    <div class="grid">
+      <div class="card c1">
+        <div class="label">Latest Pass Rate</div>
+        <div id="passRate" class="v">-</div>
+      </div>
+      <div class="card c1">
+        <div class="label">Latest Total Cases</div>
+        <div id="totalCases" class="v">-</div>
+      </div>
+      <div class="card c1">
+        <div class="label">Latest Failed Cases</div>
+        <div id="failedCases" class="v">-</div>
+      </div>
+      <div class="card c2">
+        <div class="label">Pass Rate Trend</div>
+        <canvas id="trendChart" height="110"></canvas>
+      </div>
+      <div class="card c1">
+        <div class="label">Release Readiness</div>
+        <div id="releaseReady" class="v">-</div>
+      </div>
+      <div class="card c3">
+        <div class="label" style="margin-bottom: 8px;">Recent Failures</div>
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Workflow</th><th>Failed Cases</th></tr>
+          </thead>
+          <tbody id="failedTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function pct(v) { return `${(v * 100).toFixed(2)}%`; }
+    function fmtDate(ts) { return new Date(ts).toLocaleString(); }
+
+    fetch("./data.json")
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0) {
+          document.getElementById("passRate").textContent = "No data";
+          return;
+        }
+
+        const sorted = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const latest = sorted[sorted.length - 1];
+
+        document.getElementById("passRate").textContent = pct(latest.pass_rate || 0);
+        document.getElementById("totalCases").textContent = (latest.total_cases ?? 0).toString();
+        document.getElementById("failedCases").textContent = (latest.failed_cases ?? 0).toString();
+
+        const ready = (latest.pass_rate || 0) >= 0.98 ? "Ready" : "Not Ready";
+        document.getElementById("releaseReady").textContent = ready;
+
+        const labels = sorted.map(x => new Date(x.timestamp).toLocaleDateString());
+        const values = sorted.map(x => ((x.pass_rate || 0) * 100).toFixed(2));
+        new Chart(document.getElementById("trendChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Pass Rate %",
+              data: values,
+              borderColor: "#0f5cc0",
+              backgroundColor: "rgba(15,92,192,0.2)",
+              tension: 0.2,
+              fill: true
+            }]
+          },
+          options: { scales: { y: { suggestedMin: 0, suggestedMax: 100 } } }
+        });
+
+        const tbody = document.getElementById("failedTable");
+        const failed = sorted.filter(x => (x.failed_cases || 0) > 0).slice(-10).reverse();
+        for (const row of failed) {
+          const tr = document.createElement("tr");
+          const names = (row.failed_case_names || []).join(", ");
+          tr.innerHTML = `<td>${fmtDate(row.timestamp)}</td><td>${row.workflow || "-"}</td><td>${names || "-"}</td>`;
+          tbody.appendChild(tr);
+        }
+      })
+      .catch(() => {
+        document.getElementById("passRate").textContent = "Load failed";
+      });
+  </script>
+</body>
+</html>
