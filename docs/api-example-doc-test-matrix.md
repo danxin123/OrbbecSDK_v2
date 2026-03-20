@@ -10,6 +10,11 @@ This is the initial baseline for Step 7. It tracks whether key SDK capability ar
 | Playback from bag | Yes | Yes | Yes | Yes | Added no-hardware playback smoke test with tests/rosbag sample. |
 | Recording to bag | Yes | Yes | Yes | No | Needs hardware test and file integrity checks. |
 | Metadata access | Yes | Yes | Yes | Yes | Added playback no-hardware assertions for availability, sequence monotonicity, raw buffer consistency, unsupported-field safety, and C API metadata update/readback. |
+| Config object API safety | Yes | Yes | Yes | Yes | Added no-hardware Config API checks: enable/disable stream calls, align/depth-scale/aggregate settings, enabled-profile-list query. |
+| Version query | Yes | N/A | Yes | Yes | Added C++/C API cross-check for major/minor/patch/stage/full version composition. |
+| Logging system | Yes | N/A | Yes | Yes | Added no-hardware logger severity/console/callback/external-message path assertions with callback marker verification. |
+| Error handling basics | Yes | N/A | Yes | Yes | Added deterministic invalid playback path exception assertions with message/function/type validation. |
+| Data structures validation | Yes | N/A | Yes | Yes | Added no-hardware read/write validation for depth work mode, net IP, HDR, ROI, point/IMU vectors, property ranges, and filter schema item. |
 | Point cloud conversion | Yes | Yes | Yes | Partial | Example exists; no strict regression assertions yet. |
 | Post-processing filters | Yes | Yes | Yes | Partial | Needs deterministic parameterized test suite. |
 | Depth work mode and preset | Yes | Yes | Yes | No | Add property read/write and rollback tests. |
