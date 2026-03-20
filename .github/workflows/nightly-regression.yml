@@ -1,0 +1,54 @@
+name: Nightly Regression
+
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  nightly-nohw-regression:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build no-hardware targets
+        run: cmake --build build --target ob_core_nohw_test ob_playback_smoke_test -j
+
+      - name: Run no-hardware regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./build/tests/core_nohw_test/ob_core_nohw_test
+
+          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -z "$BAG_PATH" ]; then
+            echo "No .bag file found in tests/rosbag" >&2
+            exit 1
+          fi
+          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+
+      - name: Save nightly summary artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/nightly
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > reports/nightly/nightly_summary.txt
+          echo "status=PASS" >> reports/nightly/nightly_summary.txt
+
+      - name: Upload nightly artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-summary
+          path: reports/nightly/nightly_summary.txt
+          retention-days: 30

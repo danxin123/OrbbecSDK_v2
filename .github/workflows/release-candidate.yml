@@ -1,0 +1,79 @@
+name: Release Candidate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  branch-guard:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Validate release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref="${GITHUB_REF_NAME}"
+          if [[ "$ref" != release/* ]]; then
+            echo "This workflow must run from release/* branches. Current: $ref" >&2
+            exit 1
+          fi
+
+  rc-linux:
+    needs: branch-guard
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build test targets
+        run: cmake --build build --target ob_core_nohw_test ob_playback_smoke_test -j
+
+      - name: Run core no-hardware tests
+        run: ./build/tests/core_nohw_test/ob_core_nohw_test
+
+      - name: Run playback regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -z "$BAG_PATH" ]; then
+            echo "No .bag file found in tests/rosbag" >&2
+            exit 1
+          fi
+          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+
+  rc-windows-build:
+    needs: branch-guard
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build `
+            -DOB_BUILD_TESTS=ON `
+            -DOB_BUILD_EXAMPLES=OFF `
+            -DOB_BUILD_TOOLS=OFF `
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build
+        run: cmake --build build --config Release
+
+  rc-summary:
+    needs: [rc-linux, rc-windows-build]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Generate release summary
+        run: |
+          echo "RC validation finished." >> "$GITHUB_STEP_SUMMARY"
+          echo "- P0 threshold and benchmark gate integration: pending repo-level test-suite config wiring." >> "$GITHUB_STEP_SUMMARY"
