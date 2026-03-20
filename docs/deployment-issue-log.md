@@ -28,3 +28,8 @@ This file tracks blockers found while executing the deployment/implementation do
 - Problem: User requested to skip ROS steps 8-10 for current execution cycle.
 - Impact: ROS Docker build, launch baseline and ROS gate acceptance are intentionally deferred.
 - Suggested follow-up: Execute steps 8-10 later in OrbbecSDK_ROS1 and OrbbecSDK_ROS2 when ROS scope is resumed.
+
+6. RC workflow threshold gate still partial
+- Problem: RC workflow now includes build/no-hardware/docs/examples checks, but P0 pass-rate threshold and benchmark 3-sigma gate are not yet data-driven.
+- Impact: Release gate is stronger but still missing numeric policy enforcement from centralized suite metrics.
+- Suggested follow-up: Introduce suite-threshold config and gate script that consumes aggregated test report + benchmark outputs.

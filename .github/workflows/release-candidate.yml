@@ -51,6 +51,31 @@ jobs:
           fi
           ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
 
+  rc-docs-check:
+    needs: branch-guard
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run docs checks
+        run: bash scripts/run_docs_checks.sh
+
+  rc-examples-linux:
+    needs: branch-guard
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run examples smoke
+        run: bash scripts/run_examples.sh
+
   rc-windows-build:
     needs: branch-guard
     runs-on: windows-2022
@@ -70,10 +95,15 @@ jobs:
         run: cmake --build build --config Release
 
   rc-summary:
-    needs: [rc-linux, rc-windows-build]
+    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux]
     runs-on: ubuntu-22.04
+    environment: rc-validation
     steps:
       - name: Generate release summary
         run: |
           echo "RC validation finished." >> "$GITHUB_STEP_SUMMARY"
-          echo "- P0 threshold and benchmark gate integration: pending repo-level test-suite config wiring." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux build/no-hardware regression: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Windows build: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Docs check: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Examples smoke (Linux): PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Remaining gap: P0 threshold ratio and benchmark 3-sigma gate need dedicated suite config wiring." >> "$GITHUB_STEP_SUMMARY"
