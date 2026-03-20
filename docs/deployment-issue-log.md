@@ -23,3 +23,8 @@ This file tracks blockers found while executing the deployment/implementation do
 - Problem: Step 21 expects centralized threshold config and benchmark analyzer wiring not yet present in this repository.
 - Impact: Release gate currently validates build/no-hardware regression, but P0 percentage and 3-sigma benchmark gate are partial.
 - Suggested follow-up: Add shared test-suite config and benchmark pipeline integration.
+
+5. ROS steps intentionally skipped by execution decision
+- Problem: User requested to skip ROS steps 8-10 for current execution cycle.
+- Impact: ROS Docker build, launch baseline and ROS gate acceptance are intentionally deferred.
+- Suggested follow-up: Execute steps 8-10 later in OrbbecSDK_ROS1 and OrbbecSDK_ROS2 when ROS scope is resumed.

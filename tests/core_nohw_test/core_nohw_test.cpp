@@ -232,6 +232,25 @@ int tc_cpp_24_error_handling() {
         return 1;
     }
 
+    // TC_CPP_13/24 no-hardware subset: invalid filter creation should raise SDK error safely.
+    bool filterErrorCaught = false;
+    try {
+        auto invalidFilter = ob::FilterFactory::createFilter("__invalid_filter_name__");
+        (void)invalidFilter;
+    }
+    catch(const ob::Error &e) {
+        filterErrorCaught = true;
+        if(e.what() == nullptr || std::strlen(e.what()) == 0 || e.getFunction() == nullptr || std::strlen(e.getFunction()) == 0) {
+            std::cerr << "TC_CPP_24 failed: invalid filter error info is incomplete" << std::endl;
+            return 1;
+        }
+    }
+
+    if(!filterErrorCaught) {
+        std::cerr << "TC_CPP_24 failed: invalid filter creation did not throw expected error" << std::endl;
+        return 1;
+    }
+
     std::cout << "TC_CPP_24 passed" << std::endl;
     return 0;
 }
