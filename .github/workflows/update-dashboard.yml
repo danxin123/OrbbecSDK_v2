@@ -19,16 +19,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare sample report payload
+        - name: Build report payload from workflow result
         run: |
-          cat > report.json << 'JSON'
-          {
-            "total_cases": 1,
-            "passed_cases": 1,
-            "failed_cases": 0,
-            "failed_case_names": []
-          }
-          JSON
+          python3 - << 'PY'
+          import json
+          import os
+
+          conclusion = "${{ github.event.workflow_run.conclusion }}"
+          if conclusion == "success":
+            report = {
+              "total_cases": 1,
+              "passed_cases": 1,
+              "failed_cases": 0,
+              "failed_case_names": []
+            }
+          else:
+            report = {
+              "total_cases": 1,
+              "passed_cases": 0,
+              "failed_cases": 1,
+              "failed_case_names": [f"workflow_{conclusion}"]
+            }
+
+          with open("report.json", "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+          PY
 
       - name: Update dashboard data
         run: |
