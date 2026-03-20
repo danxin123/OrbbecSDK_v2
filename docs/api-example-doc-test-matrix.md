@@ -22,6 +22,18 @@ This is the initial baseline for Step 7. It tracks whether key SDK capability ar
 
 ## Gap List (P0/P1/P2)
 
+### API But No Example
+
+- None in current capability-level baseline.
+
+### Example But No Document
+
+- Needs full inventory sweep to validate across all example directories.
+
+### Document But Command May Be Stale
+
+- README/tutorial command samples still require periodic command-level execution audit in CI.
+
 ### P0
 
 - Completed: frame validity and timestamp monotonicity assertions in no-hardware playback tests.
@@ -36,3 +48,11 @@ This is the initial baseline for Step 7. It tracks whether key SDK capability ar
 
 - Expand matrix coverage from major capability areas to full API inventory.
 - Add script-based matrix generation to avoid manual drift.
+
+## Next Expansion Plan (Step 7 Full Scale)
+
+1. Parse API symbols from include/libobsensor/h and include/libobsensor/hpp.
+2. Build per-feature rows from docs/api and docs/tutorial references.
+3. Map example coverage by scanning examples/ and matching keywords.
+4. Map test coverage by scanning tests/ target and testcase IDs.
+5. Generate prioritized missing-list for API/Example/Doc/Test dimensions.

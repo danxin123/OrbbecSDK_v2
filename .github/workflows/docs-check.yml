@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check markdown links
-        uses: lycheeverse/lychee-action@v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          fail: true
-          args: --no-progress --verbose --exclude-mail ./README.md ./docs ./LiDAR_README.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node-version: "20"
+
+      - name: Run docs checks
+        run: bash scripts/run_docs_checks.sh

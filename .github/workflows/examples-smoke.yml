@@ -2,8 +2,22 @@ name: Examples Smoke
 
 on:
   pull_request:
+    paths:
+      - "examples/**"
+      - "include/**"
+      - "src/**"
+      - "CMakeLists.txt"
+      - "cmake/**"
+      - "scripts/run_examples.sh"
   push:
     branches: [main]
+    paths:
+      - "examples/**"
+      - "include/**"
+      - "src/**"
+      - "CMakeLists.txt"
+      - "cmake/**"
+      - "scripts/run_examples.sh"
 
 jobs:
   examples-linux:
@@ -12,18 +26,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure
-        run: |
-          cmake -S . -B build \
-            -DOB_BUILD_EXAMPLES=ON \
-            -DOB_BUILD_TESTS=OFF \
-            -DOB_BUILD_TOOLS=OFF \
-            -DOB_BUILD_DOCS=OFF \
-            -DOB_BUILD_PCL_EXAMPLES=OFF \
-            -DOB_BUILD_OPEN3D_EXAMPLES=OFF
-
-      - name: Build examples
-        run: cmake --build build -j
+      - name: Build examples (Linux)
+        run: bash scripts/run_examples.sh
 
   examples-windows:
     runs-on: windows-2022
@@ -43,3 +47,44 @@ jobs:
 
       - name: Build examples
         run: cmake --build build --config Release
+
+      - name: Optional PCL/Open3D examples (non-blocking)
+        continue-on-error: true
+        run: |
+          cmake -S . -B build_opt `
+            -DOB_BUILD_EXAMPLES=ON `
+            -DOB_BUILD_TESTS=OFF `
+            -DOB_BUILD_TOOLS=OFF `
+            -DOB_BUILD_DOCS=OFF `
+            -DOB_BUILD_PCL_EXAMPLES=ON `
+            -DOB_BUILD_OPEN3D_EXAMPLES=ON
+          cmake --build build_opt --config Release
+
+  examples-python-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Python example syntax/import checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find examples -type f -name '*.py')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No Python examples found under examples/, skip."
+            exit 0
+          fi
+
+          for f in "${files[@]}"; do
+            python -m py_compile "$f"
+          done
+
+          for f in "${files[@]}"; do
+            python -c "import importlib.util, pathlib, sys; p=pathlib.Path(sys.argv[1]); s=importlib.util.spec_from_file_location(p.stem, p); (_ for _ in ()).throw(RuntimeError(f'cannot build import spec for {p}')) if (s is None or s.loader is None) else None; m=importlib.util.module_from_spec(s); s.loader.exec_module(m)" "$f"
+          done
