@@ -1,0 +1,45 @@
+name: Examples Smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  examples-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_EXAMPLES=ON \
+            -DOB_BUILD_TESTS=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF \
+            -DOB_BUILD_PCL_EXAMPLES=OFF \
+            -DOB_BUILD_OPEN3D_EXAMPLES=OFF
+
+      - name: Build examples
+        run: cmake --build build -j
+
+  examples-windows:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build `
+            -DOB_BUILD_EXAMPLES=ON `
+            -DOB_BUILD_TESTS=OFF `
+            -DOB_BUILD_TOOLS=OFF `
+            -DOB_BUILD_DOCS=OFF `
+            -DOB_BUILD_PCL_EXAMPLES=OFF `
+            -DOB_BUILD_OPEN3D_EXAMPLES=OFF
+
+      - name: Build examples
+        run: cmake --build build --config Release
