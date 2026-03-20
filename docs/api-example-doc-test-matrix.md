@@ -9,7 +9,7 @@ This is the initial baseline for Step 7. It tracks whether key SDK capability ar
 | Frame acquisition | Yes | Yes | Yes | Partial | Add assertions on output frame count in tests. |
 | Playback from bag | Yes | Yes | Yes | Yes | Added no-hardware playback smoke test with tests/rosbag sample. |
 | Recording to bag | Yes | Yes | Yes | No | Needs hardware test and file integrity checks. |
-| Metadata access | Yes | Yes | Yes | Partial | Needs explicit metadata validation test cases. |
+| Metadata access | Yes | Yes | Yes | Yes | Added playback no-hardware assertions for availability, sequence monotonicity, raw buffer consistency, unsupported-field safety, and C API metadata update/readback. |
 | Point cloud conversion | Yes | Yes | Yes | Partial | Example exists; no strict regression assertions yet. |
 | Post-processing filters | Yes | Yes | Yes | Partial | Needs deterministic parameterized test suite. |
 | Depth work mode and preset | Yes | Yes | Yes | No | Add property read/write and rollback tests. |
@@ -19,8 +19,8 @@ This is the initial baseline for Step 7. It tracks whether key SDK capability ar
 
 ### P0
 
-- Add automated regression assertions for frame validity and timestamp monotonicity in no-hardware playback tests.
-- Add no-hardware smoke validation for metadata fields on recorded playback files.
+- Completed: frame validity and timestamp monotonicity assertions in no-hardware playback tests.
+- Completed: no-hardware metadata validations on recorded playback files (value/sequence/raw buffer/C API update safety).
 
 ### P1
 

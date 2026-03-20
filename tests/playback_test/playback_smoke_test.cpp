@@ -368,6 +368,35 @@ int main(int argc, char **argv) {
             }
         }
 
+        // TC_CPP_11_06 subset (C API): update raw metadata buffer and verify readback consistency.
+        if(metadataSize > 0) {
+            std::vector<uint8_t> metadataBlob(firstDepthFrame->metadata(), firstDepthFrame->metadata() + metadataSize);
+            auto                 metadataCarrier = ob::FrameFactory::createFrame(firstDepthFrame->type(), firstDepthFrame->format(), firstDepthFrame->dataSize());
+
+            ob_error *cError = nullptr;
+            ob_frame_update_metadata(const_cast<ob_frame *>(metadataCarrier->getImpl()), metadataBlob.data(), static_cast<uint32_t>(metadataBlob.size()),
+                                     &cError);
+            ob::Error::handle(&cError);
+
+            if(metadataCarrier->metadata() == nullptr || metadataCarrier->metadataSize() != metadataBlob.size()
+               || std::memcmp(metadataCarrier->metadata(), metadataBlob.data(), metadataBlob.size()) != 0) {
+                std::cerr << "Playback smoke test failed: C API metadata update readback mismatch." << std::endl;
+                return 1;
+            }
+
+            // Update one byte and verify the raw metadata buffer is actually refreshed.
+            metadataBlob[0] = static_cast<uint8_t>(metadataBlob[0] ^ 0x01);
+            ob_frame_update_metadata(const_cast<ob_frame *>(metadataCarrier->getImpl()), metadataBlob.data(), static_cast<uint32_t>(metadataBlob.size()),
+                                     &cError);
+            ob::Error::handle(&cError);
+
+            if(metadataCarrier->metadata() == nullptr || metadataCarrier->metadataSize() != metadataBlob.size()
+               || std::memcmp(metadataCarrier->metadata(), metadataBlob.data(), metadataBlob.size()) != 0) {
+                std::cerr << "Playback smoke test failed: C API metadata second update readback mismatch." << std::endl;
+                return 1;
+            }
+        }
+
         // TC_CPP_08 config switch fallback in current SDK: stop/start with a new config.
         auto config2 = std::make_shared<ob::Config>();
         auto depthProfiles = pipeline->getStreamProfileList(OB_SENSOR_DEPTH);
