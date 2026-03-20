@@ -24,7 +24,7 @@ This document tracks execution status against the quality implementation deploym
 11. Dashboard page skeleton: DONE
 12. Dashboard update script: DONE
 13. Dashboard auto-update workflow: DONE
-14. First self-hosted runner onboarding: PARTIAL
+14. First self-hosted runner onboarding: DONE
 15. Daily HW smoke workflow: PARTIAL
 16. Nightly regression workflow: PARTIAL
 17. Basic module test implementation batch: PARTIAL
@@ -37,5 +37,6 @@ This document tracks execution status against the quality implementation deploym
 ## Notes
 
 - ROS steps 8-10 are skipped by execution decision for this cycle.
-- Hardware-dependent acceptance for steps 14-16 requires self-hosted runners and devices online.
+- Step 14 is completed (first self-hosted runner setup confirmed).
+- Hardware-dependent acceptance for steps 15-16 still requires stable online devices and scheduled run history.
 - Step 21 still needs numeric policy enforcement (P0 threshold and benchmark 3-sigma gate).

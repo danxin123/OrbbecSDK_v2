@@ -19,12 +19,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if lsusb | grep -q "2bc5"; then
+          chmod +x scripts/device_health_check.sh
+          if bash scripts/device_health_check.sh; then
             echo "healthy=true" >> "$GITHUB_OUTPUT"
             echo "DEVICE_HEALTH=OK" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "healthy=false" >> "$GITHUB_OUTPUT"
-            echo "DEVICE_HEALTH=INFRA_FAIL (no Orbbec USB device found)" >> "$GITHUB_STEP_SUMMARY"
+            echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
+            echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
+            echo "[HEALTH FAIL] Check device connections, power, and runner configuration." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   cpp-hw-smoke:
@@ -62,4 +65,6 @@ jobs:
     steps:
       - name: Report infra failure
         run: |
-          echo "Daily HW Smoke skipped due to infra issue (device offline or not detected)." >> "$GITHUB_STEP_SUMMARY"
+          echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
+          echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
+          echo "[HEALTH FAIL] Check device connections, power, and runner configuration." >> "$GITHUB_STEP_SUMMARY"
