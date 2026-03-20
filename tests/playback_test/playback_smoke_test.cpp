@@ -39,6 +39,8 @@ int main(int argc, char **argv) {
         std::atomic<int> frameSetCount(0);
         std::shared_ptr<ob::DepthFrame> firstDepthFrame;
         std::vector<uint64_t> depthTimestamps;
+        std::vector<int64_t> depthFrameNumbers;
+        std::vector<int64_t> depthSensorTimestamps;
 
         pipeline->start(config);
 
@@ -56,6 +58,13 @@ int main(int argc, char **argv) {
                     firstDepthFrame = depthFrame;
                 }
                 depthTimestamps.push_back(depthFrame->timeStampUs());
+
+                if(depthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_FRAME_NUMBER)) {
+                    depthFrameNumbers.push_back(depthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER));
+                }
+                if(depthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_SENSOR_TIMESTAMP)) {
+                    depthSensorTimestamps.push_back(depthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_SENSOR_TIMESTAMP));
+                }
             }
         }
 
@@ -101,6 +110,26 @@ int main(int argc, char **argv) {
             if(depthTimestamps[i] < depthTimestamps[i - 1]) {
                 std::cerr << "Playback smoke test failed: depth timestamp is not monotonic." << std::endl;
                 return 1;
+            }
+        }
+
+        // TC_CPP_11_02 subset: FRAME_NUMBER metadata monotonicity when available.
+        if(depthFrameNumbers.size() >= 2) {
+            for(size_t i = 1; i < depthFrameNumbers.size(); ++i) {
+                if(depthFrameNumbers[i] < depthFrameNumbers[i - 1]) {
+                    std::cerr << "Playback smoke test failed: FRAME_NUMBER metadata is not monotonic." << std::endl;
+                    return 1;
+                }
+            }
+        }
+
+        // TC_CPP_11_01/11_02 subset: SENSOR_TIMESTAMP metadata monotonicity when available.
+        if(depthSensorTimestamps.size() >= 2) {
+            for(size_t i = 1; i < depthSensorTimestamps.size(); ++i) {
+                if(depthSensorTimestamps[i] < depthSensorTimestamps[i - 1]) {
+                    std::cerr << "Playback smoke test failed: SENSOR_TIMESTAMP metadata is not monotonic." << std::endl;
+                    return 1;
+                }
             }
         }
 
