@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 file(GLOB subdirectories RELATIVE ${CMAKE_CURRENT_LIST_DIR} "*")
 
 foreach(subdir ${subdirectories})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${subdir})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${subdir} AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${subdir}/CMakeLists.txt)
         add_subdirectory(${subdir})
     endif()
 endforeach()
