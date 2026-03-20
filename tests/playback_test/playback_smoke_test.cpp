@@ -242,6 +242,17 @@ int main(int argc, char **argv) {
             return 1;
         }
 
+        auto clonedFrameNoCopy = ob::FrameFactory::createFrameFromOtherFrame(firstDepthFrame, false);
+        if(clonedFrameNoCopy == nullptr || clonedFrameNoCopy->type() != firstDepthFrame->type()
+           || clonedFrameNoCopy->format() != firstDepthFrame->format() || clonedFrameNoCopy->dataSize() != firstDepthFrame->dataSize()) {
+            std::cerr << "Playback smoke test failed: createFrameFromOtherFrame(copy=false) returned invalid clone." << std::endl;
+            return 1;
+        }
+        if(clonedFrameNoCopy->data() == nullptr || clonedFrameNoCopy->data() == firstDepthFrame->data()) {
+            std::cerr << "Playback smoke test failed: createFrameFromOtherFrame(copy=false) buffer is invalid." << std::endl;
+            return 1;
+        }
+
         auto createdFrameSet = ob::FrameFactory::createFrameSet();
         if(createdFrameSet == nullptr || createdFrameSet->frameCount() != 0) {
             std::cerr << "Playback smoke test failed: createFrameSet initial state is invalid." << std::endl;
@@ -250,6 +261,11 @@ int main(int argc, char **argv) {
         createdFrameSet->pushFrame(createdFrame);
         if(createdFrameSet->frameCount() != 1) {
             std::cerr << "Playback smoke test failed: createFrameSet pushFrame did not increase frame count." << std::endl;
+            return 1;
+        }
+        createdFrameSet->pushFrame(clonedFrame);
+        if(createdFrameSet->frameCount() != 1) {
+            std::cerr << "Playback smoke test failed: same-type push should replace frame without increasing count." << std::endl;
             return 1;
         }
 
@@ -342,7 +358,8 @@ int main(int argc, char **argv) {
                 handledSafely = true;
             }
             catch(...) {
-                handledSafely = true;
+                std::cerr << "Playback smoke test failed: unsupported metadata access raised unexpected exception type." << std::endl;
+                return 1;
             }
 
             if(!handledSafely) {
