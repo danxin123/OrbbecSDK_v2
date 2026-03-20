@@ -33,3 +33,8 @@ This file tracks blockers found while executing the deployment/implementation do
 - Problem: RC workflow now includes build/no-hardware/docs/examples checks, but P0 pass-rate threshold and benchmark 3-sigma gate are not yet data-driven.
 - Impact: Release gate is stronger but still missing numeric policy enforcement from centralized suite metrics.
 - Suggested follow-up: Introduce suite-threshold config and gate script that consumes aggregated test report + benchmark outputs.
+
+7. device_health_check.sh path mismatch in installer context
+- Problem: Deployment doc references ci/scripts/device_health_check.sh, but this repository has no ci/ directory or that script.
+- Impact: Jetson one-click installer cannot wire the exact script by default.
+- Suggested follow-up: Installer uses a fallback lsusb-based health check; optionally provide REPO_DEVICE_HEALTH_SCRIPT env var to wire an external health script path.
