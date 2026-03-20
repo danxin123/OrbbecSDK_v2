@@ -224,6 +224,29 @@ int main(int argc, char **argv) {
             return 1;
         }
 
+        // TC_CPP_12_02 subset: create frame from stream profile of playback frame.
+        auto sourceProfile = firstDepthFrame->getStreamProfile();
+        if(sourceProfile == nullptr) {
+            std::cerr << "Playback smoke test failed: first depth frame stream profile is null." << std::endl;
+            return 1;
+        }
+
+        auto frameFromProfile = ob::FrameFactory::createFrameFromStreamProfile(sourceProfile);
+        if(frameFromProfile == nullptr || frameFromProfile->format() != sourceProfile->format()) {
+            std::cerr << "Playback smoke test failed: createFrameFromStreamProfile returned invalid frame." << std::endl;
+            return 1;
+        }
+
+        if(sourceProfile->is<ob::VideoStreamProfile>()) {
+            auto sourceVideoProfile = sourceProfile->as<ob::VideoStreamProfile>();
+            auto createdVideo = frameFromProfile->as<ob::VideoFrame>();
+            if(createdVideo == nullptr || sourceVideoProfile == nullptr || createdVideo->width() != sourceVideoProfile->width()
+               || createdVideo->height() != sourceVideoProfile->height()) {
+                std::cerr << "Playback smoke test failed: frame created from stream profile has mismatched dimensions." << std::endl;
+                return 1;
+            }
+        }
+
         // TC_CPP_12_03 subset: wrap external buffers and verify destroy callbacks.
         std::atomic<int> externalDestroyCount(0);
         {
