@@ -103,6 +103,68 @@ int main(int argc, char **argv) {
             }
         }
 
+        // TC_CPP_11 subset: metadata availability and value access.
+        const auto hasTsMeta = firstDepthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_TIMESTAMP);
+        const auto hasSensorTsMeta = firstDepthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_SENSOR_TIMESTAMP);
+        const auto hasFrameNumMeta = firstDepthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_FRAME_NUMBER);
+        const auto metadataSize = firstDepthFrame->metadataSize();
+
+        bool hasAnyMetadata = false;
+        if(hasTsMeta) {
+            hasAnyMetadata = true;
+            const auto ts = firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_TIMESTAMP);
+            if(ts <= 0) {
+                std::cerr << "Playback smoke test failed: invalid TIMESTAMP metadata value." << std::endl;
+                return 1;
+            }
+        }
+        if(hasSensorTsMeta) {
+            hasAnyMetadata = true;
+            const auto sts = firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_SENSOR_TIMESTAMP);
+            if(sts <= 0) {
+                std::cerr << "Playback smoke test failed: invalid SENSOR_TIMESTAMP metadata value." << std::endl;
+                return 1;
+            }
+        }
+        if(hasFrameNumMeta) {
+            hasAnyMetadata = true;
+            (void)firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER);
+        }
+
+        if(!hasAnyMetadata && metadataSize == 0) {
+            std::cerr << "Playback smoke test failed: no metadata found on first depth frame." << std::endl;
+            return 1;
+        }
+
+        // TC_CPP_08 config switch fallback in current SDK: stop/start with a new config.
+        auto config2 = std::make_shared<ob::Config>();
+        auto depthProfiles = pipeline->getStreamProfileList(OB_SENSOR_DEPTH);
+        if(depthProfiles != nullptr && depthProfiles->count() > 0) {
+            config2->enableStream(depthProfiles->getProfile(0));
+        }
+        else {
+            // Fallback: re-enable all available sensors if depth profile list is unavailable.
+            for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
+                config2->enableStream(sensorList->getSensorType(i));
+            }
+        }
+        config2->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
+
+        pipeline->start(config2);
+        int switchedFrameCount = 0;
+        for(int i = 0; i < 10; ++i) {
+            auto fs = pipeline->waitForFrames(3000);
+            if(fs != nullptr) {
+                ++switchedFrameCount;
+            }
+        }
+        pipeline->stop();
+
+        if(switchedFrameCount <= 0) {
+            std::cerr << "Playback smoke test failed: no frame after config switch fallback." << std::endl;
+            return 1;
+        }
+
         return 0;
     }
     catch(const ob::Error &e) {
