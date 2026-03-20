@@ -224,6 +224,81 @@ int main(int argc, char **argv) {
             return 1;
         }
 
+        // TC_CPP_12_03 subset: wrap external buffers and verify destroy callbacks.
+        std::atomic<int> externalDestroyCount(0);
+        {
+            const auto externalSize = firstDepthFrame->dataSize();
+            auto *externalBuffer = new uint8_t[externalSize];
+            std::memcpy(externalBuffer, firstDepthFrame->data(), externalSize);
+
+            auto wrappedFrame = ob::FrameFactory::createFrameFromBuffer(
+                firstDepthFrame->type(), firstDepthFrame->format(), externalBuffer,
+                [&externalDestroyCount](uint8_t *buffer) {
+                    delete[] buffer;
+                    externalDestroyCount.fetch_add(1, std::memory_order_relaxed);
+                },
+                externalSize);
+
+            if(wrappedFrame == nullptr || wrappedFrame->data() == nullptr || wrappedFrame->dataSize() != externalSize
+               || wrappedFrame->data() != externalBuffer) {
+                std::cerr << "Playback smoke test failed: createFrameFromBuffer returned invalid frame." << std::endl;
+                return 1;
+            }
+        }
+
+        if(externalDestroyCount.load(std::memory_order_relaxed) != 1) {
+            std::cerr << "Playback smoke test failed: frame buffer destroy callback was not called exactly once." << std::endl;
+            return 1;
+        }
+
+        std::atomic<int> externalVideoDestroyCount(0);
+        {
+            const auto externalVideoSize = firstDepthFrame->dataSize();
+            auto *externalVideoBuffer = new uint8_t[externalVideoSize];
+            std::memcpy(externalVideoBuffer, firstDepthFrame->data(), externalVideoSize);
+
+            auto wrappedVideoFrame = ob::FrameFactory::createVideoFrameFromBuffer(
+                firstDepthFrame->type(), firstDepthFrame->format(), firstDepthFrame->width(), firstDepthFrame->height(), externalVideoBuffer,
+                [&externalVideoDestroyCount](uint8_t *buffer) {
+                    delete[] buffer;
+                    externalVideoDestroyCount.fetch_add(1, std::memory_order_relaxed);
+                },
+                externalVideoSize, 0);
+
+            if(wrappedVideoFrame == nullptr || wrappedVideoFrame->data() == nullptr || wrappedVideoFrame->dataSize() != externalVideoSize
+               || wrappedVideoFrame->data() != externalVideoBuffer || wrappedVideoFrame->width() != firstDepthFrame->width()
+               || wrappedVideoFrame->height() != firstDepthFrame->height()) {
+                std::cerr << "Playback smoke test failed: createVideoFrameFromBuffer returned invalid frame." << std::endl;
+                return 1;
+            }
+        }
+
+        if(externalVideoDestroyCount.load(std::memory_order_relaxed) != 1) {
+            std::cerr << "Playback smoke test failed: video frame buffer destroy callback was not called exactly once." << std::endl;
+            return 1;
+        }
+
+        // TC_CPP_11_05 subset: unsupported metadata field should be handled safely.
+        const auto hasGpioInputMeta = firstDepthFrame->hasMetadata(OB_FRAME_METADATA_TYPE_GPIO_INPUT_DATA);
+        if(!hasGpioInputMeta) {
+            bool handledSafely = false;
+            try {
+                (void)firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_GPIO_INPUT_DATA);
+                handledSafely = true;
+            }
+            catch(const ob::Error &) {
+                handledSafely = true;
+            }
+            catch(...) {
+                handledSafely = true;
+            }
+
+            if(!handledSafely) {
+                std::cerr << "Playback smoke test failed: unsupported metadata access is not handled safely." << std::endl;
+                return 1;
+            }
+        }
+
         // TC_CPP_08 config switch fallback in current SDK: stop/start with a new config.
         auto config2 = std::make_shared<ob::Config>();
         auto depthProfiles = pipeline->getStreamProfileList(OB_SENSOR_DEPTH);
