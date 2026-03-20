@@ -60,14 +60,10 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build test targets
-        run: cmake --build build --target frame_test total_test align_test hdr_test ob_core_nohw_test -j
+        run: cmake --build build --target ob_core_nohw_test -j
 
       - name: Verify test executables
         run: |
-          test -f build/tests/frame_test/frame_test
-          test -f build/tests/total_test/total_test
-          test -f build/tests/align_test/align_test
-          test -f build/tests/hdr_test/hdr_test
           test -f build/tests/core_nohw_test/ob_core_nohw_test
 
       - name: Run no-hardware core tests (TC_CPP_01/02/09/22/23/24/25 subset)

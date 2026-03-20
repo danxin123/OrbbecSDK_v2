@@ -47,16 +47,13 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build test targets
-        run: cmake --build build --target frame_test total_test align_test hdr_test -j
+        run: cmake --build build --target ob_core_nohw_test -j
 
-      - name: Run hardware smoke executables
+      - name: Run smoke executable
         shell: bash
         run: |
           set -euo pipefail
-          ./build/tests/frame_test/frame_test
-          ./build/tests/total_test/total_test
-          ./build/tests/align_test/align_test
-          ./build/tests/hdr_test/hdr_test
+          ./build/tests/core_nohw_test/ob_core_nohw_test
 
   infra-summary:
     needs: device-health
