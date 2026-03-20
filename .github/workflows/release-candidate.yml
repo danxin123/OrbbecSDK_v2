@@ -99,6 +99,30 @@ jobs:
     runs-on: ubuntu-22.04
     environment: rc-validation
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run RC numeric policy gate
+        run: |
+          python3 scripts/rc_policy_gate.py \
+            --reports-dir all_reports \
+            --min-success-rate 98.0 \
+            --allow-missing-p0 \
+            --job-results "${JOB_RESULTS}" \
+            --output-json reports/rc_gate_result.json \
+            --output-md reports/rc_gate_result.md
+        env:
+          JOB_RESULTS: ${{ needs.rc-linux.result }},${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }}
+
+      - name: Upload RC gate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-policy-gate-${{ github.run_id }}
+          path: |
+            reports/rc_gate_result.json
+            reports/rc_gate_result.md
+          retention-days: 90
+
       - name: Generate release summary
         run: |
           echo "RC validation finished." >> "$GITHUB_STEP_SUMMARY"
@@ -106,4 +130,5 @@ jobs:
           echo "- Windows build: PASS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Docs check: PASS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Examples smoke (Linux): PASS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Remaining gap: P0 threshold ratio and benchmark 3-sigma gate need dedicated suite config wiring." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat reports/rc_gate_result.md >> "$GITHUB_STEP_SUMMARY"

@@ -2,7 +2,7 @@ name: Update Dashboard
 
 on:
   workflow_run:
-    workflows: ["PR Gate"]
+    workflows: ["PR Gate", "Daily HW Smoke", "Nightly Regression"]
     types: [completed]
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-        - name: Build report payload from workflow result
+      - name: Build report payload from workflow result
         run: |
           python3 - << 'PY'
           import json

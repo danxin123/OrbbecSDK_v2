@@ -24,10 +24,10 @@ This file tracks blockers found while executing the deployment/implementation do
 - Impact: CI build failed until target references were aligned to existing targets.
 - Suggested follow-up: Add dedicated hardware test targets in this repo, or keep workflow aligned to available executable targets.
 
-5. RC workflow threshold gate still partial
-- Problem: RC workflow includes build/no-hardware/docs/examples checks, but P0 pass-rate threshold and benchmark 3-sigma gate are not yet data-driven.
-- Impact: Release gate is stronger but still missing numeric policy enforcement from centralized suite metrics.
-- Suggested follow-up: Introduce suite-threshold config and gate script that consumes aggregated test report + benchmark outputs.
+5. RC workflow threshold gate partially closed
+- Problem: RC workflow originally lacked explicit numeric policy enforcement.
+- Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.
+- Remaining gap: P0 and benchmark checks are only fully enforceable when RC pipeline emits standardized XML/CSV artifacts from real runs.
 
 6. device_health_check.sh path mismatch in installer context
 - Problem: Deployment doc references ci/scripts/device_health_check.sh, but this repository has no ci/ directory or that script.
