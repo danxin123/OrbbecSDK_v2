@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -133,6 +134,93 @@ int main(int argc, char **argv) {
 
         if(!hasAnyMetadata && metadataSize == 0) {
             std::cerr << "Playback smoke test failed: no metadata found on first depth frame." << std::endl;
+            return 1;
+        }
+
+        // TC_CPP_11_04 subset: raw metadata buffer readability and consistency.
+        if(metadataSize > 0) {
+            auto rawMetaBefore = firstDepthFrame->metadata();
+            if(rawMetaBefore == nullptr) {
+                std::cerr << "Playback smoke test failed: metadataSize > 0 but metadata buffer is null." << std::endl;
+                return 1;
+            }
+
+            std::vector<uint8_t> snapshotBefore(rawMetaBefore, rawMetaBefore + metadataSize);
+
+            // Read APIs should not mutate raw metadata contents.
+            if(hasTsMeta) {
+                (void)firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_TIMESTAMP);
+            }
+            if(hasSensorTsMeta) {
+                (void)firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_SENSOR_TIMESTAMP);
+            }
+            if(hasFrameNumMeta) {
+                (void)firstDepthFrame->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER);
+            }
+
+            if(firstDepthFrame->metadataSize() != metadataSize) {
+                std::cerr << "Playback smoke test failed: metadata size changed after metadata reads." << std::endl;
+                return 1;
+            }
+
+            auto rawMetaAfter = firstDepthFrame->metadata();
+            if(rawMetaAfter == nullptr) {
+                std::cerr << "Playback smoke test failed: metadata buffer becomes null after reads." << std::endl;
+                return 1;
+            }
+
+            if(std::memcmp(snapshotBefore.data(), rawMetaAfter, metadataSize) != 0) {
+                std::cerr << "Playback smoke test failed: raw metadata buffer changed unexpectedly after reads." << std::endl;
+                return 1;
+            }
+        }
+
+        // TC_CPP_12_01/12_02/12_04 subsets: FrameFactory create/clone/frameset operations.
+        auto createdFrame = ob::FrameFactory::createFrame(firstDepthFrame->type(), firstDepthFrame->format(), firstDepthFrame->dataSize());
+        if(createdFrame == nullptr || createdFrame->type() != firstDepthFrame->type() || createdFrame->format() != firstDepthFrame->format()
+           || createdFrame->dataSize() != firstDepthFrame->dataSize()) {
+            std::cerr << "Playback smoke test failed: createFrame returned invalid frame." << std::endl;
+            return 1;
+        }
+
+        auto createdVideoFrame = ob::FrameFactory::createVideoFrame(firstDepthFrame->type(), firstDepthFrame->format(), firstDepthFrame->width(),
+                                                                     firstDepthFrame->height(), 0);
+        if(createdVideoFrame == nullptr || createdVideoFrame->width() != firstDepthFrame->width()
+           || createdVideoFrame->height() != firstDepthFrame->height()) {
+            std::cerr << "Playback smoke test failed: createVideoFrame returned invalid video frame." << std::endl;
+            return 1;
+        }
+
+        auto clonedFrame = ob::FrameFactory::createFrameFromOtherFrame(firstDepthFrame, true);
+        if(clonedFrame == nullptr || clonedFrame->type() != firstDepthFrame->type() || clonedFrame->format() != firstDepthFrame->format()
+           || clonedFrame->dataSize() != firstDepthFrame->dataSize()) {
+            std::cerr << "Playback smoke test failed: createFrameFromOtherFrame returned invalid clone." << std::endl;
+            return 1;
+        }
+
+        if(clonedFrame->data() == nullptr || firstDepthFrame->data() == nullptr) {
+            std::cerr << "Playback smoke test failed: clone data buffer is null." << std::endl;
+            return 1;
+        }
+
+        if(clonedFrame->data() == firstDepthFrame->data()) {
+            std::cerr << "Playback smoke test failed: clone data buffer aliases source buffer unexpectedly." << std::endl;
+            return 1;
+        }
+
+        if(std::memcmp(clonedFrame->data(), firstDepthFrame->data(), firstDepthFrame->dataSize()) != 0) {
+            std::cerr << "Playback smoke test failed: clone data does not match source data." << std::endl;
+            return 1;
+        }
+
+        auto createdFrameSet = ob::FrameFactory::createFrameSet();
+        if(createdFrameSet == nullptr || createdFrameSet->frameCount() != 0) {
+            std::cerr << "Playback smoke test failed: createFrameSet initial state is invalid." << std::endl;
+            return 1;
+        }
+        createdFrameSet->pushFrame(createdFrame);
+        if(createdFrameSet->frameCount() != 1) {
+            std::cerr << "Playback smoke test failed: createFrameSet pushFrame did not increase frame count." << std::endl;
             return 1;
         }
 
