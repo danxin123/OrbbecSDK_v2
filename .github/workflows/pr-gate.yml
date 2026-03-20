@@ -68,3 +68,33 @@ jobs:
           test -f build/tests/total_test/total_test
           test -f build/tests/align_test/align_test
           test -f build/tests/hdr_test/hdr_test
+
+  test-playback:
+    runs-on: ubuntu-22.04
+    needs: build-linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build playback smoke test
+        run: cmake --build build --target ob_playback_smoke_test -j
+
+      - name: Run playback smoke test
+        run: |
+          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -z "$BAG_PATH" ]; then
+            echo "No .bag file found in tests/rosbag"
+            exit 1
+          fi
+          echo "Using bag: $BAG_PATH"
+          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
