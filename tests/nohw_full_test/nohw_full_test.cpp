@@ -724,12 +724,12 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_01_log_severity_set) {
     };
     for(auto level : levels) {
         ob_error *error = nullptr;
-        ob_set_log_severity(level, &error);
+        ob_set_logger_severity(level, &error);
         EXPECT_EQ(error, nullptr) << "Failed to set log level: " << (int)level;
     }
     // restore a normal level
     ob_error *error = nullptr;
-    ob_set_log_severity(OB_LOG_SEVERITY_WARN, &error);
+    ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
@@ -761,7 +761,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
     // 清理
     std::remove(logFile.c_str());
     // 恢复默认
-    ob_set_log_severity(OB_LOG_SEVERITY_WARN, &error);
+    ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_03_log_to_console) {
@@ -771,7 +771,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_03_log_to_console) {
     EXPECT_EQ(error, nullptr);
 
     // 恢复
-    ob_set_log_severity(OB_LOG_SEVERITY_WARN, &error);
+    ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
@@ -796,7 +796,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
     EXPECT_GT(logCount.load(), 0) << "No log callback received";
 
     // Restore
-    ob_set_log_severity(OB_LOG_SEVERITY_WARN, &error);
+    ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_05_external_message) {
@@ -816,13 +816,13 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_05_external_message) {
         &found, &error);
     ASSERT_EQ(error, nullptr);
 
-    ob_log_external_message(OB_LOG_SEVERITY_INFO, "NOHW_TEST_MARKER", &error);
+    ob_log_external_message(OB_LOG_SEVERITY_INFO, "NOHW", "NOHW_TEST_MARKER", __FILE__, __func__, __LINE__, &error);
     EXPECT_EQ(error, nullptr);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     EXPECT_TRUE(found.load()) << "External message not captured";
 
-    ob_set_log_severity(OB_LOG_SEVERITY_WARN, &error);
+    ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 // ============================================================
@@ -1002,7 +1002,7 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_07_property_range_structs) {
     }
     {
         OBFilterConfigSchemaItem item = {};
-        std::strncpy(item.name, "test_param", sizeof(item.name) - 1);
+        item.name = "test_param";
         item.min = 0.0;
         item.max = 100.0;
         item.step = 1.0;
