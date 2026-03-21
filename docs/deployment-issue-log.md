@@ -27,7 +27,8 @@ This file tracks blockers found while executing the deployment/implementation do
 5. RC workflow threshold gate partially closed
 - Problem: RC workflow originally lacked explicit numeric policy enforcement.
 - Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.
-- Remaining gap: P0 and benchmark checks are only fully enforceable when RC pipeline emits standardized XML/CSV artifacts from real runs.
+- Current improvement: rc-linux now emits and uploads JUnit XML artifact; rc-summary downloads artifacts before gate evaluation.
+- Remaining gap: P0 and benchmark checks are only fully enforceable when RC pipeline emits standardized P0-tagged JUnit and benchmark CSV artifacts from real runs.
 
 7. RC summary correctness (closed)
 - Problem: release-candidate summary previously printed static PASS text.

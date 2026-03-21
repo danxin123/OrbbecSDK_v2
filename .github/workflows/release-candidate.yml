@@ -37,19 +37,66 @@ jobs:
       - name: Build test targets
         run: cmake --build build --target ob_core_nohw_test ob_playback_smoke_test -j
 
-      - name: Run core no-hardware tests
-        run: ./build/tests/core_nohw_test/ob_core_nohw_test
-
-      - name: Run playback regression
+      - name: Run no-hardware regression and emit JUnit
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          mkdir -p reports
+
+          CORE_RC=0
+          PLAYBACK_RC=0
+
+          ./build/tests/core_nohw_test/ob_core_nohw_test || CORE_RC=$?
+
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -z "$BAG_PATH" ]; then
             echo "No .bag file found in tests/rosbag" >&2
+            PLAYBACK_RC=2
+          else
+            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH" || PLAYBACK_RC=$?
+          fi
+
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          core_rc = int("${CORE_RC}")
+          playback_rc = int("${PLAYBACK_RC}")
+
+          suite = ET.Element(
+              "testsuite",
+              name="rc_linux_nohw",
+              tests="2",
+              failures=str(int(core_rc != 0) + int(playback_rc != 0)),
+              errors="0",
+              skipped="0",
+          )
+
+          case_core = ET.SubElement(suite, "testcase", classname="rc_linux", name="core_nohw")
+          if core_rc != 0:
+              fail = ET.SubElement(case_core, "failure", message=f"exit code {core_rc}")
+              fail.text = "ob_core_nohw_test failed"
+
+          case_playback = ET.SubElement(suite, "testcase", classname="rc_linux", name="playback_smoke")
+          if playback_rc != 0:
+              fail = ET.SubElement(case_playback, "failure", message=f"exit code {playback_rc}")
+              fail.text = "ob_playback_smoke_test failed"
+
+          root = ET.Element("testsuites")
+          root.append(suite)
+          ET.ElementTree(root).write("reports/rc_linux_junit.xml", encoding="utf-8", xml_declaration=True)
+          PY
+
+          if [ "$CORE_RC" -ne 0 ] || [ "$PLAYBACK_RC" -ne 0 ]; then
             exit 1
           fi
-          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+
+      - name: Upload rc-linux reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-linux-report-${{ github.run_id }}
+          path: reports/rc_linux_junit.xml
+          retention-days: 30
 
   rc-docs-check:
     needs: branch-guard
@@ -102,6 +149,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Download report artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*report*"
+          path: all_reports/
+          merge-multiple: true
+
       - name: Run RC numeric policy gate
         run: |
           python3 scripts/rc_policy_gate.py \
@@ -112,7 +166,7 @@ jobs:
             --output-json reports/rc_gate_result.json \
             --output-md reports/rc_gate_result.md
         env:
-          JOB_RESULTS: ${{ needs.rc-linux.result }},${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }}
+          JOB_RESULTS: ${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }}
 
       - name: Upload RC gate artifacts
         uses: actions/upload-artifact@v4
