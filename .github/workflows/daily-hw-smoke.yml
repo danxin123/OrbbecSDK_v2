@@ -27,10 +27,9 @@ jobs:
             echo "healthy=false" >> "$GITHUB_OUTPUT"
             echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
             echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
-            echo "[HEALTH FAIL] Check device connections, power, and runner configuration." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  cpp-hw-smoke:
+  cpp-tests:
     needs: device-health
     if: ${{ needs.device-health.outputs.healthy == 'true' }}
     runs-on: [self-hosted, linux, sdk, usb, gemini-335]
@@ -46,14 +45,37 @@ jobs:
             -DOB_BUILD_TOOLS=OFF \
             -DOB_BUILD_DOCS=OFF
 
-      - name: Build test targets
-        run: cmake --build build --target ob_hardware_p0_test -j
+      - name: Build all test targets
+        run: cmake --build build --target ob_nohw_full_test ob_hw_full_test ob_playback_smoke_test -j
 
-      - name: Run hardware P0 smoke executable
-        shell: bash
+      - name: Run no-hardware full test
         run: |
-          set -euo pipefail
-          ./build/tests/hardware/ob_hardware_p0_test
+          mkdir -p reports
+          ./build/tests/nohw_full_test/ob_nohw_full_test \
+            --gtest_output=xml:reports/nohw_junit.xml
+
+      - name: Run hardware full test
+        env:
+          HARDWARE_AVAILABLE: "true"
+          DEVICE_TYPE: gemini-335
+        run: |
+          ./build/tests/hw_full_test/ob_hw_full_test \
+            --gtest_output=xml:reports/hw_junit.xml
+
+      - name: Run playback smoke test
+        run: |
+          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -n "$BAG_PATH" ]; then
+            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+          fi
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-hw-reports-${{ github.run_id }}
+          path: reports/*.xml
+          retention-days: 30
 
   infra-summary:
     needs: device-health

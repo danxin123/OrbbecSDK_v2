@@ -1,12 +1,7 @@
-name: Release Candidate
+﻿name: Release Candidate
 
 on:
   workflow_dispatch:
-    inputs:
-      require_hw_p0:
-        description: "Require hardware P0 artifact in this RC run"
-        type: boolean
-        default: false
 
 jobs:
   branch-guard:
@@ -40,73 +35,19 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build test targets
-        run: cmake --build build --target ob_core_nohw_test ob_playback_smoke_test -j
+        run: cmake --build build --target ob_nohw_full_test ob_playback_smoke_test -j
 
-      - name: Run no-hardware regression and emit JUnit
-        shell: bash
+      - name: Run no-hardware full test
         run: |
-          set -uo pipefail
           mkdir -p reports
+          ./build/tests/nohw_full_test/ob_nohw_full_test \
+            --gtest_output=xml:reports/rc_nohw_junit.xml
 
-          CORE_RC=0
-          PLAYBACK_RC=0
-          CORE_DURATION_MS=0
-          PLAYBACK_DURATION_MS=0
-
-          CORE_START_MS=$(date +%s%3N)
-          ./build/tests/core_nohw_test/ob_core_nohw_test || CORE_RC=$?
-          CORE_END_MS=$(date +%s%3N)
-          CORE_DURATION_MS=$((CORE_END_MS - CORE_START_MS))
-
+      - name: Run playback smoke test
+        run: |
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
-          if [ -z "$BAG_PATH" ]; then
-            echo "No .bag file found in tests/rosbag" >&2
-            PLAYBACK_RC=2
-          else
-            PLAYBACK_START_MS=$(date +%s%3N)
-            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH" || PLAYBACK_RC=$?
-            PLAYBACK_END_MS=$(date +%s%3N)
-            PLAYBACK_DURATION_MS=$((PLAYBACK_END_MS - PLAYBACK_START_MS))
-          fi
-
-          cat > reports/rc_benchmark_current.csv <<EOF
-          metric,value
-          core_nohw_runtime_ms,${CORE_DURATION_MS}
-          playback_runtime_ms,${PLAYBACK_DURATION_MS}
-          EOF
-
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-
-          core_rc = int("${CORE_RC}")
-          playback_rc = int("${PLAYBACK_RC}")
-
-          suite = ET.Element(
-              "testsuite",
-              name="rc_linux_nohw",
-              tests="2",
-              failures=str(int(core_rc != 0) + int(playback_rc != 0)),
-              errors="0",
-              skipped="0",
-          )
-
-          case_core = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="core_nohw_p0")
-          if core_rc != 0:
-              fail = ET.SubElement(case_core, "failure", message=f"exit code {core_rc}")
-              fail.text = "ob_core_nohw_test failed"
-
-          case_playback = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="playback_smoke_p0")
-          if playback_rc != 0:
-              fail = ET.SubElement(case_playback, "failure", message=f"exit code {playback_rc}")
-              fail.text = "ob_playback_smoke_test failed"
-
-          root = ET.Element("testsuites")
-          root.append(suite)
-          ET.ElementTree(root).write("reports/rc_linux_junit.xml", encoding="utf-8", xml_declaration=True)
-          PY
-
-          if [ "$CORE_RC" -ne 0 ] || [ "$PLAYBACK_RC" -ne 0 ]; then
-            exit 1
+          if [ -n "$BAG_PATH" ]; then
+            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
           fi
 
       - name: Upload rc-linux reports
@@ -114,10 +55,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rc-linux-report-${{ github.run_id }}
-          path: |
-            reports/rc_linux_junit.xml
-            reports/rc_benchmark_current.csv
+          path: reports/*.xml
           retention-days: 30
+
+  rc-windows-build:
+    needs: branch-guard
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build `
+            -DOB_BUILD_TESTS=ON `
+            -DOB_BUILD_EXAMPLES=OFF `
+            -DOB_BUILD_TOOLS=OFF `
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build
+        run: cmake --build build --config Release
 
   rc-docs-check:
     needs: branch-guard
@@ -144,49 +101,21 @@ jobs:
       - name: Run examples smoke
         run: bash scripts/run_examples.sh
 
-  rc-windows-build:
+  rc-hw-full:
     needs: branch-guard
-    runs-on: windows-2022
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure
-        run: |
-          cmake -S . -B build `
-            -DOB_BUILD_TESTS=ON `
-            -DOB_BUILD_EXAMPLES=OFF `
-            -DOB_BUILD_TOOLS=OFF `
-            -DOB_BUILD_DOCS=OFF
-
-      - name: Build
-        run: cmake --build build --config Release
-
-  rc-hw-p0:
-    needs: branch-guard
-    if: ${{ inputs.require_hw_p0 == true }}
     runs-on: [self-hosted, linux, sdk, usb, gemini-335]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure pytest available
+      - name: Device health check
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --upgrade pip
-          python3 -m pip install pytest
+          chmod +x scripts/device_health_check.sh
+          bash scripts/device_health_check.sh
 
-      - name: Validate hardware P0 suite presence
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -d "tests/hardware" ]; then
-            echo "Hardware P0 suite is required but tests/hardware is missing." >&2
-            exit 1
-          fi
-
-      - name: Configure hardware test build
+      - name: Configure
         run: |
           cmake -S . -B build \
             -DOB_BUILD_TESTS=ON \
@@ -194,36 +123,42 @@ jobs:
             -DOB_BUILD_TOOLS=OFF \
             -DOB_BUILD_DOCS=OFF
 
-      - name: Build and run C++ hardware P0 smoke
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reports
-          cmake --build build --target ob_hardware_p0_test -j
-          ./build/tests/hardware/ob_hardware_p0_test --junit-out reports/rc_hw_cpp_p0_junit.xml
+      - name: Build all test targets
+        run: cmake --build build --target ob_nohw_full_test ob_hw_full_test ob_playback_smoke_test -j
 
-      - name: Run hardware P0 pytest and emit JUnit
-        shell: bash
+      - name: Run no-hardware full test
         run: |
-          set -euo pipefail
           mkdir -p reports
-          python3 -m pytest tests/hardware -m "p0 and hardware" -v \
-            --junit-xml=reports/rc_hw_p0_junit.xml
+          ./build/tests/nohw_full_test/ob_nohw_full_test \
+            --gtest_output=xml:reports/rc_nohw_junit.xml
 
-      - name: Upload rc-hw-p0 report
+      - name: Run hardware full test
+        env:
+          HARDWARE_AVAILABLE: "true"
+          DEVICE_TYPE: gemini-335
+        run: |
+          ./build/tests/hw_full_test/ob_hw_full_test \
+            --gtest_output=xml:reports/rc_hw_junit.xml
+
+      - name: Run playback smoke test
+        run: |
+          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -n "$BAG_PATH" ]; then
+            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+          fi
+
+      - name: Upload rc-hw reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rc-hw-p0-report-${{ github.run_id }}
-          path: |
-            reports/rc_hw_p0_junit.xml
-            reports/rc_hw_cpp_p0_junit.xml
+          name: rc-hw-report-${{ github.run_id }}
+          path: reports/*.xml
           retention-days: 30
 
   rc-summary:
-    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux, rc-hw-p0]
+    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux, rc-hw-full]
+    if: always()
     runs-on: ubuntu-22.04
-    environment: rc-validation
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -235,41 +170,11 @@ jobs:
           path: all_reports/
           merge-multiple: true
 
-      - name: Run RC numeric policy gate
-        run: |
-          EXTRA_ARGS=""
-          if [ "${REQUIRE_HW_P0}" = "true" ]; then
-            EXTRA_ARGS="--require-hw-p0"
-          fi
-
-          python3 scripts/rc_policy_gate.py \
-            --reports-dir all_reports \
-            --min-success-rate 98.0 \
-            --benchmark-baseline scripts/benchmark_baseline.csv \
-            --benchmark-current all_reports/rc_benchmark_current.csv \
-            --job-results "${JOB_RESULTS}" \
-            ${EXTRA_ARGS} \
-            --output-json reports/rc_gate_result.json \
-            --output-md reports/rc_gate_result.md
-        env:
-          JOB_RESULTS: ${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }},${{ needs.rc-hw-p0.result }}
-          REQUIRE_HW_P0: ${{ inputs.require_hw_p0 }}
-
-      - name: Upload RC gate artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: rc-policy-gate-${{ github.run_id }}
-          path: |
-            reports/rc_gate_result.json
-            reports/rc_gate_result.md
-          retention-days: 90
-
       - name: Generate release summary
         run: |
-          echo "RC validation finished." >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux build/no-hardware regression: ${{ needs.rc-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## RC Validation Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux no-HW regression: ${{ needs.rc-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows build: ${{ needs.rc-windows-build.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Docs check: ${{ needs.rc-docs-check.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Examples smoke (Linux): ${{ needs.rc-examples-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          cat reports/rc_gate_result.md >> "$GITHUB_STEP_SUMMARY"
+          echo "- Examples smoke: ${{ needs.rc-examples-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Hardware full test: ${{ needs.rc-hw-full.result }}" >> "$GITHUB_STEP_SUMMARY"

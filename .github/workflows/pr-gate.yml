@@ -1,8 +1,9 @@
 name: PR Gate
 
 on:
-  schedule:
-    - cron: "0 1 * * *"
+  pull_request:
+  push:
+    branches: [main, develop, release/*]
   workflow_dispatch:
 
 concurrency:
@@ -59,19 +60,22 @@ jobs:
             -DOB_BUILD_TOOLS=OFF \
             -DOB_BUILD_DOCS=OFF
 
-      - name: Build test targets
-        run: cmake --build build --target ob_core_nohw_test ob_full_feature_matrix_test -j
+      - name: Build nohw test
+        run: cmake --build build --target ob_nohw_full_test -j
 
-      - name: Verify test executables
+      - name: Run no-hardware full test
         run: |
-          test -f build/tests/core_nohw_test/ob_core_nohw_test
-          test -f build/tests/core_nohw_test/ob_full_feature_matrix_test
+          mkdir -p reports
+          ./build/tests/nohw_full_test/ob_nohw_full_test \
+            --gtest_output=xml:reports/nohw_junit.xml
 
-      - name: Run no-hardware core tests (TC_CPP_01/02/09/22/23/24/25 subset)
-        run: ./build/tests/core_nohw_test/ob_core_nohw_test
-
-      - name: Run full feature matrix no-hardware test (TC_CPP_FULL_001)
-        run: ./build/tests/core_nohw_test/ob_full_feature_matrix_test
+      - name: Upload nohw JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nohw-junit-${{ github.run_id }}
+          path: reports/nohw_junit.xml
+          retention-days: 14
 
   test-playback:
     runs-on: ubuntu-22.04
