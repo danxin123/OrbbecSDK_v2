@@ -162,6 +162,8 @@ jobs:
             --reports-dir all_reports \
             --min-success-rate 98.0 \
             --allow-missing-p0 \
+            --benchmark-baseline scripts/benchmark_baseline.csv \
+            --benchmark-current all_reports/rc_benchmark_current.csv \
             --job-results "${JOB_RESULTS}" \
             --output-json reports/rc_gate_result.json \
             --output-md reports/rc_gate_result.md

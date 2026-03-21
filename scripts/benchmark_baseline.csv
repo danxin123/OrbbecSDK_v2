@@ -1,0 +1,3 @@
+metric,mean,stddev,sample_count,unit,updated
+core_nohw_runtime_ms,6000,1500,10,ms,2026-03-21
+playback_runtime_ms,4000,1200,10,ms,2026-03-21
