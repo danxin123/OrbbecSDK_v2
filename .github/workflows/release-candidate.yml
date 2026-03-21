@@ -126,9 +126,9 @@ jobs:
       - name: Generate release summary
         run: |
           echo "RC validation finished." >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux build/no-hardware regression: PASS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Windows build: PASS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Docs check: PASS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Examples smoke (Linux): PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux build/no-hardware regression: ${{ needs.rc-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Windows build: ${{ needs.rc-windows-build.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Docs check: ${{ needs.rc-docs-check.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Examples smoke (Linux): ${{ needs.rc-examples-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           cat reports/rc_gate_result.md >> "$GITHUB_STEP_SUMMARY"

@@ -29,6 +29,11 @@ This file tracks blockers found while executing the deployment/implementation do
 - Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.
 - Remaining gap: P0 and benchmark checks are only fully enforceable when RC pipeline emits standardized XML/CSV artifacts from real runs.
 
+7. RC summary correctness (closed)
+- Problem: release-candidate summary previously printed static PASS text.
+- Current state: summary now uses real needs.<job>.result values.
+- Remaining gap: none for summary accuracy.
+
 6. device_health_check.sh path mismatch in installer context
 - Problem: Deployment doc references ci/scripts/device_health_check.sh, but this repository has no ci/ directory or that script.
 - Impact: Jetson one-click installer cannot wire the exact script by default.
