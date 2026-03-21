@@ -35,11 +35,7 @@ It provides high-performance C/C++ APIs and language wrappers for building depth
 
 ## Core Features
 
-- Cross-platform SDK for Windows, Linux, macOS, and Android
-- C/C++ APIs with wrappers for multiple languages and frameworks
-- Rich feature coverage for RGB-D and LiDAR pipelines
-- Built-in support for stream alignment, post-processing, recording/playback, firmware management, and multi-device scenarios
-- Open-source repository with active issue tracking and release packages
+> **See all SDK features:** [docs/sdk_feature_matrix.md](docs/sdk_feature_matrix.md)
 
 ## Supported Devices and Platforms
 
@@ -47,44 +43,35 @@ It provides high-performance C/C++ APIs and language wrappers for building depth
 
 For the full v1 vs v2 support policy table and support-level definitions, see:
 
-- [docs/tutorial/migration_v1_to_v2.md](docs/tutorial/migration_v1_to_v2.md)
 
 ### Supported Devices and Firmware
 
-| Product Series | Product | Minimum Firmware | Recommended Firmware |
-|---|---|---|---|
-| Gemini 305 | Gemini 305 | 1.0.30 | 1.0.30 |
-| Gemini 340 | Gemini 345 | 1.7.04 | 1.9.03 |
-| Gemini 340 | Gemini 345Lg | 1.7.04 | 1.9.03 |
-| Gemini 435Le | Gemini 435Le | 1.2.4 | 1.3.6 |
-| Gemini 330 | Gemini 335Le | 1.5.31 | 1.6.00 |
-| Gemini 330 | Gemini 330 | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 330L | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 335 | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 335L | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 336 | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 336L | 1.2.20 | 1.6.00 |
-| Gemini 330 | Gemini 335Lg | 1.3.46 | 1.6.00 |
-| Gemini 2 | Gemini 2 | 1.4.92 | 1.4.98 |
-| Gemini 2 | Gemini 2 L | 1.4.53 | 1.5.2 |
-| Gemini 2 | Gemini 215 | 1.0.9 | 1.0.9 |
-| Gemini 2 | Gemini 210 | 1.0.9 | 1.0.9 |
-| Femto | Femto Bolt | 1.1.2 | 1.1.3 |
-| Femto | Femto Mega | 1.3.0 | 1.3.1 |
-| Femto | Femto Mega I | 2.0.4 | 2.0.4 |
-| Astra | Astra 2 | 2.8.20 | 2.8.20 |
-| Astra Mini | Astra mini Pro | 2.0.03 | 2.0.03 |
-| Astra Mini | Astra mini S Pro | 2.0.03 | 2.0.03 |
-| LiDAR | Pulsar SL450 | 2.2.4.5 | 2.2.4.5 |
-| LiDAR | Pulsar ME450 | 1.0.0.6 | 1.0.0.6 |
+
+| Series              | Models & Buy Links                                                                 |
+|---------------------|-----------------------------------------------------------------------------------|
+| Gemini 305 Series   | [Gemini 305](https://store.orbbec.com/products/gemini-305) |
+| Gemini 340 Series   | Gemini 345, Gemini 345Lg |
+| Gemini 435 Series   | [Gemini 435Le](https://store.orbbec.com/products/gemini-435le) |
+| Gemini 330 Series   | [Gemini 330 Series](https://store.orbbec.com/collections/gemini-330-series), [Gemini 330](https://store.orbbec.com/products/gemini-330), [Gemini 330L](https://store.orbbec.com/products/gemini-330l), [Gemini 335](https://store.orbbec.com/products/gemini-335), [Gemini 335L](https://store.orbbec.com/products/gemini-335l), [Gemini 335Le](https://store.orbbec.com/products/gemini-335le), [Gemini 336](https://store.orbbec.com/products/gemini-336), [Gemini 336L](https://store.orbbec.com/products/gemini-336l), [Gemini 335Lg](https://store.orbbec.com/products/gemini-335lg) |
+| Gemini 2 Series     | [Gemini 2 Series](https://store.orbbec.com/collections/gemini-2-series), [Gemini 2](https://store.orbbec.com/products/gemini-2), [Gemini 2L](https://store.orbbec.com/products/gemini-2l), [Gemini 215](https://store.orbbec.com/products/gemini-215), Gemini 210 |
+| Femto Series        | Femto Bolt, Femto Mega, Femto Mega I |
+| Astra Series        | Astra 2 |
+| Astra Mini Series   | Astra mini Pro, Astra mini S Pro |
+| LiDAR Series        | [dToF LiDAR Pulsar SL450](https://store.orbbec.com/products/dtof-lidar-pulsar-sl450), [dToF LiDAR Pulsar ME450](https://store.orbbec.com/products/pulsar-me450) |
+
+> **See detailed device/firmware support matrix:** [docs/supported_devices_firmware.md](docs/supported_devices_firmware.md)
 
 ### Supported Platforms
 
-- Windows 10 or later: x86 and x64
-- Linux x64: tested on Ubuntu 20.04, 22.04, 24.04
-- Linux ARM64: tested on NVIDIA Jetson AGX Orin, Orin NX, Orin Nano, AGX Xavier, Xavier NX, Jetson Thor
-- Android: tested on Android 13, see [OrbbecSDK-Android-Wrapper](https://github.com/orbbec/OrbbecSDK-Android-Wrapper/tree/v2-main)
-- macOS: tested on Apple M2, macOS 13.2
+| Platform      | Supported Versions / Models                                                      |
+|--------------|----------------------------------------------------------------------------------|
+| Windows      | Windows 10, Windows 11 (x86, x64)                                                 |
+| Linux x86-x64| Ubuntu 20.04, Ubuntu 22.04, Ubuntu 24.04                                          |
+| Arm Linux    | Jetson AGX Orin, Jetson Orin NX, Orin Nano, AGX, Xavier, Xavier NX, Jetson Thor   |
+| Android      | Android 13 (see [OrbbecSDK-Android-Wrapper](https://github.com/orbbec/OrbbecSDK-Android-Wrapper/tree/v2-main)) |
+| macOS        | Apple M2, macOS 13.2                                                             |
+
+
 
 ## SDK Installation
 
