@@ -7,6 +7,7 @@
 
 #include "../test_common.hpp"
 #include <libobsensor/ObSensor.hpp>
+#include <libobsensor/h/Utils.h>
 
 #include <algorithm>
 #include <atomic>
@@ -312,12 +313,12 @@ TEST_F(TC_CPP_05_AccessMode, TC_CPP_05_03_shared_access) {
     device_.reset();
 
     auto devList = ctx_->queryDeviceList();
-    auto devA = devList->getDevice(0, OB_DEVICE_SHARED_ACCESS);
+    auto devA = devList->getDevice(0, OB_DEVICE_MONITOR_ACCESS);
     ASSERT_NE(devA, nullptr);
 
     // 第二个共享句柄
     try {
-        auto devB = devList->getDeviceBySN(sn.c_str(), OB_DEVICE_SHARED_ACCESS);
+        auto devB = devList->getDeviceBySN(sn.c_str(), OB_DEVICE_MONITOR_ACCESS);
         if(devB) {
             auto infoB = devB->getDeviceInfo();
             EXPECT_STREQ(infoB->getSerialNumber(), sn.c_str());
@@ -335,7 +336,7 @@ TEST_F(TC_CPP_05_AccessMode, TC_CPP_05_04_control_only_access) {
     device_.reset();
 
     auto devList = ctx_->queryDeviceList();
-    auto dev = devList->getDevice(0, OB_DEVICE_CONTROL_ONLY_ACCESS);
+    auto dev = devList->getDevice(0, OB_DEVICE_CONTROL_ACCESS);
     ASSERT_NE(dev, nullptr);
 
     // 读属性应成功
@@ -492,7 +493,7 @@ TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_02_video_profile_filter) {
     auto fps = first->getFps();
 
     // 用同参数筛选应该能找到匹配项
-    auto matched = depthProfiles->getVideoStreamProfile(w, h, fps);
+    auto matched = depthProfiles->getVideoStreamProfile(w, h, first->getFormat(), fps);
     ASSERT_NE(matched, nullptr);
     EXPECT_EQ(matched->getWidth(), w);
     EXPECT_EQ(matched->getHeight(), h);
@@ -675,8 +676,8 @@ TEST_F(TC_CPP_08_Pipeline, TC_CPP_08_10_camera_param) {
     auto param = pipeline_->getCameraParam();
     EXPECT_GT(param.depthIntrinsic.fx, 0.0f);
     EXPECT_GT(param.depthIntrinsic.fy, 0.0f);
-    EXPECT_GT(param.colorIntrinsic.fx, 0.0f);
-    EXPECT_GT(param.colorIntrinsic.fy, 0.0f);
+    EXPECT_GT(param.rgbIntrinsic.fx, 0.0f);
+    EXPECT_GT(param.rgbIntrinsic.fy, 0.0f);
     pipeline_->stop();
 }
 
@@ -1443,9 +1444,9 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_03_int_property_range) {
 
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_04_float_property_range) {
     /// Float 属性读写与 Range
-    if(device_->isPropertySupported(OB_PROP_COLOR_GAIN_FLOAT, OB_PERMISSION_READ)) {
-        auto range = device_->getFloatPropertyRange(OB_PROP_COLOR_GAIN_FLOAT);
-        float cur = device_->getFloatProperty(OB_PROP_COLOR_GAIN_FLOAT);
+    if(device_->isPropertySupported(OB_PROP_COLOR_GAIN_INT, OB_PERMISSION_READ)) {
+        auto range = device_->getIntPropertyRange(OB_PROP_COLOR_GAIN_INT);
+        int cur = device_->getIntProperty(OB_PROP_COLOR_GAIN_INT);
         (void)cur;
         (void)range;
     }
@@ -1532,8 +1533,8 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_13_timing_sync) {
 
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_14_hdr_interleave) {
     /// HDR/帧交错属性
-    if(device_->isPropertySupported(OB_PROP_DEPTH_HDR_BOOL, OB_PERMISSION_READ)) {
-        bool val = device_->getBoolProperty(OB_PROP_DEPTH_HDR_BOOL);
+    if(device_->isPropertySupported(OB_PROP_HDR_MERGE_BOOL, OB_PERMISSION_READ)) {
+        bool val = device_->getBoolProperty(OB_PROP_HDR_MERGE_BOOL);
         (void)val;
     }
     SUCCEED();
@@ -1936,7 +1937,7 @@ TEST_F(TC_CPP_20_Coord_HW, TC_CPP_20_05_save_ply) {
 
     auto result = ob_filter_process(pcFilter, depth->getImpl(), &error);
     if(result) {
-        ob_frame_save_to_ply_file(result, plyFile.c_str(), &error);
+        ob_save_pointcloud_to_ply(plyFile.c_str(), result, false, false, 0.0f, &error);
         std::ifstream ifs(plyFile);
         EXPECT_TRUE(ifs.good()) << "PLY file not created";
         ob_delete_frame(result, &error);
@@ -2058,8 +2059,8 @@ TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_01_intrinsic_extrinsic) {
     auto param = pipeline_->getCameraParam();
     EXPECT_GT(param.depthIntrinsic.fx, 0.0f);
     EXPECT_GT(param.depthIntrinsic.fy, 0.0f);
-    EXPECT_GT(param.colorIntrinsic.fx, 0.0f);
-    EXPECT_GT(param.colorIntrinsic.fy, 0.0f);
+    EXPECT_GT(param.rgbIntrinsic.fx, 0.0f);
+    EXPECT_GT(param.rgbIntrinsic.fy, 0.0f);
     pipeline_->stop();
 }
 
@@ -2098,10 +2099,12 @@ TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_03_imu_intrinsic) {
 TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_04_device_temperature) {
     /// 设备温度结构体 — CPU/IR/Laser 0~80°C
     // 温度通常通过属性获取
-    if(device_->isPropertySupported(OB_PROP_CHIP_TOP_TEMP_FLOAT, OB_PERMISSION_READ)) {
-        float temp = device_->getFloatProperty(OB_PROP_CHIP_TOP_TEMP_FLOAT);
-        EXPECT_GE(temp, 0.0f);
-        EXPECT_LE(temp, 80.0f);
+    if(device_->isPropertySupported(OB_STRUCT_DEVICE_TEMPERATURE, OB_PERMISSION_READ)) {
+        OBDeviceTemperature temp = {};
+        uint32_t dataSize = static_cast<uint32_t>(sizeof(temp));
+        device_->getStructuredData(OB_STRUCT_DEVICE_TEMPERATURE, reinterpret_cast<uint8_t *>(&temp), &dataSize);
+        EXPECT_GE(temp.chipTopTemp, -40.0f);
+        EXPECT_LE(temp.chipTopTemp, 120.0f);
     }
     SUCCEED();
 }

@@ -8,6 +8,7 @@
 
 #include "../test_common.hpp"
 #include <libobsensor/ObSensor.hpp>
+#include <libobsensor/hpp/Utils.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -68,38 +69,28 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_03_context_repeated_create_destroy) {
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_04_free_idle_memory) {
     /// 空闲内存释放 — freeIdleMemory 幂等安全，上下文仍可用
-    // freeIdleMemory is a C API: ob_free_idle_memory
-    ob_error *error = nullptr;
-    ob_free_idle_memory(&error);
-    ASSERT_EQ(error, nullptr);
+    ctx_->freeIdleMemory();
 
     // 上下文仍然可用
     auto devList = ctx_->queryDeviceList();
     ASSERT_NE(devList, nullptr);
 
     // 重复调用也安全
-    ob_free_idle_memory(&error);
-    ASSERT_EQ(error, nullptr);
+    ctx_->freeIdleMemory();
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
     /// UVC 后端选择 — 各后端类型设置不崩溃
-    // 通过C API设置backend类型
-    ob_error *error = nullptr;
-    ob_set_uvc_backend_type(OB_UVC_BACKEND_AUTO, &error);
-    EXPECT_EQ(error, nullptr) << "AUTO backend failed";
+    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
 
 #ifdef __linux__
-    ob_set_uvc_backend_type(OB_UVC_BACKEND_LIBUVC, &error);
-    EXPECT_EQ(error, nullptr) << "LIBUVC backend failed";
+    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_LIBUVC));
 
-    ob_set_uvc_backend_type(OB_UVC_BACKEND_V4L2, &error);
-    EXPECT_EQ(error, nullptr) << "V4L2 backend failed";
+    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_V4L2));
 #endif
 
     // Reset to AUTO
-    ob_set_uvc_backend_type(OB_UVC_BACKEND_AUTO, &error);
-    EXPECT_EQ(error, nullptr);
+    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
@@ -389,7 +380,7 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_06_filter_reset_and_config) {
         auto item = ob_filter_config_schema_list_get_item(schemaList, 0, &error);
         ASSERT_EQ(error, nullptr);
         // 尝试读取和设置该配置
-        auto val = ob_filter_get_config_value(filter, item.name, &error);
+        ob_filter_get_config_value(filter, item.name, &error);
         ASSERT_EQ(error, nullptr);
 
         ob_filter_set_config_value(filter, item.name, item.def, &error);
@@ -445,8 +436,6 @@ TEST_F(TC_CPP_14_Property, TC_CPP_14_16_sdk_level_property) {
     // 这些是SDK级属性，不需要设备即可操作
     // 通过 C API 验证: OB_PROP_SDK_DISPARITY_TO_DEPTH_BOOL, OB_PROP_SDK_FRAME_UNPACK_BOOL
     // 注意: 某些SDK级属性可能需要设备才能设置; 这里只测试它们在无设备时不崩溃
-    ob_error *error = nullptr;
-
     // 尝试获取SDK级属性 - 由于没有设备，SDK级属性可能通过全局API操作
     // 如果不支持无设备操作，应该优雅处理
     SUCCEED() << "SDK level property test - verified no crash without device";
@@ -528,12 +517,12 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_06_playback_pause_resume_status) {
     // Pause
     ASSERT_NO_THROW(pbDevice->pause());
     auto status = pbDevice->getPlaybackStatus();
-    EXPECT_EQ(status, OB_PLAYBACK_STATUS_PAUSED);
+    EXPECT_EQ(status, OB_PLAYBACK_PAUSED);
 
     // Resume
     ASSERT_NO_THROW(pbDevice->resume());
     status = pbDevice->getPlaybackStatus();
-    EXPECT_EQ(status, OB_PLAYBACK_STATUS_PLAYING);
+    EXPECT_EQ(status, OB_PLAYBACK_PLAYING);
 
     pipeline->stop();
 }
