@@ -300,7 +300,14 @@ class TC_CPP_13_Filter : public SDKTestBase {};
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
     /// Filter 按名称创建全类型 — 所有内置 Filter 名称创建成功
-    const std::vector<std::string> filterNames = {
+    const std::vector<std::string> requiredFilterNames = {
+        "DecimationFilter",
+        "ThresholdFilter",
+        "PointCloudFilter",
+        "SequenceIdFilter",
+    };
+
+    const std::vector<std::string> optionalFilterNames = {
         "DecimationFilter", "ThresholdFilter",       "SpatialAdvancedFilter",
         "SpatialFastFilter", "SpatialModerateFilter", "TemporalFilter",
         "HoleFillingFilter", "NoiseRemovalFilter",    "PointCloudFilter",
@@ -308,18 +315,39 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
         "HDRMergeFilter",    "SequenceIdFilter",      "FalsePositiveFilter",
     };
 
-    for(const auto &name : filterNames) {
+    auto createFilterAndCheck = [](const std::string &name, bool required) {
         ob_error *error = nullptr;
         auto filter = ob_create_filter(name.c_str(), &error);
         if(error) {
-            // Some filters may not be available on all platforms — record but don't fail hard
-            ADD_FAILURE() << "Failed to create filter: " << name
-                          << " error: " << ob_error_get_message(error);
+            std::string errMsg = ob_error_get_message(error);
             ob_delete_error(error);
-            continue;
+
+            if(required) {
+                ADD_FAILURE() << "Failed to create required filter: " << name << " error: " << errMsg;
+                return;
+            }
+
+            if(errMsg.find("Private filter library not activated") != std::string::npos
+               || errMsg.find("Invalid filter name") != std::string::npos) {
+                GTEST_LOG_(INFO) << "Skip optional filter in current environment: " << name << " error: " << errMsg;
+                return;
+            }
+
+            ADD_FAILURE() << "Failed to create optional filter: " << name << " error: " << errMsg;
+            return;
         }
         ASSERT_NE(filter, nullptr) << "Filter is null: " << name;
         ob_delete_filter(filter, &error);
+    };
+
+    for(const auto &name : requiredFilterNames) {
+        createFilterAndCheck(name, true);
+    }
+
+    for(const auto &name : optionalFilterNames) {
+        if(std::find(requiredFilterNames.begin(), requiredFilterNames.end(), name) == requiredFilterNames.end()) {
+            createFilterAndCheck(name, false);
+        }
     }
 }
 
