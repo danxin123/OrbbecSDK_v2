@@ -2,6 +2,11 @@ name: Release Candidate
 
 on:
   workflow_dispatch:
+    inputs:
+      require_hw_p0:
+        description: "Require hardware P0 artifact in this RC run"
+        type: boolean
+        default: false
 
 jobs:
   branch-guard:
@@ -141,8 +146,41 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+  rc-hw-p0:
+    needs: branch-guard
+    if: ${{ inputs.require_hw_p0 == true }}
+    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate hardware P0 suite presence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -d "tests/hardware" ]; then
+            echo "Hardware P0 suite is required but tests/hardware is missing." >&2
+            exit 1
+          fi
+
+      - name: Run hardware P0 pytest and emit JUnit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          python3 -m pytest tests/hardware -m "p0 and hardware" -v \
+            --junit-xml=reports/rc_hw_p0_junit.xml
+
+      - name: Upload rc-hw-p0 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-hw-p0-report-${{ github.run_id }}
+          path: reports/rc_hw_p0_junit.xml
+          retention-days: 30
+
   rc-summary:
-    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux]
+    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux, rc-hw-p0]
     runs-on: ubuntu-22.04
     environment: rc-validation
     steps:
@@ -158,16 +196,23 @@ jobs:
 
       - name: Run RC numeric policy gate
         run: |
+          EXTRA_ARGS=""
+          if [ "${REQUIRE_HW_P0}" = "true" ]; then
+            EXTRA_ARGS="--require-hw-p0"
+          fi
+
           python3 scripts/rc_policy_gate.py \
             --reports-dir all_reports \
             --min-success-rate 98.0 \
             --benchmark-baseline scripts/benchmark_baseline.csv \
             --benchmark-current all_reports/rc_benchmark_current.csv \
             --job-results "${JOB_RESULTS}" \
+            ${EXTRA_ARGS} \
             --output-json reports/rc_gate_result.json \
             --output-md reports/rc_gate_result.md
         env:
-          JOB_RESULTS: ${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }}
+          JOB_RESULTS: ${{ needs.rc-windows-build.result }},${{ needs.rc-docs-check.result }},${{ needs.rc-examples-linux.result }},${{ needs.rc-hw-p0.result }}
+          REQUIRE_HW_P0: ${{ inputs.require_hw_p0 }}
 
       - name: Upload RC gate artifacts
         uses: actions/upload-artifact@v4

@@ -24,6 +24,11 @@ This file tracks blockers found while executing the deployment/implementation do
 - Impact: CI build failed until target references were aligned to existing targets.
 - Suggested follow-up: Add dedicated hardware test targets in this repo, or keep workflow aligned to available executable targets.
 
+8. RC hardware P0 optional mode added (open)
+- Problem: Current repository lacks tests/hardware suite, so full hardware P0 artifact ingestion cannot run by default.
+- Current state: release-candidate adds workflow_dispatch input require_hw_p0; when true, rc-hw-p0 job requires tests/hardware and emits JUnit, otherwise fails fast with explicit message.
+- Suggested follow-up: implement real tests/hardware P0 cases, then use require_hw_p0=true for release validation.
+
 5. RC workflow threshold gate mostly closed
 - Problem: RC workflow originally lacked explicit numeric policy enforcement.
 - Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.

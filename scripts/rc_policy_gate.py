@@ -125,6 +125,7 @@ def main() -> int:
     parser.add_argument("--benchmark-current", default="")
     parser.add_argument("--sigma", type=float, default=3.0)
     parser.add_argument("--job-results", default="")
+    parser.add_argument("--require-hw-p0", action="store_true")
     parser.add_argument("--output-json", default="reports/rc_gate_result.json")
     parser.add_argument("--output-md", default="reports/rc_gate_result.md")
     args = parser.parse_args()
@@ -134,8 +135,9 @@ def main() -> int:
     # Fallback: evaluate required job outcomes when test-level XML is unavailable.
     if total == 0 and args.job_results:
         parts = [x.strip().lower() for x in args.job_results.split(",") if x.strip()]
-        if parts:
-            total = len(parts)
+        considered = [x for x in parts if x not in {"skipped", "cancelled", "neutral"}]
+        if considered:
+            total = len(considered)
             passed_jobs = sum(1 for x in parts if x == "success")
             failed = max(total - passed_jobs, 0)
             errors = 0
@@ -157,6 +159,20 @@ def main() -> int:
         reasons.append("No P0 testcase found in JUnit XML")
     elif p0_total > 0 and p0_rate < 100.0:
         reasons.append(f"P0 pass rate {p0_rate:.2f}% < 100%")
+
+    if args.require_hw_p0:
+        hw_p0_cases = 0
+        for xml_file in find_xml_files(Path(args.reports_dir)):
+            try:
+                root = ET.parse(xml_file).getroot()
+            except Exception:
+                continue
+            for case in root.findall(".//testcase"):
+                combined = (case.attrib.get("name", "") + " " + case.attrib.get("classname", "")).lower()
+                if "hw" in combined and "p0" in combined:
+                    hw_p0_cases += 1
+        if hw_p0_cases == 0:
+            reasons.append("Hardware P0 required but no hw+p0 testcase found in JUnit XML")
 
     regressions: List[str] = []
     baseline = Path(args.benchmark_baseline) if args.benchmark_baseline else None
