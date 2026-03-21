@@ -24,11 +24,11 @@ This file tracks blockers found while executing the deployment/implementation do
 - Impact: CI build failed until target references were aligned to existing targets.
 - Suggested follow-up: Add dedicated hardware test targets in this repo, or keep workflow aligned to available executable targets.
 
-5. RC workflow threshold gate partially closed
+5. RC workflow threshold gate mostly closed
 - Problem: RC workflow originally lacked explicit numeric policy enforcement.
 - Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.
-- Current improvement: rc-linux now emits and uploads JUnit XML plus rc_benchmark_current.csv; rc-summary downloads artifacts and executes gate with benchmark baseline/current inputs.
-- Remaining gap: P0 checks are only fully enforceable when RC pipeline emits standardized P0-tagged JUnit from real runs.
+- Current improvement: rc-linux now emits P0-tagged JUnit XML plus rc_benchmark_current.csv; rc-summary downloads artifacts and executes gate with strict P0=100 and benchmark baseline/current inputs.
+- Remaining gap: current P0 source is RC no-hardware smoke scope; full hardware P0 coverage still requires self-hosted real-device suite artifacts.
 
 7. RC summary correctness (closed)
 - Problem: release-candidate summary previously printed static PASS text.

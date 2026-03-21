@@ -71,12 +71,12 @@ jobs:
               skipped="0",
           )
 
-          case_core = ET.SubElement(suite, "testcase", classname="rc_linux", name="core_nohw")
+            case_core = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="core_nohw_p0")
           if core_rc != 0:
               fail = ET.SubElement(case_core, "failure", message=f"exit code {core_rc}")
               fail.text = "ob_core_nohw_test failed"
 
-          case_playback = ET.SubElement(suite, "testcase", classname="rc_linux", name="playback_smoke")
+            case_playback = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="playback_smoke_p0")
           if playback_rc != 0:
               fail = ET.SubElement(case_playback, "failure", message=f"exit code {playback_rc}")
               fail.text = "ob_playback_smoke_test failed"
@@ -161,7 +161,6 @@ jobs:
           python3 scripts/rc_policy_gate.py \
             --reports-dir all_reports \
             --min-success-rate 98.0 \
-            --allow-missing-p0 \
             --benchmark-baseline scripts/benchmark_baseline.csv \
             --benchmark-current all_reports/rc_benchmark_current.csv \
             --job-results "${JOB_RESULTS}" \
