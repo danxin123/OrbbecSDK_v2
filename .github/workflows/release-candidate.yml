@@ -170,6 +170,21 @@ jobs:
             exit 1
           fi
 
+      - name: Configure hardware test build
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build and run C++ hardware P0 smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build --target ob_hardware_p0_test -j
+          ./build/tests/hardware/ob_hardware_p0_test
+
       - name: Run hardware P0 pytest and emit JUnit
         shell: bash
         run: |

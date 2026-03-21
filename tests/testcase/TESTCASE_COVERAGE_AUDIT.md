@@ -35,10 +35,12 @@
 
 - 可执行:
   - `tests/hardware/test_p0_hardware_smoke.py`
+  - `tests/hardware/hardware_p0_test.cpp` -> `ob_hardware_p0_test`
 - 当前覆盖的 TC 方向:
   - P0 基础健康检查: USB 可见性 + health script
+  - P0 功能链路检查: 设备枚举/打开 + Pipeline Depth 取帧
 - 结论:
-  - 已具备 RC 硬件 P0 工件来源，但仍为最小 smoke 级别。
+  - 已具备 RC 硬件 P0 工件来源，且增加了 C++ 功能链路 smoke；仍建议继续扩展到更多设备特性验证。
 
 ## 是否需要补充
 

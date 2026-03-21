@@ -47,13 +47,13 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build test targets
-        run: cmake --build build --target ob_core_nohw_test -j
+        run: cmake --build build --target ob_hardware_p0_test -j
 
-      - name: Run smoke executable
+      - name: Run hardware P0 smoke executable
         shell: bash
         run: |
           set -euo pipefail
-          ./build/tests/core_nohw_test/ob_core_nohw_test
+          ./build/tests/hardware/ob_hardware_p0_test
 
   infra-summary:
     needs: device-health
