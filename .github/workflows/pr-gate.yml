@@ -60,14 +60,18 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build test targets
-        run: cmake --build build --target ob_core_nohw_test -j
+        run: cmake --build build --target ob_core_nohw_test ob_full_feature_matrix_test -j
 
       - name: Verify test executables
         run: |
           test -f build/tests/core_nohw_test/ob_core_nohw_test
+          test -f build/tests/core_nohw_test/ob_full_feature_matrix_test
 
       - name: Run no-hardware core tests (TC_CPP_01/02/09/22/23/24/25 subset)
         run: ./build/tests/core_nohw_test/ob_core_nohw_test
+
+      - name: Run full feature matrix no-hardware test (TC_CPP_FULL_001)
+        run: ./build/tests/core_nohw_test/ob_full_feature_matrix_test
 
   test-playback:
     runs-on: ubuntu-22.04

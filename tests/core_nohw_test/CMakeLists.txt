@@ -6,3 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 add_executable(ob_core_nohw_test core_nohw_test.cpp)
 target_link_libraries(ob_core_nohw_test PRIVATE ob::OrbbecSDK)
 set_target_properties(ob_core_nohw_test PROPERTIES FOLDER "tests")
+
+add_executable(ob_full_feature_matrix_test full_feature_matrix_test.cpp)
+target_link_libraries(ob_full_feature_matrix_test PRIVATE ob::OrbbecSDK)
+set_target_properties(ob_full_feature_matrix_test PROPERTIES FOLDER "tests")
