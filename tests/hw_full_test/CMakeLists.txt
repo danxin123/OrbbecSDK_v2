@@ -24,3 +24,10 @@ include(GoogleTest)
 gtest_discover_tests(ob_hw_full_test
     PROPERTIES LABELS "hw"
 )
+
+set_target_properties(ob_hw_full_test PROPERTIES FOLDER "tests")
+if(MSVC)
+    set_target_properties(ob_hw_full_test PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
+
+install(TARGETS ob_hw_full_test RUNTIME DESTINATION bin)

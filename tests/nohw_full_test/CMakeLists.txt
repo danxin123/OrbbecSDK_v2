@@ -22,3 +22,10 @@ gtest_discover_tests(ob_nohw_full_test
     PROPERTIES LABELS "nohw"
     DISCOVERY_TIMEOUT 30
 )
+
+set_target_properties(ob_nohw_full_test PROPERTIES FOLDER "tests")
+if(MSVC)
+    set_target_properties(ob_nohw_full_test PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
+
+install(TARGETS ob_nohw_full_test RUNTIME DESTINATION bin)

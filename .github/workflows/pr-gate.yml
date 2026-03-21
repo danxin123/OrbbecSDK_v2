@@ -30,13 +30,16 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test -j
 
+      - name: Install
+        run: cmake --install build --prefix build/install
+
       - name: Run no-hardware full test
         run: |
           mkdir -p reports
-          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
+          BINARY=$(find build/install -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
           # Locate built extensions directory and run from its parent so the SDK finds extensions/
-          EXT_DIR=$(find build -path "*/extensions/filters" -type d | head -n 1)
+          EXT_DIR=$(find build/install -path "*/extensions/filters" -type d | head -n 1)
           if [ -n "$EXT_DIR" ]; then
             EXT_PARENT=$(dirname "$(dirname "$EXT_DIR")")
             echo "Found extensions: $EXT_PARENT/extensions"
@@ -72,13 +75,16 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test --config Release
 
+      - name: Install
+        run: cmake --install build --config Release --prefix build/install
+
       - name: Run no-hardware full test
         run: |
           New-Item -ItemType Directory -Force -Path reports | Out-Null
-          $binary = Get-ChildItem -Recurse -Path build -Filter ob_nohw_full_test.exe | Select-Object -First 1 -ExpandProperty FullName
+          $binary = Get-ChildItem -Recurse -Path build/install -Filter ob_nohw_full_test.exe | Select-Object -First 1 -ExpandProperty FullName
           Write-Host "Found binary: $binary"
           # Locate built extensions directory and run from its parent so the SDK finds extensions/
-          $extDir = Get-ChildItem -Recurse -Path build -Directory -Filter filters | Where-Object { $_.FullName -match 'extensions[\\/]filters$' } | Select-Object -First 1
+          $extDir = Get-ChildItem -Recurse -Path build/install -Directory -Filter filters | Where-Object { $_.FullName -match 'extensions[\\/]filters$' } | Select-Object -First 1
           if ($extDir) {
             $extParent = Split-Path (Split-Path $extDir.FullName)
             Write-Host "Found extensions: $(Split-Path $extDir.FullName)"
@@ -113,13 +119,16 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test -j
 
+      - name: Install
+        run: cmake --install build --prefix build/install
+
       - name: Run no-hardware full test
         run: |
           mkdir -p reports
-          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
+          BINARY=$(find build/install -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
           # Locate built extensions directory and run from its parent so the SDK finds extensions/
-          EXT_DIR=$(find build -path "*/extensions/filters" -type d | head -n 1)
+          EXT_DIR=$(find build/install -path "*/extensions/filters" -type d | head -n 1)
           if [ -n "$EXT_DIR" ]; then
             EXT_PARENT=$(dirname "$(dirname "$EXT_DIR")")
             echo "Found extensions: $EXT_PARENT/extensions"
@@ -155,6 +164,9 @@ jobs:
       - name: Build playback smoke test
         run: cmake --build build --target ob_playback_smoke_test -j
 
+      - name: Install
+        run: cmake --install build --prefix build/install
+
       - name: Run playback smoke test
         run: |
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
@@ -162,5 +174,11 @@ jobs:
             echo "No .bag file found in tests/rosbag"
             exit 1
           fi
+          BINARY=$(find build/install -name ob_playback_smoke_test -type f | head -n 1)
+          if [ -z "$BINARY" ]; then
+            echo "ob_playback_smoke_test not found under build/install"
+            exit 1
+          fi
+          echo "Found binary: $BINARY"
           echo "Using bag: $BAG_PATH"
-          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+          "$GITHUB_WORKSPACE/$BINARY" "$BAG_PATH"
