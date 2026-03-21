@@ -28,6 +28,23 @@ jobs:
       - name: Build
         run: cmake --build build -j
 
+      - name: Build nohw test
+        run: cmake --build build --target ob_nohw_full_test -j
+
+      - name: Run no-hardware full test
+        run: |
+          mkdir -p reports
+          find build -name ob_nohw_full_test -type f
+          ./build/nohw_full_test/ob_nohw_full_test --gtest_output=xml:reports/nohw_junit.xml
+
+      - name: Upload nohw JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nohw-junit-${{ github.run_id }}
+          path: reports/nohw_junit.xml
+          retention-days: 14
+
   build-windows:
     runs-on: windows-2022
     steps:
@@ -44,6 +61,23 @@ jobs:
 
       - name: Build
         run: cmake --build build --config Release
+
+      - name: Build nohw test
+        run: cmake --build build --target ob_nohw_full_test --config Release
+
+      - name: Run no-hardware full test
+        run: |
+          if not exist reports mkdir reports
+          dir /s /b build\*ob_nohw_full_test.exe
+          build\nohw_full_test\Release\ob_nohw_full_test.exe --gtest_output=xml:reports/nohw_junit.xml
+
+      - name: Upload nohw JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nohw-junit-${{ github.run_id }}
+          path: reports/nohw_junit.xml
+          retention-days: 14
 
   test-cpp-nohw:
     runs-on: ubuntu-22.04
