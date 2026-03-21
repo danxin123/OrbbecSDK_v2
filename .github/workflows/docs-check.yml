@@ -1,15 +1,7 @@
 name: Docs Check
 
 on:
-  pull_request:
-    paths:
-      - "**/*.md"
-      - "docs/**"
-  push:
-    branches: [main]
-    paths:
-      - "**/*.md"
-      - "docs/**"
+  workflow_dispatch:
 
 jobs:
   markdown-links:

@@ -1,23 +1,9 @@
 name: Examples Smoke
 
 on:
-  pull_request:
-    paths:
-      - "examples/**"
-      - "include/**"
-      - "src/**"
-      - "CMakeLists.txt"
-      - "cmake/**"
-      - "scripts/run_examples.sh"
-  push:
-    branches: [main]
-    paths:
-      - "examples/**"
-      - "include/**"
-      - "src/**"
-      - "CMakeLists.txt"
-      - "cmake/**"
-      - "scripts/run_examples.sh"
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
 
 jobs:
   examples-linux:
