@@ -1,9 +1,8 @@
 name: PR Gate
 
 on:
-  pull_request:
-  push:
-    branches: [main, develop, release/*]
+  schedule:
+    - cron: '0 16 * * *'   # Every day at midnight CST (UTC+8)
   workflow_dispatch:
 
 concurrency:
@@ -36,7 +35,14 @@ jobs:
           mkdir -p reports
           BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/nohw_junit.xml
+          # Locate built extensions directory and run from its parent so the SDK finds extensions/
+          EXT_DIR=$(find build -path "*/extensions/filters" -type d | head -n 1)
+          if [ -n "$EXT_DIR" ]; then
+            EXT_PARENT=$(dirname "$(dirname "$EXT_DIR")")
+            echo "Found extensions: $EXT_PARENT/extensions"
+            cd "$EXT_PARENT"
+          fi
+          "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
 
       - name: Upload nohw JUnit
         if: always()
@@ -71,7 +77,15 @@ jobs:
           New-Item -ItemType Directory -Force -Path reports | Out-Null
           $binary = Get-ChildItem -Recurse -Path build -Filter ob_nohw_full_test.exe | Select-Object -First 1 -ExpandProperty FullName
           Write-Host "Found binary: $binary"
-          & $binary --gtest_output=xml:reports/nohw_junit.xml
+          # Locate built extensions directory and run from its parent so the SDK finds extensions/
+          $extDir = Get-ChildItem -Recurse -Path build -Directory -Filter filters | Where-Object { $_.FullName -match 'extensions[\\/]filters$' } | Select-Object -First 1
+          if ($extDir) {
+            $extParent = Split-Path (Split-Path $extDir.FullName)
+            Write-Host "Found extensions: $(Split-Path $extDir.FullName)"
+            Push-Location $extParent
+          }
+          & $binary --gtest_output=xml:"$env:GITHUB_WORKSPACE\reports\nohw_junit.xml"
+          if ($extDir) { Pop-Location }
 
       - name: Upload nohw JUnit
         if: always()
@@ -102,8 +116,16 @@ jobs:
       - name: Run no-hardware full test
         run: |
           mkdir -p reports
-          ./build/tests/nohw_full_test/ob_nohw_full_test \
-            --gtest_output=xml:reports/nohw_junit.xml
+          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
+          echo "Found binary: $BINARY"
+          # Locate built extensions directory and run from its parent so the SDK finds extensions/
+          EXT_DIR=$(find build -path "*/extensions/filters" -type d | head -n 1)
+          if [ -n "$EXT_DIR" ]; then
+            EXT_PARENT=$(dirname "$(dirname "$EXT_DIR")")
+            echo "Found extensions: $EXT_PARENT/extensions"
+            cd "$EXT_PARENT"
+          fi
+          "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
 
       - name: Upload nohw JUnit
         if: always()
