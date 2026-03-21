@@ -29,14 +29,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./build/tests/core_nohw_test/ob_core_nohw_test
+          BINARY=$(find build -name ob_core_nohw_test -type f | head -n 1)
+          echo "Found binary: $BINARY"
+          "$BINARY"
 
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -z "$BAG_PATH" ]; then
             echo "No .bag file found in tests/rosbag" >&2
             exit 1
           fi
-          ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+          PBINARY=$(find build -name ob_playback_smoke_test -type f | head -n 1)
+          echo "Found binary: $PBINARY"
+          "$PBINARY" "$BAG_PATH"
 
       - name: Save nightly summary artifact
         shell: bash

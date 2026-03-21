@@ -40,14 +40,17 @@ jobs:
       - name: Run no-hardware full test
         run: |
           mkdir -p reports
-          ./build/tests/nohw_full_test/ob_nohw_full_test \
-            --gtest_output=xml:reports/rc_nohw_junit.xml
+          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
+          echo "Found binary: $BINARY"
+          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml
 
       - name: Run playback smoke test
         run: |
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -n "$BAG_PATH" ]; then
-            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+            BINARY=$(find build -name ob_playback_smoke_test -type f | head -n 1)
+            echo "Found binary: $BINARY"
+            "$BINARY" "$BAG_PATH"
           fi
 
       - name: Upload rc-linux reports
@@ -129,22 +132,26 @@ jobs:
       - name: Run no-hardware full test
         run: |
           mkdir -p reports
-          ./build/tests/nohw_full_test/ob_nohw_full_test \
-            --gtest_output=xml:reports/rc_nohw_junit.xml
+          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
+          echo "Found binary: $BINARY"
+          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml
 
       - name: Run hardware full test
         env:
           HARDWARE_AVAILABLE: "true"
           DEVICE_TYPE: gemini-335
         run: |
-          ./build/tests/hw_full_test/ob_hw_full_test \
-            --gtest_output=xml:reports/rc_hw_junit.xml
+          BINARY=$(find build -name ob_hw_full_test -type f | head -n 1)
+          echo "Found binary: $BINARY"
+          "$BINARY" --gtest_output=xml:reports/rc_hw_junit.xml
 
       - name: Run playback smoke test
         run: |
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -n "$BAG_PATH" ]; then
-            ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH"
+            BINARY=$(find build -name ob_playback_smoke_test -type f | head -n 1)
+            echo "Found binary: $BINARY"
+            "$BINARY" "$BAG_PATH"
           fi
 
       - name: Upload rc-hw reports
