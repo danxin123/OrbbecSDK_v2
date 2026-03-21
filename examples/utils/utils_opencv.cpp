@@ -14,6 +14,84 @@
 
 namespace ob_smpl {
 
+cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapId) {
+    if(!depthFrame || depthFrame->getType() != OB_FRAME_DEPTH) {
+        return cv::Mat();
+    }
+
+    auto videoFrame = depthFrame->as<const ob::VideoFrame>();
+    if(videoFrame->getFormat() != OB_FORMAT_Y16 && videoFrame->getFormat() != OB_FORMAT_Z16) {
+        return cv::Mat();
+    }
+
+    int   width = videoFrame->getWidth();
+    int   height = videoFrame->getHeight();
+    float scale = videoFrame->as<ob::DepthFrame>()->getValueScale();
+
+    cv::Mat rawMat(height, width, CV_16UC1, videoFrame->getData());
+
+    // Convert to float depth in mm, clamp to [200, 8000] mm
+    cv::Mat depthMm;
+    rawMat.convertTo(depthMm, CV_32F, scale);
+    cv::Mat clipped;
+    cv::min(cv::max(depthMm, 200.0f), 8000.0f, clipped);
+
+    // Normalize to [0, 1] and apply gamma correction
+    cv::Mat normalized = (clipped - 200.0f) / (8000.0f - 200.0f);
+    cv::pow(normalized, 0.6f, normalized);
+
+    // Convert to 8-bit for colormap and gradient
+    cv::Mat depth8;
+    normalized.convertTo(depth8, CV_8UC1, 255.0);
+
+    // Compute Scharr gradients for surface-normal lighting
+    cv::Mat gradX, gradY;
+    cv::Scharr(depth8, gradX, CV_32F, 1, 0);
+    cv::Scharr(depth8, gradY, CV_32F, 0, 1);
+
+    cv::Mat mag;
+    cv::magnitude(gradX, gradY, mag);
+    mag += 1.0f;  // avoid division by zero
+
+    // Diffuse lighting from upper-left direction
+    cv::Mat lighting = -0.707f * (gradX + gradY) / mag;
+    lighting = lighting * 0.15f + 0.85f;
+    cv::min(cv::max(lighting, 0.7f), 1.0f, lighting);
+
+    // Apply colormap
+    cv::Mat colored;
+    cv::applyColorMap(depth8, colored, colormapId);
+
+    // Zero-depth pixels should be black
+    cv::Mat zeroMask;
+    cv::compare(rawMat, 0, zeroMask, cv::CMP_EQ);
+
+    // Multiply color channels by lighting
+    std::vector<cv::Mat> channels(3);
+    cv::split(colored, channels);
+    for(auto &ch : channels) {
+        ch.convertTo(ch, CV_32F);
+        ch = ch.mul(lighting);
+        ch.convertTo(ch, CV_8UC1);
+        ch.setTo(0, zeroMask);
+    }
+
+    cv::Mat result;
+    cv::merge(channels, result);
+
+    // Overlay center-point distance text
+    int cx = width / 2;
+    int cy = height / 2;
+    uint16_t rawVal = rawMat.at<uint16_t>(cy, cx);
+    float distMm = rawVal * scale;
+    std::string distText = (rawVal == 0) ? "N/A" : (toString(distMm / 1000.0f, 2) + "m");
+    cv::circle(result, cv::Point(cx, cy), 4, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+    cv::putText(result, distText, cv::Point(cx + 8, cy - 8), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+    cv::putText(result, distText, cv::Point(cx + 8, cy - 8), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+
+    return result;
+}
+
 const std::string defaultKeyMapPrompt = "'Esc': Exit Window, '?': Show Key Map";
 CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMode arrangeMode)
     : name_(std::move(name)),

@@ -25,6 +25,13 @@ typedef enum {
     ARRANGE_OVERLAY      // Overlay the first two frames in the array
 } ArrangeMode;
 
+// Render a depth frame with 3D relief lighting effect using Scharr gradients.
+// The result is a BGR cv::Mat with colormap + diffuse lighting applied.
+// @param depthFrame  The depth frame to render
+// @param colormapId  OpenCV colormap id (default: cv::COLORMAP_JET)
+// @return BGR cv::Mat with 3D lighting effect
+cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapId = cv::COLORMAP_JET);
+
 class CVWindow {
 public:
     // create a window with the specified name, width and height

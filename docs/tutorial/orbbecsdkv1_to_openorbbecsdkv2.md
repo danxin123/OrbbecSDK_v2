@@ -93,7 +93,7 @@ pipe.stopRecord();
 pipe.stop();
 ```
 
-In  Orbbec SDK v2, a new class ob::RecordDevice has been introduced for recording. By constructing ob::RecordDevice with the target device and output file path (.bag file), recording and stopping are controlled via the resume() and pause() interfaces. Below is a sample code snippet of the new recording implementation. For details, see the [ob_device_record example](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/2.device.record).
+In  Orbbec SDK v2, a new class ob::RecordDevice has been introduced for recording. By constructing ob::RecordDevice with the target device and output file path (.bag file), recording and stopping are controlled via the resume() and pause() interfaces. Below is a sample code snippet of the new recording implementation. For details, see the [ob_device_record example](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/advanced/record).
 
 ```cpp
 // Create a context, for getting devices and sensors
@@ -170,7 +170,7 @@ while(true) {
 pipe.stop();
 ```
 
-In  Orbbec SDK v2, a new class ob::PlaybackDevice has been added for playback functionality. By constructing ob::PlaybackDevice with a .bag file, a new ob::Pipeline can be created to complete playback. Below is a code snippet for SDK v2 playback. For details, see the [ob_device_playback](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/2.device.playback) example.
+In  Orbbec SDK v2, a new class ob::PlaybackDevice has been added for playback functionality. By constructing ob::PlaybackDevice with a .bag file, a new ob::Pipeline can be created to complete playback. Below is a code snippet for SDK v2 playback. For details, see the [ob_device_playback](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/advanced/playback) example.
 
 ```cpp
 // Create a playback device with a Rosbag file
@@ -302,7 +302,7 @@ void deviceUpgrade(const char *filePath, DeviceUpgradeCallback callback, bool as
 void deviceUpgradeFromData(const char *fileData, uint32_t fileSize, DeviceUpgradeCallback callback, bool async = true);
 ```
 
-The firmware update-related interfaces in  Orbbec SDK v2 are as follows. please refer to the [ob_device_firmware_update](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/2.device.firmware_update) example.
+The firmware update-related interfaces in  Orbbec SDK v2 are as follows. please refer to the [ob_device_firmware_update](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/beginner/09_firmware_update) example.
 
 ```cpp
 /**
@@ -405,7 +405,7 @@ obHdrConfig.gain_2     = 16;
 device->setStructuredData(OB_STRUCT_DEPTH_HDR_CONFIG, reinterpret_cast<uint8_t *>(&obHdrConfig), sizeof(OBHdrConfig));
 ```
 
-In Orbbec SDK v2, the HDR Merge API has been unified with frame interleave APIs. For details, refer to the [HDR sample](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/3.advanced.hdr)
+In Orbbec SDK v2, the HDR Merge API has been unified with frame interleave APIs. For details, refer to the [HDR sample](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/advanced/hdr)
 
 ```cpp
 if( device->isFrameInterleaveSupported() ) {
@@ -427,7 +427,7 @@ if( device->isFrameInterleaveSupported() ) {
 
 ### 3.11 New Frame Interleave API
 
-Orbbec SDK v2 introduces new APIs in Device.hpp for frame interleave functionality.  For details, see the [laser_interleave](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/3.advanced.laser_interleave) example.
+Orbbec SDK v2 introduces new APIs in Device.hpp for frame interleave functionality.  For details, see the [laser_interleave](https://github.com/orbbec/OrbbecSDK_v2/tree/main/examples/advanced/laser_interleave) example.
 
 ```cpp
 // Load frame interleave mode as 'Laser On-Off'
