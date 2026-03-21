@@ -50,16 +50,30 @@ jobs:
 
           CORE_RC=0
           PLAYBACK_RC=0
+          CORE_DURATION_MS=0
+          PLAYBACK_DURATION_MS=0
 
+          CORE_START_MS=$(date +%s%3N)
           ./build/tests/core_nohw_test/ob_core_nohw_test || CORE_RC=$?
+          CORE_END_MS=$(date +%s%3N)
+          CORE_DURATION_MS=$((CORE_END_MS - CORE_START_MS))
 
           BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -z "$BAG_PATH" ]; then
             echo "No .bag file found in tests/rosbag" >&2
             PLAYBACK_RC=2
           else
+            PLAYBACK_START_MS=$(date +%s%3N)
             ./build/tests/playback_test/ob_playback_smoke_test "$BAG_PATH" || PLAYBACK_RC=$?
+            PLAYBACK_END_MS=$(date +%s%3N)
+            PLAYBACK_DURATION_MS=$((PLAYBACK_END_MS - PLAYBACK_START_MS))
           fi
+
+          cat > reports/rc_benchmark_current.csv <<EOF
+          metric,value
+          core_nohw_runtime_ms,${CORE_DURATION_MS}
+          playback_runtime_ms,${PLAYBACK_DURATION_MS}
+          EOF
 
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
@@ -76,12 +90,12 @@ jobs:
               skipped="0",
           )
 
-            case_core = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="core_nohw_p0")
+          case_core = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="core_nohw_p0")
           if core_rc != 0:
               fail = ET.SubElement(case_core, "failure", message=f"exit code {core_rc}")
               fail.text = "ob_core_nohw_test failed"
 
-            case_playback = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="playback_smoke_p0")
+          case_playback = ET.SubElement(suite, "testcase", classname="rc_linux.p0", name="playback_smoke_p0")
           if playback_rc != 0:
               fail = ET.SubElement(case_playback, "failure", message=f"exit code {playback_rc}")
               fail.text = "ob_playback_smoke_test failed"
@@ -100,7 +114,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rc-linux-report-${{ github.run_id }}
-          path: reports/rc_linux_junit.xml
+          path: |
+            reports/rc_linux_junit.xml
+            reports/rc_benchmark_current.csv
           retention-days: 30
 
   rc-docs-check:
@@ -182,8 +198,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p reports
           cmake --build build --target ob_hardware_p0_test -j
-          ./build/tests/hardware/ob_hardware_p0_test
+          ./build/tests/hardware/ob_hardware_p0_test --junit-out reports/rc_hw_cpp_p0_junit.xml
 
       - name: Run hardware P0 pytest and emit JUnit
         shell: bash
@@ -198,7 +215,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rc-hw-p0-report-${{ github.run_id }}
-          path: reports/rc_hw_p0_junit.xml
+          path: |
+            reports/rc_hw_p0_junit.xml
+            reports/rc_hw_cpp_p0_junit.xml
           retention-days: 30
 
   rc-summary:
