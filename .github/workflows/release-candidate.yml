@@ -154,6 +154,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure pytest available
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pytest
+
       - name: Validate hardware P0 suite presence
         shell: bash
         run: |

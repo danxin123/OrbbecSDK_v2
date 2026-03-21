@@ -39,4 +39,4 @@ This document tracks execution status against the quality implementation deploym
 - ROS steps 8-10 are skipped by execution decision for this cycle.
 - Step 14 is completed (first self-hosted runner setup confirmed).
 - Hardware-dependent acceptance for steps 15-16 still requires stable online devices and scheduled run history.
-- Step 21 numeric policy gate is now wired via scripts/rc_policy_gate.py in release-candidate workflow with strict P0=100 plus benchmark CSV ingestion; workflow now supports optional require_hw_p0 mode, and remaining gap is implementing real tests/hardware P0 artifacts in this repo.
+- Step 21 numeric policy gate is now wired via scripts/rc_policy_gate.py in release-candidate workflow with strict P0=100 plus benchmark CSV ingestion; workflow supports optional require_hw_p0 mode, and this repo now includes a minimal tests/hardware P0 suite for artifact generation.

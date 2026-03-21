@@ -25,9 +25,9 @@ This file tracks blockers found while executing the deployment/implementation do
 - Suggested follow-up: Add dedicated hardware test targets in this repo, or keep workflow aligned to available executable targets.
 
 8. RC hardware P0 optional mode added (open)
-- Problem: Current repository lacks tests/hardware suite, so full hardware P0 artifact ingestion cannot run by default.
-- Current state: release-candidate adds workflow_dispatch input require_hw_p0; when true, rc-hw-p0 job requires tests/hardware and emits JUnit, otherwise fails fast with explicit message.
-- Suggested follow-up: implement real tests/hardware P0 cases, then use require_hw_p0=true for release validation.
+- Problem: Hardware P0 artifact source was missing initially.
+- Current state: tests/hardware minimal P0 suite has been added, and rc-hw-p0 can emit JUnit artifacts when require_hw_p0=true.
+- Suggested follow-up: expand from minimal runner/health smoke checks to device-feature P0 cases (stream/frame/intrinsic/extrinsic) for stronger release confidence.
 
 5. RC workflow threshold gate mostly closed
 - Problem: RC workflow originally lacked explicit numeric policy enforcement.
