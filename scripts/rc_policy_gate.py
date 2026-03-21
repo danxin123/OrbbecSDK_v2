@@ -41,7 +41,11 @@ def collect_junit_stats(reports_dir: Path) -> Tuple[int, int, int, int, int, int
             if "p0" not in combined:
                 continue
             p0_total += 1
-            if case.find("failure") is not None or case.find("error") is not None:
+            if (
+                case.find("failure") is not None
+                or case.find("error") is not None
+                or case.find("skipped") is not None
+            ):
                 p0_failed += 1
 
     return total, failed, errors, skipped, p0_total, p0_failed

@@ -18,12 +18,10 @@ import pytest
 @pytest.mark.p0
 def test_TC_HW_P0_001_orbbec_usb_visible() -> None:
     """Verify an Orbbec USB device is visible on Linux runner via lsusb."""
-    if os.name != "posix":
-        pytest.skip("Linux-only hardware check")
+    assert os.name == "posix", "Hardware P0 USB check must run on Linux runner"
 
     lsusb = shutil.which("lsusb")
-    if not lsusb:
-        pytest.skip("lsusb is not available on this runner")
+    assert lsusb is not None, "lsusb is required on hardware runner"
 
     proc = subprocess.run([lsusb], capture_output=True, text=True, check=False)
     output = proc.stdout.lower()

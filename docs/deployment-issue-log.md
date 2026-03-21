@@ -33,7 +33,8 @@ This file tracks blockers found while executing the deployment/implementation do
 - Problem: RC workflow originally lacked explicit numeric policy enforcement.
 - Current state: scripts/rc_policy_gate.py has been added and integrated into release-candidate.yml with min success-rate gate and optional benchmark 3-sigma checks.
 - Current improvement: rc-linux now emits P0-tagged JUnit XML plus rc_benchmark_current.csv; rc-summary downloads artifacts and executes gate with strict P0=100 and benchmark baseline/current inputs.
-- Remaining gap: current P0 source is RC no-hardware smoke scope; full hardware P0 coverage still requires self-hosted real-device suite artifacts.
+- Current improvement: skipped P0 testcases are treated as failed in gate logic, preventing false-pass from skipped runs.
+- Remaining gap: hardware P0 coverage is currently minimal smoke level; expand to real device-feature P0 cases for stronger release confidence.
 
 7. RC summary correctness (closed)
 - Problem: release-candidate summary previously printed static PASS text.
