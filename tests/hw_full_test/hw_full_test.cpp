@@ -52,17 +52,6 @@ std::shared_ptr<ob::Sensor> tryGetSensor(const std::shared_ptr<ob::Device> &devi
     }
 }
 
-void enableAllPlaybackSensors(const std::shared_ptr<ob::PlaybackDevice> &device, const std::shared_ptr<ob::Config> &config) {
-    auto sensorList = device->getSensorList();
-    ASSERT_NE(sensorList, nullptr);
-    ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
-
-    for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
-        config->enableStream(sensorList->getSensorType(i));
-    }
-
-    config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
-}
 
 }  // namespace
 
