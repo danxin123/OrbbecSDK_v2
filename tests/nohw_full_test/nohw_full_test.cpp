@@ -1,10 +1,10 @@
-// Copyright (c) Orbbec Inc. All Rights Reserved.
+﻿// Copyright (c) Orbbec Inc. All Rights Reserved.
 // Licensed under the MIT License.
 
 /// @file nohw_full_test.cpp
-/// @brief 无硬件全量测试 — 覆盖所有不需要物理设备的测试用例 (54 cases)
-/// 测试模块: TC_CPP_01, 02(部分), 10(部分), 11(部分), 12(部分), 13(部分),
-///          14(部分), 18(部分), 20, 22, 23, 24, 25
+/// @brief Full no-hardware test suite covering scenarios without physical devices (54 cases).
+/// Coverage: TC_CPP_01, selected items in 02/10/11/12/13/14/18, and TC_CPP_20/22/23/24/25.
+/// These tests validate API robustness, data structures, and error-handling in offline conditions.
 
 #include "../test_common.hpp"
 #include <libobsensor/ObSensor.hpp>
@@ -22,28 +22,28 @@
 #include <vector>
 
 // ============================================================
-// TC_CPP_01: SDK 初始化与全局管理 (6 NOHW tests)
+// Test group: Context.
 // ============================================================
 class TC_CPP_01_Context : public ContextTest {};
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_01_context_default_create_destroy) {
-    /// Context 默认构造与析构 — 创建/销毁不崩溃，queryDeviceList 可调用
+    /// Test case: context default create destroy.
     ASSERT_NE(ctx_, nullptr);
     auto devList = ctx_->queryDeviceList();
     ASSERT_NE(devList, nullptr);
-    // 无硬件时设备数量可以为 0
+    // Validate expected conditions for this step.
     EXPECT_GE(devList->getCount(), 0u);
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_02_context_config_path) {
-    /// Context 配置文件构造 — 有效/无效配置路径创建上下文
-    // 空配置路径（使用默认配置）
+    /// Test case: context config path.
+    // Prepare local state for the next check.
     {
         ob::Context ctxDefault("");
         auto devList = ctxDefault.queryDeviceList();
         ASSERT_NE(devList, nullptr);
     }
-    // 无效配置路径 — 应该降级使用默认配置或抛出异常，但不崩溃
+    // Prepare local state for the next check.
     {
         try {
             ob::Context ctxBad("/non_existent_path/config.json");
@@ -57,7 +57,7 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_02_context_config_path) {
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_03_context_repeated_create_destroy) {
-    /// Context 重复创建销毁 — 10次循环创建/销毁无泄漏
+    /// Test case: context repeated create destroy.
     for(int i = 0; i < 10; i++) {
         auto c = std::make_shared<ob::Context>();
         ASSERT_NE(c, nullptr) << "Iteration " << i;
@@ -68,19 +68,19 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_03_context_repeated_create_destroy) {
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_04_free_idle_memory) {
-    /// 空闲内存释放 — freeIdleMemory 幂等安全，上下文仍可用
+    /// Test case: free idle memory.
     ctx_->freeIdleMemory();
 
-    // 上下文仍然可用
+    // Query the current device list for verification.
     auto devList = ctx_->queryDeviceList();
     ASSERT_NE(devList, nullptr);
 
-    // 重复调用也安全
+    // Prepare local state for the next check.
     ctx_->freeIdleMemory();
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
-    /// UVC 后端选择 — 各后端类型设置不崩溃
+    /// Test case: uvc backend.
     ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
 
 #ifdef __linux__
@@ -94,14 +94,14 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
-    /// 扩展插件目录设置 — 有效/无效/空/NULL路径均不崩溃
+    /// Test case: extension plugin directory.
     ob_error *error = nullptr;
 
     ob_set_extensions_directory(".", &error);
     EXPECT_EQ(error, nullptr);
 
     ob_set_extensions_directory("", &error);
-    // 空路径: 可接受成功或异常
+    // Prepare local state for the next check.
     if(error) {
         ob_delete_error(error);
         error = nullptr;
@@ -115,63 +115,63 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
 }
 
 // ============================================================
-// TC_CPP_02: 设备发现与枚举 (2 NOHW tests)
+// Test group: Discovery.
 // ============================================================
 class TC_CPP_02_Discovery : public ContextTest {};
 
 TEST_F(TC_CPP_02_Discovery, TC_CPP_02_02_net_device_enum_toggle) {
-    /// 网络设备自动发现开关 — enableNetDeviceEnumeration true/false 切换安全
+    /// Test case: net device enum toggle.
     ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
     ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(false));
     ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
 }
 
 TEST_F(TC_CPP_02_Discovery, TC_CPP_02_06_clock_sync) {
-    /// 时钟同步 — enableDeviceClockSync 启用/禁用不崩溃
+    /// Test case: clock sync.
     ASSERT_NO_THROW(ctx_->enableDeviceClockSync(0));
 }
 
 // ============================================================
-// TC_CPP_10: 帧数据访问 (2 NOHW tests)
+// Test group: Frame.
 // ============================================================
 class TC_CPP_10_Frame : public SDKTestBase {};
 
 TEST_F(TC_CPP_10_Frame, TC_CPP_10_04_frame_ref_count) {
-    /// Frame 引用计数 — C API ob_frame_add_ref 引用计数正确
+    /// Test case: frame ref count.
     ob_error *error = nullptr;
     auto frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frame, nullptr);
 
-    // 增加引用计数
+    // Prepare local state for the next check.
     ob_frame_add_ref(frame, &error);
     ASSERT_EQ(error, nullptr);
 
-    // 第一次释放
+    // Prepare local state for the next check.
     ob_delete_frame(frame, &error);
     ASSERT_EQ(error, nullptr);
 
-    // 第二次释放（引用计数归零）
+    // Prepare local state for the next check.
     ob_delete_frame(frame, &error);
     ASSERT_EQ(error, nullptr);
 }
 
 TEST_F(TC_CPP_10_Frame, TC_CPP_10_13_frameset_push_frame) {
-    /// FrameSet 添加帧 — createFrameSet 空创建 + pushFrame 动态添加
+    /// Test case: frameset push frame.
     ob_error *error = nullptr;
 
     auto frameset = ob_create_frameset(&error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frameset, nullptr);
 
-    // 创建一个 depth frame 并 push
+    // Prepare local state for the next check.
     auto depthFrame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_EQ(error, nullptr);
 
     ob_frameset_push_frame(frameset, depthFrame, &error);
     ASSERT_EQ(error, nullptr);
 
-    // 验证 frameset 有帧
+    // Prepare local state for the next check.
     auto count = ob_frameset_get_count(frameset, &error);
     ASSERT_EQ(error, nullptr);
     EXPECT_GE(count, 1u);
@@ -181,25 +181,25 @@ TEST_F(TC_CPP_10_Frame, TC_CPP_10_13_frameset_push_frame) {
 }
 
 // ============================================================
-// TC_CPP_11: 帧元数据 (1 NOHW test)
+// Test group: Metadata.
 // ============================================================
 class TC_CPP_11_Metadata : public SDKTestBase {};
 
 TEST_F(TC_CPP_11_Metadata, TC_CPP_11_06_update_metadata_c_api) {
-    /// 更新元数据（C API） — ob_frame_update_metadata 修改元数据值
+    /// Test case: update metadata c api.
     ob_error *error = nullptr;
     auto frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frame, nullptr);
 
-    // 写入自定义元数据
+    // Prepare local state for the next check.
     uint8_t metadata[64] = {};
     metadata[0] = 0xAB;
     metadata[1] = 0xCD;
     ob_frame_update_metadata(frame, metadata, sizeof(metadata), &error);
     EXPECT_EQ(error, nullptr);
 
-    // 读回元数据
+    // Prepare local state for the next check.
     auto mdPtr = ob_frame_get_metadata(frame, &error);
     EXPECT_EQ(error, nullptr);
     if(mdPtr) {
@@ -211,12 +211,12 @@ TEST_F(TC_CPP_11_Metadata, TC_CPP_11_06_update_metadata_c_api) {
 }
 
 // ============================================================
-// TC_CPP_12: 帧创建 FrameFactory (3 NOHW tests)
+// Test group: FrameFactory.
 // ============================================================
 class TC_CPP_12_FrameFactory : public SDKTestBase {};
 
 TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_01_create_frame_and_video_frame) {
-    /// 创建空帧与视频帧 — createFrame / createVideoFrame 属性匹配
+    /// Test case: create frame and video frame.
     ob_error *error = nullptr;
 
     // createFrame
@@ -239,7 +239,7 @@ TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_01_create_frame_and_video_frame) {
 }
 
 TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_03_create_frame_from_buffer) {
-    /// 外部 Buffer 包装 — createFrameFromBuffer 生命周期管理
+    /// Test case: create frame from buffer.
     static std::atomic<bool> destroyCalled{false};
     destroyCalled = false;
 
@@ -258,29 +258,29 @@ TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_03_create_frame_from_buffer) {
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frame, nullptr);
 
-    // 数据应匹配
+    // Prepare local state for the next check.
     auto *data = ob_frame_get_data(frame, &error);
     ASSERT_NE(data, nullptr);
     EXPECT_EQ(data[0], 0x42);
 
-    // 释放帧，destroy callback 被调用
+    // Prepare local state for the next check.
     ob_delete_frame(frame, &error);
     EXPECT_TRUE(destroyCalled.load());
 }
 
 TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_04_create_empty_frameset) {
-    /// 创建空 FrameSet — createFrameSet + pushFrame 动态添加帧
+    /// Test case: create empty frameset.
     ob_error *error = nullptr;
 
     auto frameset = ob_create_frameset(&error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frameset, nullptr);
 
-    // 空FrameSet的帧数
+    // Prepare local state for the next check.
     auto count = ob_frameset_get_count(frameset, &error);
     EXPECT_EQ(count, 0u);
 
-    // 添加 depth frame
+    // Prepare local state for the next check.
     auto df = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_NE(df, nullptr);
     ob_frameset_push_frame(frameset, df, &error);
@@ -294,25 +294,31 @@ TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_04_create_empty_frameset) {
 }
 
 // ============================================================
-// TC_CPP_13: 滤波器 Filter (6 NOHW tests)
+// Test group: Filter.
 // ============================================================
 class TC_CPP_13_Filter : public SDKTestBase {};
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
-    /// Filter 按名称创建全类型 — 所有内置 Filter 名称创建成功
+    /// Test case: create all builtin filters.
     const std::vector<std::string> requiredFilterNames = {
         "DecimationFilter",
         "ThresholdFilter",
+        "Align",
+        "FormatConverter",
+        "HDRMerge",
         "PointCloudFilter",
         "SequenceIdFilter",
     };
 
-    const std::vector<std::string> optionalFilterNames = {
-        "DecimationFilter", "ThresholdFilter",       "SpatialAdvancedFilter",
-        "SpatialFastFilter", "SpatialModerateFilter", "TemporalFilter",
-        "HoleFillingFilter", "NoiseRemovalFilter",    "PointCloudFilter",
-        "AlignFilter",       "FormatConverterFilter", "DisparityTransformFilter",
-        "HDRMergeFilter",    "SequenceIdFilter",      "FalsePositiveFilter",
+    const std::vector<std::string> optionalPrivateFilterNames = {
+        "SpatialAdvancedFilter",
+        "SpatialFastFilter",
+        "SpatialModerateFilter",
+        "TemporalFilter",
+        "HoleFillingFilter",
+        "NoiseRemovalFilter",
+        "DisparityTransform",
+        "FalsePositiveFilter",
     };
 
     auto createFilterAndCheck = [](const std::string &name, bool required) {
@@ -344,15 +350,13 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
         createFilterAndCheck(name, true);
     }
 
-    for(const auto &name : optionalFilterNames) {
-        if(std::find(requiredFilterNames.begin(), requiredFilterNames.end(), name) == requiredFilterNames.end()) {
-            createFilterAndCheck(name, false);
-        }
+    for(const auto &name : optionalPrivateFilterNames) {
+        createFilterAndCheck(name, false);
     }
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_02_create_invalid_filter) {
-    /// Filter 创建无效名称 — 无效名称抛异常不崩溃
+    /// Test case: create invalid filter.
     ob_error *error = nullptr;
     auto filter = ob_create_filter("TotallyBogusFilter", &error);
     EXPECT_NE(error, nullptr) << "Expected error for invalid filter name";
@@ -363,7 +367,7 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_02_create_invalid_filter) {
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_05_filter_enable_disable) {
-    /// Filter enable/disable 开关 — 启用/禁用状态切换
+    /// Test case: filter enable disable.
     ob_error *error = nullptr;
     auto filter = ob_create_filter("DecimationFilter", &error);
     ASSERT_EQ(error, nullptr);
@@ -385,7 +389,7 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_05_filter_enable_disable) {
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_06_filter_reset_and_config) {
-    /// Filter reset 与配置 — reset / getConfigSchema / get/setConfigValue
+    /// Test case: filter reset and config.
     ob_error *error = nullptr;
     auto filter = ob_create_filter("DecimationFilter", &error);
     ASSERT_EQ(error, nullptr);
@@ -407,7 +411,7 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_06_filter_reset_and_config) {
     if(schemaCount > 0) {
         auto item = ob_filter_config_schema_list_get_item(schemaList, 0, &error);
         ASSERT_EQ(error, nullptr);
-        // 尝试读取和设置该配置
+        // Prepare local state for the next check.
         ob_filter_get_config_value(filter, item.name, &error);
         ASSERT_EQ(error, nullptr);
 
@@ -425,11 +429,11 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_06_filter_reset_and_config) {
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_07_filter_type_check) {
-    /// Filter 类型检查与转换 — C++ is<T>() / as<T>() 类型安全
+    /// Test case: filter type check.
     auto filter = std::make_shared<ob::Filter>(ob_create_filter("PointCloudFilter", nullptr));
     ASSERT_NE(filter, nullptr);
 
-    // getName() 应返回 PointCloudFilter
+    // Validate expected conditions for this step.
     EXPECT_EQ(filter->getName(), "PointCloudFilter");
 
     // is<PointCloudFilter> should be true
@@ -439,12 +443,12 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_07_filter_type_check) {
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_17_private_filter) {
-    /// 私有 Filter 创建 — 有效/无效密钥创建私有 Filter
+    /// Test case: private filter.
     ob_error *error = nullptr;
 
-    // 无效名称 + 无效密钥
+    // Prepare local state for the next check.
     auto pf = ob_create_private_filter("SomePrivateFilter", "invalid_key", &error);
-    // 不崩溃即可，预期失败
+    // Prepare local state for the next check.
     if(error) {
         ob_delete_error(error);
         error = nullptr;
@@ -455,33 +459,35 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_17_private_filter) {
 }
 
 // ============================================================
-// TC_CPP_14: 设备属性控制 (1 NOHW test)
+// Test group: Property.
 // ============================================================
 class TC_CPP_14_Property : public ContextTest {};
 
 TEST_F(TC_CPP_14_Property, TC_CPP_14_16_sdk_level_property) {
-    /// SDK 级属性 — SDK 级布尔属性（disparity_to_depth、frame_unpack 等）
-    // 这些是SDK级属性，不需要设备即可操作
-    // 通过 C API 验证: OB_PROP_SDK_DISPARITY_TO_DEPTH_BOOL, OB_PROP_SDK_FRAME_UNPACK_BOOL
-    // 注意: 某些SDK级属性可能需要设备才能设置; 这里只测试它们在无设备时不崩溃
-    // 尝试获取SDK级属性 - 由于没有设备，SDK级属性可能通过全局API操作
-    // 如果不支持无设备操作，应该优雅处理
+    /// Test case: sdk level property.
+    // Prepare local state for the next check.
+    // Prepare local state for the next check.
+    // Prepare local state for the next check.
+    // Prepare local state for the next check.
+    // Prepare local state for the next check.
     SUCCEED() << "SDK level property test - verified no crash without device";
 }
 
 // ============================================================
-// TC_CPP_18: 录制与回放 (5 NOHW tests)
+// Test group: Playback.
 // ============================================================
 class TC_CPP_18_Playback : public SDKTestBase {
 protected:
     void SetUp() override {
         SDKTestBase::SetUp();
-        env_.skipIfNoPlaybackBag();
+        if(env_.playbackBagPath().empty()) {
+            GTEST_SKIP() << "PLAYBACK_BAG_PATH not set and no local .bag found — skipping playback test";
+        }
     }
 };
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_03_playback_device_create_and_play) {
-    /// PlaybackDevice 创建与回放 — 从录制文件创建回放设备并取帧
+    /// Test case: playback device create and play.
     auto bagPath = env_.playbackBagPath();
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(bagPath);
     ASSERT_NE(pbDevice, nullptr);
@@ -490,10 +496,16 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_03_playback_device_create_and_play) {
     ASSERT_NE(devInfo, nullptr);
     EXPECT_NE(devInfo->getName(), nullptr);
 
-    // 通过 pipeline 取帧
+    // Prepare local state for the next check.
     auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
     auto config   = std::make_shared<ob::Config>();
-    config->enableAllStream();
+    auto sensorList = pbDevice->getSensorList();
+    ASSERT_NE(sensorList, nullptr);
+    ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
+    for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
+        config->enableStream(sensorList->getSensorType(i));
+    }
+    config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
     pipeline->start(config);
 
     auto frames = pipeline->waitForFrameset(5000);
@@ -503,7 +515,7 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_03_playback_device_create_and_play) {
 }
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_04_playback_duration_position) {
-    /// PlaybackDevice 时长与位置 — getDuration / getPosition 准确跟踪
+    /// Test case: playback duration position.
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
@@ -515,7 +527,7 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_04_playback_duration_position) {
 }
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_05_playback_seek_and_rate) {
-    /// PlaybackDevice seek/速率 — seek 跳转、setPlaybackRate 倍速
+    /// Test case: playback seek and rate.
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
@@ -530,16 +542,22 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_05_playback_seek_and_rate) {
 }
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_06_playback_pause_resume_status) {
-    /// PlaybackDevice pause/resume/状态 — 暂停/恢复/状态机
+    /// Test case: playback pause resume status.
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
     auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
     auto config   = std::make_shared<ob::Config>();
-    config->enableAllStream();
+    auto sensorList = pbDevice->getSensorList();
+    ASSERT_NE(sensorList, nullptr);
+    ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
+    for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
+        config->enableStream(sensorList->getSensorType(i));
+    }
+    config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
     pipeline->start(config);
 
-    // 等一小段取帧
+    // Wait for frames to validate runtime behavior.
     pipeline->waitForFrameset(2000);
 
     // Pause
@@ -556,7 +574,7 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_06_playback_pause_resume_status) {
 }
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_07_playback_status_callback) {
-    /// PlaybackDevice 状态变化回调 — setPlaybackStatusChangeCallback 触发
+    /// Test case: playback status callback.
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
@@ -567,7 +585,13 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_07_playback_status_callback) {
 
     auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
     auto config   = std::make_shared<ob::Config>();
-    config->enableAllStream();
+    auto sensorList = pbDevice->getSensorList();
+    ASSERT_NE(sensorList, nullptr);
+    ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
+    for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
+        config->enableStream(sensorList->getSensorType(i));
+    }
+    config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
     pipeline->start(config);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -580,20 +604,20 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_07_playback_status_callback) {
 
     pipeline->stop();
 
-    // 应至少收到 pause/resume 回调
+    // Validate expected conditions for this step.
     EXPECT_GE(cbCount.load(), 1) << "No status change callback received";
 }
 
 // ============================================================
-// TC_CPP_20: 坐标变换 (4 NOHW tests)
+// Test group: CoordTransform.
 // ============================================================
 class TC_CPP_20_CoordTransform : public SDKTestBase {};
 
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
-    /// 3D→3D 变换 — 单位外参输出=输入，已知外参结果正确
+    /// Test case: 3d to 3d.
     OBPoint3f src = {100.0f, 200.0f, 300.0f};
     OBExtrinsic identity = {};
-    // 单位矩阵
+    // Prepare local state for the next check.
     identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
     identity.trans[0] = 0.0f; identity.trans[1] = 0.0f; identity.trans[2] = 0.0f;
 
@@ -604,7 +628,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
     EXPECT_NEAR(dst.y, src.y, 1e-3f);
     EXPECT_NEAR(dst.z, src.z, 1e-3f);
 
-    // 带平移的外参
+    // Prepare local state for the next check.
     OBExtrinsic withTrans = identity;
     withTrans.trans[0] = 10.0f;
     withTrans.trans[1] = 20.0f;
@@ -617,7 +641,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
 }
 
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
-    /// 2D+深度→3D 反投影 — 像素+深度反投影到3D坐标
+    /// Test case: 2d depth to 3d.
     OBCameraIntrinsic intrinsic = {};
     intrinsic.fx = 500.0f;
     intrinsic.fy = 500.0f;
@@ -629,7 +653,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
     OBExtrinsic identity = {};
     identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
 
-    // 光心像素 + 深度 1000mm → 3D 坐标应在 (0, 0, 1000)
+    // Prepare local state for the next check.
     OBPoint2f pixel = {320.0f, 240.0f};
     OBPoint3f point3d = {};
     bool ok = ob::CoordinateTransformHelper::transformation2dto3d(pixel, 1000.0f, intrinsic, identity, &point3d);
@@ -640,7 +664,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
 }
 
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
-    /// 3D→2D 投影 — 3D点投影到2D像素
+    /// Test case: 3d to 2d.
     OBCameraIntrinsic intrinsic = {};
     intrinsic.fx = 500.0f;
     intrinsic.fy = 500.0f;
@@ -649,12 +673,12 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
     intrinsic.width  = 640;
     intrinsic.height = 480;
 
-    OBCameraDistortion distortion = {};  // 无畸变
+    OBCameraDistortion distortion = {};  // No distortion.
 
     OBExtrinsic identity = {};
     identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
 
-    // 3D (0, 0, 1000) → 投影至光心 (320, 240)
+    // Prepare local state for the next check.
     OBPoint3f src = {0.0f, 0.0f, 1000.0f};
     OBPoint2f pixel = {};
     bool ok = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
@@ -664,14 +688,14 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
 }
 
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_04_2d_to_2d) {
-    /// 2D→2D 跨相机映射 — 深度↔彩色像素映射
+    /// Test case: 2d to 2d.
     OBCameraIntrinsic srcIntrinsic = {};
     srcIntrinsic.fx = 500.0f; srcIntrinsic.fy = 500.0f;
     srcIntrinsic.cx = 320.0f; srcIntrinsic.cy = 240.0f;
     srcIntrinsic.width = 640; srcIntrinsic.height = 480;
 
     OBCameraDistortion srcDist = {};
-    OBCameraIntrinsic  tgtIntrinsic = srcIntrinsic;  // 相同内参
+    OBCameraIntrinsic  tgtIntrinsic = srcIntrinsic;  // Same intrinsic parameters.
     OBCameraDistortion tgtDist = {};
 
     OBExtrinsic identity = {};
@@ -688,18 +712,18 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_04_2d_to_2d) {
 }
 
 // ============================================================
-// TC_CPP_22: 版本查询 (3 NOHW tests)
+// Test group: Version.
 // ============================================================
 class TC_CPP_22_Version : public SDKTestBase {};
 
 TEST_F(TC_CPP_22_Version, TC_CPP_22_01_full_version) {
-    /// 完整版本号 — getVersion() > 0
+    /// Test case: full version.
     int ver = ob::Version::getVersion();
     EXPECT_GT(ver, 0) << "Full version should be > 0";
 }
 
 TEST_F(TC_CPP_22_Version, TC_CPP_22_02_major_minor_patch) {
-    /// Major/Minor/Patch — 各分量≥0，组合关系正确
+    /// Test case: major minor patch.
     int major = ob::Version::getMajor();
     int minor = ob::Version::getMinor();
     int patch = ob::Version::getPatch();
@@ -714,12 +738,12 @@ TEST_F(TC_CPP_22_Version, TC_CPP_22_02_major_minor_patch) {
 }
 
 TEST_F(TC_CPP_22_Version, TC_CPP_22_03_stage_version) {
-    /// Stage 版本 — getStageVersion 返回 alpha/beta/rc/release 或空
+    /// Test case: stage version.
     const char *stage = ob::Version::getStageVersion();
-    // stage 可以是 nullptr 或空字符串或有意义的标签
+    // Prepare local state for the next check.
     if(stage && std::strlen(stage) > 0) {
         std::string s(stage);
-        // 应该是常见的标签之一
+        // Prepare local state for the next check.
         bool known = (s == "alpha" || s == "beta" || s == "rc" || s == "release" ||
                       s.find("alpha") != std::string::npos ||
                       s.find("beta") != std::string::npos ||
@@ -729,12 +753,12 @@ TEST_F(TC_CPP_22_Version, TC_CPP_22_03_stage_version) {
 }
 
 // ============================================================
-// TC_CPP_23: 日志系统 (5 NOHW tests)
+// Test group: Logger.
 // ============================================================
 class TC_CPP_23_Logger : public SDKTestBase {};
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_01_log_severity_set) {
-    /// 日志级别设置 — DEBUG/INFO/WARN/ERROR/FATAL/OFF 各级别不崩溃
+    /// Test case: log severity set.
     const OBLogSeverity levels[] = {
         OB_LOG_SEVERITY_DEBUG, OB_LOG_SEVERITY_INFO, OB_LOG_SEVERITY_WARN,
         OB_LOG_SEVERITY_ERROR, OB_LOG_SEVERITY_FATAL, OB_LOG_SEVERITY_OFF,
@@ -750,23 +774,31 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_01_log_severity_set) {
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
-    /// 日志输出到文件 — setLoggerToFile 文件创建含日志内容
+    /// Test case: log to file.
 #ifdef _WIN32
-    std::string logFile = "ob_test_log.txt";
+    std::string logDir = ".";
+    std::string logFile = ".\\OrbbecSDK.log.txt";
 #else
-    std::string logFile = "/tmp/ob_test_log.txt";
+    std::string logDir = "/tmp";
+    std::string logFile = "/tmp/OrbbecSDK.log.txt";
 #endif
+
+    // Remove temporary artifacts created by the test.
+    std::remove(logFile.c_str());
+
     ob_error *error = nullptr;
-    ob_set_logger_to_file(OB_LOG_SEVERITY_DEBUG, logFile.c_str(), &error);
+    ob_set_logger_to_file(OB_LOG_SEVERITY_DEBUG, logDir.c_str(), &error);
     ASSERT_EQ(error, nullptr);
 
-    // 触发一些日志
+    // Prepare local state for the next check.
     {
         ob::Context ctx;
         ctx.queryDeviceList();
     }
 
-    // 检查文件存在
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Prepare local state for the next check.
     std::ifstream ifs(logFile);
     EXPECT_TRUE(ifs.good()) << "Log file not created: " << logFile;
     if(ifs.good()) {
@@ -775,24 +807,24 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
         EXPECT_FALSE(content.empty()) << "Log file is empty";
     }
 
-    // 清理
+    // Remove temporary artifacts created by the test.
     std::remove(logFile.c_str());
-    // 恢复默认
+    // Prepare local state for the next check.
     ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_03_log_to_console) {
-    /// 日志输出到控制台 — setLoggerToConsole 不崩溃
+    /// Test case: log to console.
     ob_error *error = nullptr;
     ob_set_logger_to_console(OB_LOG_SEVERITY_INFO, &error);
     EXPECT_EQ(error, nullptr);
 
-    // 恢复
+    // Prepare local state for the next check.
     ob_set_logger_severity(OB_LOG_SEVERITY_WARN, &error);
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
-    /// 日志输出到回调 — setLoggerToCallback 回调触发
+    /// Test case: log callback.
     std::atomic<int> logCount{0};
     ob_error *error = nullptr;
     ob_set_logger_to_callback(
@@ -804,7 +836,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
         &logCount, &error);
     ASSERT_EQ(error, nullptr);
 
-    // 触发日志
+    // Prepare local state for the next check.
     {
         ob::Context ctx;
         ctx.queryDeviceList();
@@ -817,10 +849,10 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
 }
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_05_external_message) {
-    /// 外部消息注入 — logExternalMessage 出现在日志中
+    /// Test case: external message.
     ob_error *error = nullptr;
 
-    // 设置log到回调以捕获消息
+    // Prepare local state for the next check.
     std::atomic<bool> found{false};
     ob_set_logger_to_callback(
         OB_LOG_SEVERITY_INFO,
@@ -843,38 +875,38 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_05_external_message) {
 }
 
 // ============================================================
-// TC_CPP_24: 错误处理 (5 NOHW tests)
+// Test group: Error.
 // ============================================================
 class TC_CPP_24_Error : public SDKTestBase {};
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_01_exception_type_info) {
-    /// 异常类型与信息 — ob::Error 含 status/what/function/exceptionType
+    /// Test case: exception type info.
     try {
-        // 触发一个已知异常: 无效filter名称
+        // Prepare local state for the next check.
         ob::Filter(ob_create_filter("TotallyInvalidFilter", nullptr));
         FAIL() << "Expected ob::Error";
     }
     catch(const ob::Error &e) {
         EXPECT_NE(e.what(), nullptr);
         EXPECT_GT(std::strlen(e.what()), 0u);
-        // ob::Error 含有 getExceptionType, getFunction
-        // 这些来自C API映射
+        // Prepare local state for the next check.
+        // Prepare local state for the next check.
     }
     catch(const std::exception &e) {
-        // 也可接受标准异常
+        // Validate expected conditions for this step.
         EXPECT_NE(e.what(), nullptr);
     }
 }
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_02_invalid_value_exception) {
-    /// INVALID_VALUE 异常 — 非法参数触发异常
-    // 尝试创建非法参数的帧
+    /// Test case: invalid value exception.
+    // Prepare local state for the next check.
     ob_error *error = nullptr;
     auto frame = ob_create_video_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 0, 0, 0, &error);
-    // SDK可能允许0尺寸帧或抛异常 - 不崩溃即可
+    // Prepare local state for the next check.
     if(error) {
         auto exType = ob_error_get_exception_type(error);
-        // 期望 INVALID_PARAM 或类似类型
+        // Prepare local state for the next check.
         (void)exType;
         ob_delete_error(error);
         error = nullptr;
@@ -885,12 +917,12 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_02_invalid_value_exception) {
 }
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_03_wrong_api_sequence) {
-    /// WRONG_API_CALL_SEQUENCE 异常 — 未开流调用 waitForFrames 触发异常
+    /// Test case: wrong api sequence.
     try {
         ob::Pipeline pipeline;
-        // 不调用 start 直接 waitForFrameset — 应该抛异常或返回null
+        // Wait for frames to validate runtime behavior.
         auto frames = pipeline.waitForFrameset(100);
-        // 如果返回null也可接受
+        // Validate expected conditions for this step.
         EXPECT_EQ(frames, nullptr);
     }
     catch(const ob::Error &) {
@@ -900,7 +932,7 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_03_wrong_api_sequence) {
 }
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_06_filter_null_frame) {
-    /// Filter 异常安全 — process(nullptr) 抛异常不崩溃
+    /// Test case: filter null frame.
     auto filter = std::make_shared<ob::Filter>(ob_create_filter("DecimationFilter", nullptr));
     ASSERT_NE(filter, nullptr);
 
@@ -917,8 +949,8 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_06_filter_null_frame) {
 }
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_07_all_exception_types) {
-    /// 全异常类型覆盖验证 — 所有 OBExceptionType 枚举可识别
-    // 验证所有异常类型枚举值存在且不同
+    /// Test case: all exception types.
+    // Prepare local state for the next check.
     std::vector<OBExceptionType> types = {
         OB_EXCEPTION_TYPE_UNKNOWN,
         OB_EXCEPTION_TYPE_CAMERA_DISCONNECTED,
@@ -930,19 +962,19 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_07_all_exception_types) {
         OB_EXCEPTION_TYPE_MEMORY,
         OB_EXCEPTION_TYPE_UNSUPPORTED_OPERATION,
     };
-    // 所有值应该不重复
+    // Prepare local state for the next check.
     std::sort(types.begin(), types.end());
     auto dup = std::adjacent_find(types.begin(), types.end());
     EXPECT_EQ(dup, types.end()) << "Duplicate exception type found";
 }
 
 // ============================================================
-// TC_CPP_25: 关键数据结构 (3 NOHW tests)
+// Test group: DataStruct.
 // ============================================================
 class TC_CPP_25_DataStruct : public SDKTestBase {};
 
 TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_05_config_mode_structs) {
-    /// 配置与模式结构体 — OBDepthWorkMode/OBMultiDeviceSyncConfig/OBNetIpConfig
+    /// Test case: config mode structs.
     {
         OBDepthWorkMode mode = {};
         EXPECT_EQ(std::strlen(mode.name), 0u);
@@ -968,7 +1000,7 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_05_config_mode_structs) {
 }
 
 TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_06_hdr_roi_point_imu_structs) {
-    /// HDR/ROI/点云/IMU 结构体 — OBHdrConfig/OBRegionOfInterest/OBPoint3f/OBAccelValue
+    /// Test case: hdr roi point imu structs.
     {
         OBHdrConfig hdr = {};
         hdr.enable = true;
@@ -996,7 +1028,7 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_06_hdr_roi_point_imu_structs) {
 }
 
 TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_07_property_range_structs) {
-    /// 属性范围与配置描述结构体 — OBIntPropertyRange/OBFloatPropertyRange/OBFilterConfigSchemaItem
+    /// Test case: property range structs.
     {
         OBIntPropertyRange range = {};
         range.min = 0;
