@@ -71,7 +71,6 @@ int main(int argc, char **argv) {
         pipeline->stop();
 
         const int received = frameSetCount.load(std::memory_order_relaxed);
-        std::cout << "playback frame sets received: " << received << std::endl;
 
         if(received <= 0) {
             std::cerr << "Playback smoke test failed: no frame set received." << std::endl;

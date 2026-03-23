@@ -11,8 +11,20 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <memory>
 #include <string>
+#include <vector>
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <dirent.h>
+#endif
 
 // ---------------------------------------------------------------------------
 // TestEnvironment — singleton that reads env vars once
@@ -29,6 +41,8 @@ public:
     const std::string &deviceSerial() const { return deviceSerial_; }
     int  deviceCount() const { return deviceCount_; }
     const std::string &playbackBagPath() const { return bagPath_; }
+    const std::string &firmwarePath() const { return firmwarePath_; }
+    const std::string &depthPresetPath() const { return depthPresetPath_; }
     bool allowDestructive() const { return allowDestructive_; }
 
     void skipIfNoHardware() const {
@@ -39,7 +53,19 @@ public:
 
     void skipIfNoPlaybackBag() const {
         if(bagPath_.empty()) {
-            GTEST_SKIP() << "PLAYBACK_BAG_PATH not set — skipping playback test";
+            GTEST_SKIP() << "PLAYBACK_BAG_PATH not set and no local .bag found — skipping playback test";
+        }
+    }
+
+    void skipIfNoFirmware() const {
+        if(firmwarePath_.empty()) {
+            GTEST_SKIP() << "No firmware file found — set FIRMWARE_FILE_PATH or place a .bin in tests/resource/firmware/";
+        }
+    }
+
+    void skipIfNoDepthPreset() const {
+        if(depthPresetPath_.empty()) {
+            GTEST_SKIP() << "No depth preset file found — set DEPTH_PRESET_PATH or place a .bin in tests/resource/present/";
         }
     }
 
@@ -72,11 +98,26 @@ public:
 
 private:
     TestEnvironment() {
-        hwAvailable_     = getEnv("HARDWARE_AVAILABLE") == "true";
+        hwAvailable_     = true;
         deviceType_      = getEnv("DEVICE_TYPE", "gemini-335");
         deviceSerial_    = getEnv("DEVICE_SERIAL");
-        bagPath_         = getEnv("PLAYBACK_BAG_PATH");
-        allowDestructive_= getEnv("ALLOW_DESTRUCTIVE_TESTS") == "true";
+
+        bagPath_ = getEnv("PLAYBACK_BAG_PATH");
+        if(bagPath_.empty()) {
+            bagPath_ = findLocalPlaybackBag();
+        }
+
+        firmwarePath_ = getEnv("FIRMWARE_FILE_PATH");
+        if(firmwarePath_.empty()) {
+            firmwarePath_ = findLocalFirmware();
+        }
+
+        depthPresetPath_ = getEnv("DEPTH_PRESET_PATH");
+        if(depthPresetPath_.empty()) {
+            depthPresetPath_ = findLocalDepthPreset();
+        }
+
+        allowDestructive_ = getEnv("ALLOW_DESTRUCTIVE_TESTS") == "true";
 
         const std::string countStr = getEnv("DEVICE_COUNT", "1");
         try { deviceCount_ = std::stoi(countStr); } catch(...) { deviceCount_ = 1; }
@@ -87,11 +128,134 @@ private:
         return val ? std::string(val) : std::string(fallback);
     }
 
+    // ---------------------------------------------------------------------------
+    // Generic file discovery helpers
+    // ---------------------------------------------------------------------------
+
+    // Case-insensitive extension comparison (e.g. ext = ".bin" or ".bag").
+    static bool endsWithExt(const char *name, const char *ext) {
+        if(name == nullptr || ext == nullptr) return false;
+        const char *found = std::strrchr(name, '.');
+        if(found == nullptr) return false;
+#ifdef _WIN32
+        return _stricmp(found, ext) == 0;
+#else
+        return std::strcmp(found, ext) == 0;
+#endif
+    }
+
+    // Return the full path of the first file with the given extension found in dir.
+    static std::string findFirstFileWithExt(const std::string &dir, const std::string &ext) {
+#ifdef _WIN32
+        WIN32_FIND_DATAA findData;
+        HANDLE           hFind = FindFirstFileA((dir + "\\*" + ext).c_str(), &findData);
+        if(hFind == INVALID_HANDLE_VALUE) {
+            return "";
+        }
+
+        std::string result;
+        do {
+            if(!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                result = dir + "\\" + findData.cFileName;
+                break;
+            }
+        } while(FindNextFileA(hFind, &findData));
+
+        FindClose(hFind);
+        return result;
+#else
+        DIR *d = opendir(dir.c_str());
+        if(d == nullptr) {
+            return "";
+        }
+
+        std::string result;
+        struct dirent *entry = nullptr;
+        while((entry = readdir(d)) != nullptr) {
+            if(entry->d_type == DT_DIR) {
+                continue;
+            }
+            if(endsWithExt(entry->d_name, ext.c_str())) {
+                result = dir + "/" + entry->d_name;
+                break;
+            }
+        }
+        closedir(d);
+        return result;
+#endif
+    }
+
+    static std::string findLocalPlaybackBag() {
+        // Prefer the canonical resource layout; keep legacy paths as fallback.
+        const std::vector<std::string> candidateDirs = {
+            "tests/resource/rosbag",
+            "../tests/resource/rosbag",
+            "../../tests/resource/rosbag",
+            "../../../tests/resource/rosbag",
+            "../../../../tests/resource/rosbag",
+            // legacy paths
+            "tests/rosbag",
+            "../tests/rosbag",
+            "../../tests/rosbag",
+            "../../../tests/rosbag",
+            "../../../../tests/rosbag",
+        };
+
+        for(const auto &dir : candidateDirs) {
+            auto bag = findFirstFileWithExt(dir, ".bag");
+            if(!bag.empty()) {
+                return bag;
+            }
+        }
+
+        return "";
+    }
+
+    static std::string findLocalFirmware() {
+        const std::vector<std::string> candidateDirs = {
+            "tests/resource/firmware",
+            "../tests/resource/firmware",
+            "../../tests/resource/firmware",
+            "../../../tests/resource/firmware",
+            "../../../../tests/resource/firmware",
+        };
+
+        for(const auto &dir : candidateDirs) {
+            auto f = findFirstFileWithExt(dir, ".bin");
+            if(!f.empty()) {
+                return f;
+            }
+        }
+
+        return "";
+    }
+
+    static std::string findLocalDepthPreset() {
+        const std::vector<std::string> candidateDirs = {
+            "tests/resource/present",
+            "../tests/resource/present",
+            "../../tests/resource/present",
+            "../../../tests/resource/present",
+            "../../../../tests/resource/present",
+        };
+
+        for(const auto &dir : candidateDirs) {
+            auto f = findFirstFileWithExt(dir, ".bin");
+            if(!f.empty()) {
+                return f;
+            }
+        }
+
+        return "";
+    }
+
     bool        hwAvailable_;
     std::string deviceType_;
     std::string deviceSerial_;
     int         deviceCount_;
     std::string bagPath_;
+    std::string firmwarePath_;
+    std::string depthPresetPath_;
     bool        allowDestructive_;
 };
 
@@ -114,7 +278,9 @@ protected:
 class HardwareTest : public SDKTestBase {
 protected:
     void SetUp() override {
-        env_.skipIfNoHardware();
+        if(!env_.hardwareAvailable()) {
+            GTEST_SKIP() << "HARDWARE_AVAILABLE is not 'true' — skipping hardware test";
+        }
     }
 };
 
