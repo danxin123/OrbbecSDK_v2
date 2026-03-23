@@ -84,16 +84,63 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
 #if !defined(BUILD_USB_PAL)
     GTEST_SKIP() << "SDK built without USB PAL (BUILD_USB_PAL=OFF)";
 #else
-    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
+    bool        usbPalMissing = false;
+    bool        hasUnexpected = false;
+    std::string errMsg;
+
+    auto setBackendType = [&](OBUvcBackendType backendType) {
+        if(usbPalMissing || hasUnexpected) {
+            return;
+        }
+
+        try {
+            ctx_->setUvcBackendType(backendType);
+        }
+        catch(const ob::Error &e) {
+            errMsg = e.what() ? e.what() : "";
+            if(errMsg.find("Usb pal is not exist") != std::string::npos
+               || errMsg.find("BUILD_USB_PAL") != std::string::npos) {
+                usbPalMissing = true;
+                return;
+            }
+            hasUnexpected = true;
+        }
+        catch(const std::exception &e) {
+            errMsg        = e.what() ? e.what() : "std::exception";
+            hasUnexpected = true;
+        }
+        catch(...) {
+            errMsg        = "unknown exception";
+            hasUnexpected = true;
+        }
+    };
+
+    setBackendType(OB_UVC_BACKEND_TYPE_AUTO);
+    if(usbPalMissing) {
+        GTEST_SKIP() << "USB PAL backend unavailable at runtime: " << errMsg;
+    }
+    ASSERT_FALSE(hasUnexpected) << "setUvcBackendType(AUTO) failed: " << errMsg;
 
 #ifdef __linux__
-    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_LIBUVC));
+    setBackendType(OB_UVC_BACKEND_TYPE_LIBUVC);
+    if(usbPalMissing) {
+        GTEST_SKIP() << "USB PAL backend unavailable at runtime: " << errMsg;
+    }
+    ASSERT_FALSE(hasUnexpected) << "setUvcBackendType(LIBUVC) failed: " << errMsg;
 
-    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_V4L2));
+    setBackendType(OB_UVC_BACKEND_TYPE_V4L2);
+    if(usbPalMissing) {
+        GTEST_SKIP() << "USB PAL backend unavailable at runtime: " << errMsg;
+    }
+    ASSERT_FALSE(hasUnexpected) << "setUvcBackendType(V4L2) failed: " << errMsg;
 #endif
 
     // Reset to AUTO
-    ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
+    setBackendType(OB_UVC_BACKEND_TYPE_AUTO);
+    if(usbPalMissing) {
+        GTEST_SKIP() << "USB PAL backend unavailable at runtime: " << errMsg;
+    }
+    ASSERT_FALSE(hasUnexpected) << "setUvcBackendType(AUTO reset) failed: " << errMsg;
 #endif
 }
 
