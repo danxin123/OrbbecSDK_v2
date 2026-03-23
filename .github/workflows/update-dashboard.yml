@@ -57,6 +57,17 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Persist generated data before switching branch context.
+          TMP_DATA="$(mktemp)"
+          cp docs/dashboard/data.json "$TMP_DATA"
+
+          # Always commit on top of remote gh-pages to avoid non-fast-forward from main/default branch.
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+          mkdir -p docs/dashboard
+          cp "$TMP_DATA" docs/dashboard/data.json
+
           git add docs/dashboard/data.json
           if git diff --cached --quiet; then
             echo "No changes"
@@ -64,21 +75,10 @@ jobs:
           fi
           git commit -m "ci: update dashboard data"
 
-          # Keep up with concurrent dashboard updates on gh-pages.
-          git fetch origin gh-pages
-          if ! git rebase origin/gh-pages; then
-            git rebase --abort || true
-            echo "Rebase onto origin/gh-pages failed; manual resolution required."
-            exit 1
-          fi
-
+          # Retry once if another run updates gh-pages concurrently.
           if ! git push origin HEAD:gh-pages; then
-            echo "First push failed; retrying after syncing origin/gh-pages..."
+            echo "First push failed; retrying after rebasing onto latest origin/gh-pages..."
             git fetch origin gh-pages
-            if ! git rebase origin/gh-pages; then
-              git rebase --abort || true
-              echo "Rebase before retry failed; manual resolution required."
-              exit 1
-            fi
+            git rebase origin/gh-pages
             git push origin HEAD:gh-pages
           fi
