@@ -81,6 +81,9 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_04_free_idle_memory) {
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
     /// Test case: uvc backend.
+#if !defined(BUILD_USB_PAL)
+    GTEST_SKIP() << "SDK built without USB PAL (BUILD_USB_PAL=OFF)";
+#else
     ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
 
 #ifdef __linux__
@@ -91,6 +94,7 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
 
     // Reset to AUTO
     ASSERT_NO_THROW(ctx_->setUvcBackendType(OB_UVC_BACKEND_TYPE_AUTO));
+#endif
 }
 
 TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
