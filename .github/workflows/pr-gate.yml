@@ -32,6 +32,9 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test -j
 
+      - name: Build playback smoke test
+        run: cmake --build build --target ob_playback_smoke_test -j
+
       - name: Install
         run: cmake --install build --prefix build/install
 
@@ -49,11 +52,27 @@ jobs:
           fi
           "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
 
+      - name: Run playback smoke test
+        run: |
+          BAG_PATH=$(find tests/resource/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          if [ -z "$BAG_PATH" ]; then
+            echo "No .bag file found in tests/resource/rosbag"
+            exit 1
+          fi
+          BINARY=$(find build/install -name ob_playback_smoke_test -type f | head -n 1)
+          if [ -z "$BINARY" ]; then
+            echo "ob_playback_smoke_test not found under build/install"
+            exit 1
+          fi
+          echo "Found binary: $BINARY"
+          echo "Using bag: $BAG_PATH"
+          "$GITHUB_WORKSPACE/$BINARY" "$GITHUB_WORKSPACE/$BAG_PATH"
+
       - name: Upload nohw JUnit
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nohw-junit-${{ github.run_id }}
+          name: nohw-junit-linux-${{ github.run_id }}
           path: reports/nohw_junit.xml
           retention-days: 14
 
@@ -79,6 +98,9 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test --config Release
 
+      - name: Build playback smoke test
+        run: cmake --build build --target ob_playback_smoke_test --config Release
+
       - name: Install
         run: cmake --install build --config Release --prefix build/install
 
@@ -97,94 +119,27 @@ jobs:
           & $binary --gtest_output=xml:"$env:GITHUB_WORKSPACE\reports\nohw_junit.xml"
           if ($extDir) { Pop-Location }
 
-      - name: Upload nohw JUnit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nohw-junit-${{ github.run_id }}
-          path: reports/nohw_junit.xml
-          retention-days: 14
-
-  test-cpp-nohw:
-    runs-on: ubuntu-22.04
-    needs: build-linux
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: Configure
-        run: |
-          cmake -S . -B build \
-            -DOB_BUILD_TESTS=ON \
-            -DOB_BUILD_EXAMPLES=OFF \
-            -DOB_BUILD_TOOLS=OFF \
-            -DOB_BUILD_DOCS=OFF
-
-      - name: Build nohw test
-        run: cmake --build build --target ob_nohw_full_test -j
-
-      - name: Install
-        run: cmake --install build --prefix build/install
-
-      - name: Run no-hardware full test
-        run: |
-          mkdir -p reports
-          BINARY=$(find build/install -name ob_nohw_full_test -type f | head -n 1)
-          echo "Found binary: $BINARY"
-          # Locate built extensions directory and run from its parent so the SDK finds extensions/
-          EXT_DIR=$(find build/install -path "*/extensions/filters" -type d | head -n 1)
-          if [ -n "$EXT_DIR" ]; then
-            EXT_PARENT=$(dirname "$(dirname "$EXT_DIR")")
-            echo "Found extensions: $EXT_PARENT/extensions"
-            cd "$EXT_PARENT"
-          fi
-          "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
-
-      - name: Upload nohw JUnit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nohw-junit-${{ github.run_id }}
-          path: reports/nohw_junit.xml
-          retention-days: 14
-
-  test-playback:
-    runs-on: ubuntu-22.04
-    needs: build-linux
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: Configure
-        run: |
-          cmake -S . -B build \
-            -DOB_BUILD_TESTS=ON \
-            -DOB_BUILD_EXAMPLES=OFF \
-            -DOB_BUILD_TOOLS=OFF \
-            -DOB_BUILD_DOCS=OFF
-
-      - name: Build playback smoke test
-        run: cmake --build build --target ob_playback_smoke_test -j
-
-      - name: Install
-        run: cmake --install build --prefix build/install
-
       - name: Run playback smoke test
         run: |
-          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
-          if [ -z "$BAG_PATH" ]; then
-            echo "No .bag file found in tests/rosbag"
+          $bag = Get-ChildItem -Path tests/resource/rosbag -Filter *.bag -File | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $bag) {
+            Write-Error "No .bag file found in tests/resource/rosbag"
             exit 1
-          fi
-          BINARY=$(find build/install -name ob_playback_smoke_test -type f | head -n 1)
-          if [ -z "$BINARY" ]; then
-            echo "ob_playback_smoke_test not found under build/install"
+          }
+          $binary = Get-ChildItem -Recurse -Path build/install -Filter ob_playback_smoke_test.exe | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $binary) {
+            Write-Error "ob_playback_smoke_test.exe not found under build/install"
             exit 1
-          fi
-          echo "Found binary: $BINARY"
-          echo "Using bag: $BAG_PATH"
-          "$GITHUB_WORKSPACE/$BINARY" "$BAG_PATH"
+          }
+          Write-Host "Found binary: $binary"
+          Write-Host "Using bag: $bag"
+          & $binary $bag
+
+      - name: Upload nohw JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nohw-junit-windows-${{ github.run_id }}
+          path: reports/nohw_junit.xml
+          retention-days: 14
+
