@@ -27,13 +27,13 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build
-        run: cmake --build build -j
+        run: cmake --build build --parallel 4
 
       - name: Build nohw test
-        run: cmake --build build --target ob_nohw_full_test -j
+        run: cmake --build build --target ob_nohw_full_test --parallel 4
 
       - name: Build playback smoke test
-        run: cmake --build build --target ob_playback_smoke_test -j
+        run: cmake --build build --target ob_playback_smoke_test --parallel 4
 
       - name: Install
         run: cmake --install build --prefix build/install
