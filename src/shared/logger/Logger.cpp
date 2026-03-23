@@ -393,8 +393,7 @@ void Logger::logMessage(OBLogSeverity severity, const char *module, const char *
     spdlog::level::level_enum level = spdlog::level::debug;
 
     auto iter = OBLogSeverityToSpdlogLevel.find(severity);
-    if(iter == OBLogSeverityToSpdlogLevel.end()) {
-        // found
+    if(iter != OBLogSeverityToSpdlogLevel.end()) {
         level = iter->second;
     }
     LOG_EXTERNAL_MSG(loc, level, module, message);
@@ -402,15 +401,8 @@ void Logger::logMessage(OBLogSeverity severity, const char *module, const char *
 
 void Logger::logExternalMessage(OBLogSeverity severity, const char *module, const char *message, const char *file, const char *func, int line) {
     if(severity != OB_LOG_SEVERITY_OFF) {
-        std::shared_ptr<Logger> logger;
-        {
-            std::lock_guard<std::mutex> lock(instanceMutex_);
-            logger = instanceWeakPtr_.lock();
-            if(logger == nullptr) {
-                // no instance
-                return;
-            }
-        }
+        // Lazily create logger so external messages also work before context/device objects are created.
+        auto logger = getInstance();
         logger->logMessage(severity, module, message, file, func, line);
     }
 }

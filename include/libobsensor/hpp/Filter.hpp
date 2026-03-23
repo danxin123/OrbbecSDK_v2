@@ -89,8 +89,9 @@ protected:
     virtual void init(ob_filter *impl) {
         impl_           = impl;
         ob_error *error = nullptr;
-        name_           = ob_filter_get_name(impl_, &error);
+        const char *name = ob_filter_get_name(impl_, &error);
         Error::handle(&error);
+        name_ = name;
 
         auto configSchemaList = ob_filter_get_config_schema_list(impl_, &error);
         Error::handle(&error);
@@ -177,7 +178,7 @@ public:
      */
     virtual std::shared_ptr<Frame> process(std::shared_ptr<const Frame> frame) const {
         ob_error *error  = nullptr;
-        auto      result = ob_filter_process(impl_, frame->getImpl(), &error);
+        auto      result = ob_filter_process(impl_, frame ? frame->getImpl() : nullptr, &error);
         Error::handle(&error);
         if(!result) {
             return nullptr;
@@ -192,7 +193,7 @@ public:
      */
     virtual void pushFrame(std::shared_ptr<Frame> frame) const {
         ob_error *error = nullptr;
-        ob_filter_push_frame(impl_, frame->getImpl(), &error);
+        ob_filter_push_frame(impl_, frame ? frame->getImpl() : nullptr, &error);
         Error::handle(&error);
     }
 

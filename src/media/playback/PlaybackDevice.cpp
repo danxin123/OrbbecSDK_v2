@@ -607,19 +607,25 @@ void PlaybackDevice::initProperties() {
     frameTransformAccessor_ = std::make_shared<PlaybackFrameTransformPropertyAccessor>(port_, this);
     auto filterAccessor     = std::make_shared<PlaybackFilterPropertyAccessor>(port_, this);
     auto vendorAccessor     = getComponentT<PlaybackVendorPropertyAccessor>(OB_DEV_COMPONENT_MAIN_PROPERTY_ACCESSOR).get();
+    const bool hasAccelProfile = !port_->getStreamProfileList(OB_SENSOR_ACCEL).empty();
+    const bool hasGyroProfile  = !port_->getStreamProfileList(OB_SENSOR_GYRO).empty();
 
-    // common imu properties
-    registerPropertyCondition(propertyServer, OB_STRUCT_GET_ACCEL_PRESETS_ODR_LIST, "", "r", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_STRUCT_GET_ACCEL_PRESETS_FULL_SCALE_LIST, "", "r", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_STRUCT_GET_GYRO_PRESETS_ODR_LIST, "", "r", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_STRUCT_GET_GYRO_PRESETS_FULL_SCALE_LIST, "", "r", vendorAccessor, nullptr, true);
-    // These properties are set as writable only to ensure compatibility with the IMU sensor startup.
-    registerPropertyCondition(propertyServer, OB_PROP_ACCEL_ODR_INT, "rw", "rw", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_PROP_ACCEL_FULL_SCALE_INT, "rw", "rw", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_PROP_ACCEL_SWITCH_BOOL, "rw", "rw", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_PROP_GYRO_ODR_INT, "rw", "rw", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_PROP_GYRO_FULL_SCALE_INT, "rw", "rw", vendorAccessor, nullptr, true);
-    registerPropertyCondition(propertyServer, OB_PROP_GYRO_SWITCH_BOOL, "rw", "rw", vendorAccessor, nullptr, true);
+    if(hasAccelProfile) {
+        registerPropertyCondition(propertyServer, OB_STRUCT_GET_ACCEL_PRESETS_ODR_LIST, "", "r", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_STRUCT_GET_ACCEL_PRESETS_FULL_SCALE_LIST, "", "r", vendorAccessor, nullptr, true);
+        // These properties are set as writable only to ensure compatibility with the IMU sensor startup.
+        registerPropertyCondition(propertyServer, OB_PROP_ACCEL_ODR_INT, "rw", "rw", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_PROP_ACCEL_FULL_SCALE_INT, "rw", "rw", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_PROP_ACCEL_SWITCH_BOOL, "rw", "rw", vendorAccessor, nullptr, true);
+    }
+
+    if(hasGyroProfile) {
+        registerPropertyCondition(propertyServer, OB_STRUCT_GET_GYRO_PRESETS_ODR_LIST, "", "r", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_STRUCT_GET_GYRO_PRESETS_FULL_SCALE_LIST, "", "r", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_PROP_GYRO_ODR_INT, "rw", "rw", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_PROP_GYRO_FULL_SCALE_INT, "rw", "rw", vendorAccessor, nullptr, true);
+        registerPropertyCondition(propertyServer, OB_PROP_GYRO_SWITCH_BOOL, "rw", "rw", vendorAccessor, nullptr, true);
+    }
 
     // filter properties
     registerPropertyCondition(propertyServer, OB_PROP_DISPARITY_TO_DEPTH_BOOL, "r", "r", filterAccessor);

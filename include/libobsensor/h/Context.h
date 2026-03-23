@@ -196,13 +196,13 @@ OB_EXPORT void ob_set_logger_severity(ob_log_severity severity, ob_error **error
  * @brief Set the log output to a file
  *
  * @param[in] severity Log level to output to file
- * @param[in] directory Path to the log file output directory.
+ * @param[in] directory Path to the directory where log files are saved.
  *                      If empty, the existing configuration is used;
  *                      if the existing configuration is also empty,
  *                      the value from the config file or the default configuration will be used.
  * @param[out] error Pointer to an error object that will be populated if an error occurs during log output setting
  *
- * @note Other settings, such as log file name, remain unchanged.
+ * @note This function only updates the output directory. The log file name remains OrbbecSDK.log.txt.
  */
 OB_EXPORT void ob_set_logger_to_file(ob_log_severity severity, const char *directory, ob_error **error);
 

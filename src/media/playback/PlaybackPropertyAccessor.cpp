@@ -43,6 +43,7 @@ void PlaybackVendorPropertyAccessor::setPropertyValue(uint32_t propertyId, const
 
 void PlaybackVendorPropertyAccessor::getPropertyValue(uint32_t propertyId, OBPropertyValue *value) {
     auto playPort_ = std::dynamic_pointer_cast<PlaybackDevicePort>(port_);
+    std::memset(value, 0, sizeof(OBPropertyValue));
 
     switch(propertyId) {
     case OB_PROP_ACCEL_ODR_INT:
@@ -50,6 +51,7 @@ void PlaybackVendorPropertyAccessor::getPropertyValue(uint32_t propertyId, OBPro
         const auto &profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
         if(profiles.empty()) {
             LOG_WARN("No accelerometer profiles available");
+            playPort_->getRecordedPropertyValue(propertyId, value);
             break;
         }
         auto accelStreamProfile = profiles.at(0)->as<AccelStreamProfile>();
@@ -61,6 +63,7 @@ void PlaybackVendorPropertyAccessor::getPropertyValue(uint32_t propertyId, OBPro
         const auto &profiles = playPort_->getStreamProfileList(OB_SENSOR_GYRO);
         if(profiles.empty()) {
             LOG_WARN("No gyroscope profiles available");
+            playPort_->getRecordedPropertyValue(propertyId, value);
             break;
         }
         auto gyroStreamProfile = profiles.at(0)->as<GyroStreamProfile>();
@@ -90,27 +93,42 @@ const std::vector<uint8_t> &PlaybackVendorPropertyAccessor::getStructureData(uin
     switch(propertyId) {
     case OB_STRUCT_GET_ACCEL_PRESETS_ODR_LIST: {
         AccelSampleRateList *dataPtr = allocateData<AccelSampleRateList>(data_);
-
-        // todo: check the vector is not empty
-        dataPtr->values[0] = playPort_->getStreamProfileList(OB_SENSOR_ACCEL).at(0)->as<AccelStreamProfile>()->getSampleRate();
+        const auto          profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
+        if(profiles.empty()) {
+            dataPtr->num = 0;
+            break;
+        }
+        dataPtr->values[0] = profiles.at(0)->as<AccelStreamProfile>()->getSampleRate();
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_ACCEL_PRESETS_FULL_SCALE_LIST: {
         AccelFullScaleRangeList *dataPtr = allocateData<AccelFullScaleRangeList>(data_);
-
-        dataPtr->values[0] = playPort_->getStreamProfileList(OB_SENSOR_ACCEL).at(0)->as<AccelStreamProfile>()->getFullScaleRange();
+        const auto               profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
+        if(profiles.empty()) {
+            dataPtr->num = 0;
+            break;
+        }
+        dataPtr->values[0] = profiles.at(0)->as<AccelStreamProfile>()->getFullScaleRange();
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_GYRO_PRESETS_ODR_LIST: {
         GyroSampleRateList *dataPtr = allocateData<GyroSampleRateList>(data_);
-
-        dataPtr->values[0] = playPort_->getStreamProfileList(OB_SENSOR_GYRO).at(0)->as<GyroStreamProfile>()->getSampleRate();
+        const auto          profiles = playPort_->getStreamProfileList(OB_SENSOR_GYRO);
+        if(profiles.empty()) {
+            dataPtr->num = 0;
+            break;
+        }
+        dataPtr->values[0] = profiles.at(0)->as<GyroStreamProfile>()->getSampleRate();
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_GYRO_PRESETS_FULL_SCALE_LIST: {
         GyroFullScaleRangeList *data = allocateData<GyroFullScaleRangeList>(data_);
-
-        data->values[0] = playPort_->getStreamProfileList(OB_SENSOR_GYRO).at(0)->as<GyroStreamProfile>()->getFullScaleRange();
+        const auto              profiles = playPort_->getStreamProfileList(OB_SENSOR_GYRO);
+        if(profiles.empty()) {
+            data->num = 0;
+            break;
+        }
+        data->values[0] = profiles.at(0)->as<GyroStreamProfile>()->getFullScaleRange();
         data->num       = 1;
     } break;
     default: {
