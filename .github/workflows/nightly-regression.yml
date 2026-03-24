@@ -23,19 +23,19 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build no-hardware targets
-        run: cmake --build build --target ob_core_nohw_test ob_playback_smoke_test -j
+        run: cmake --build build --target ob_nohw_full_test ob_playback_smoke_test --parallel 4
 
       - name: Run no-hardware regression
         shell: bash
         run: |
           set -euo pipefail
-          BINARY=$(find build -name ob_core_nohw_test -type f | head -n 1)
+          BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
           "$BINARY"
 
-          BAG_PATH=$(find tests/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
+          BAG_PATH=$(find tests/resource/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
           if [ -z "$BAG_PATH" ]; then
-            echo "No .bag file found in tests/rosbag" >&2
+            echo "No .bag file found in tests/resource/rosbag" >&2
             exit 1
           fi
           PBINARY=$(find build -name ob_playback_smoke_test -type f | head -n 1)
