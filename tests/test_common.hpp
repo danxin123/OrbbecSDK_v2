@@ -14,6 +14,7 @@
 #include <cstring>
 #include <fstream>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,7 @@ public:
     const std::string &deviceSerial() const { return deviceSerial_; }
     int  deviceCount() const { return deviceCount_; }
     const std::string &playbackBagPath() const { return bagPath_; }
+    const std::vector<std::string> &allPlaybackBagPaths() const { return allBagPaths_; }
     const std::string &firmwarePath() const { return firmwarePath_; }
     const std::string &depthPresetPath() const { return depthPresetPath_; }
     bool allowDestructive() const { return allowDestructive_; }
@@ -103,8 +105,26 @@ private:
         deviceSerial_    = getEnv("DEVICE_SERIAL");
 
         bagPath_ = getEnv("PLAYBACK_BAG_PATH");
+        allBagPaths_ = findAllPlaybackBags();
         if(bagPath_.empty()) {
-            bagPath_ = findLocalPlaybackBag();
+            if(!allBagPaths_.empty()) {
+                bagPath_ = allBagPaths_.front();
+            }
+            else {
+                bagPath_ = findLocalPlaybackBag();
+            }
+        }
+        else {
+            bool existsInList = false;
+            for(const auto &p : allBagPaths_) {
+                if(p == bagPath_) {
+                    existsInList = true;
+                    break;
+                }
+            }
+            if(!existsInList) {
+                allBagPaths_.insert(allBagPaths_.begin(), bagPath_);
+            }
         }
 
         firmwarePath_ = getEnv("FIRMWARE_FILE_PATH");
@@ -185,6 +205,71 @@ private:
 #endif
     }
 
+    // Return full paths of all files with the given extension found in dir.
+    static std::vector<std::string> findAllFilesWithExt(const std::string &dir, const std::string &ext) {
+        std::vector<std::string> results;
+#ifdef _WIN32
+        WIN32_FIND_DATAA findData;
+        HANDLE           hFind = FindFirstFileA((dir + "\\*" + ext).c_str(), &findData);
+        if(hFind == INVALID_HANDLE_VALUE) {
+            return results;
+        }
+
+        do {
+            if(!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                results.push_back(dir + "\\" + findData.cFileName);
+            }
+        } while(FindNextFileA(hFind, &findData));
+
+        FindClose(hFind);
+#else
+        DIR *d = opendir(dir.c_str());
+        if(d == nullptr) {
+            return results;
+        }
+
+        struct dirent *entry = nullptr;
+        while((entry = readdir(d)) != nullptr) {
+            if(entry->d_type == DT_DIR) {
+                continue;
+            }
+            if(endsWithExt(entry->d_name, ext.c_str())) {
+                results.push_back(dir + "/" + entry->d_name);
+            }
+        }
+        closedir(d);
+#endif
+        return results;
+    }
+
+    static std::vector<std::string> findAllPlaybackBags() {
+        const std::vector<std::string> candidateDirs = {
+            "tests/resource/rosbag",
+            "../tests/resource/rosbag",
+            "../../tests/resource/rosbag",
+            "../../../tests/resource/rosbag",
+            "../../../../tests/resource/rosbag",
+            // legacy paths
+            "tests/rosbag",
+            "../tests/rosbag",
+            "../../tests/rosbag",
+            "../../../tests/rosbag",
+            "../../../../tests/rosbag",
+        };
+
+        std::vector<std::string> all;
+        std::set<std::string>    seen;
+        for(const auto &dir : candidateDirs) {
+            auto bags = findAllFilesWithExt(dir, ".bag");
+            for(const auto &bag : bags) {
+                if(seen.insert(bag).second) {
+                    all.push_back(bag);
+                }
+            }
+        }
+        return all;
+    }
+
     static std::string findLocalPlaybackBag() {
         // Prefer the canonical resource layout; keep legacy paths as fallback.
         const std::vector<std::string> candidateDirs = {
@@ -254,6 +339,7 @@ private:
     std::string deviceSerial_;
     int         deviceCount_;
     std::string bagPath_;
+    std::vector<std::string> allBagPaths_;
     std::string firmwarePath_;
     std::string depthPresetPath_;
     bool        allowDestructive_;

@@ -32,9 +32,6 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test --parallel 4
 
-      - name: Build playback smoke test
-        run: cmake --build build --target ob_playback_smoke_test --parallel 4
-
       - name: Install
         run: cmake --install build --prefix build/install
 
@@ -51,22 +48,6 @@ jobs:
             cd "$EXT_PARENT"
           fi
           "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
-
-      - name: Run playback smoke test
-        run: |
-          BAG_PATH=$(find tests/resource/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
-          if [ -z "$BAG_PATH" ]; then
-            echo "No .bag file found in tests/resource/rosbag"
-            exit 1
-          fi
-          BINARY=$(find build/install -name ob_playback_smoke_test -type f | head -n 1)
-          if [ -z "$BINARY" ]; then
-            echo "ob_playback_smoke_test not found under build/install"
-            exit 1
-          fi
-          echo "Found binary: $BINARY"
-          echo "Using bag: $BAG_PATH"
-          "$GITHUB_WORKSPACE/$BINARY" "$GITHUB_WORKSPACE/$BAG_PATH"
 
       - name: Upload nohw JUnit
         if: always()
@@ -98,9 +79,6 @@ jobs:
       - name: Build nohw test
         run: cmake --build build --target ob_nohw_full_test --config Release
 
-      - name: Build playback smoke test
-        run: cmake --build build --target ob_playback_smoke_test --config Release
-
       - name: Install
         run: cmake --install build --config Release --prefix build/install
 
@@ -118,22 +96,6 @@ jobs:
           }
           & $binary --gtest_output=xml:"$env:GITHUB_WORKSPACE\reports\nohw_junit.xml"
           if ($extDir) { Pop-Location }
-
-      - name: Run playback smoke test
-        run: |
-          $bag = Get-ChildItem -Path tests/resource/rosbag -Filter *.bag -File | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $bag) {
-            Write-Error "No .bag file found in tests/resource/rosbag"
-            exit 1
-          }
-          $binary = Get-ChildItem -Recurse -Path build/install -Filter ob_playback_smoke_test.exe | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $binary) {
-            Write-Error "ob_playback_smoke_test.exe not found under build/install"
-            exit 1
-          }
-          Write-Host "Found binary: $binary"
-          Write-Host "Using bag: $bag"
-          & $binary $bag
 
       - name: Upload nohw JUnit
         if: always()

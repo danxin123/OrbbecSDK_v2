@@ -48,7 +48,7 @@ jobs:
             -DOB_BUILD_DOCS=OFF
 
       - name: Build all test targets
-        run: cmake --build build --target ob_nohw_full_test ob_hw_full_test ob_playback_smoke_test --parallel 4
+        run: cmake --build build --target extensions ob_nohw_full_test ob_hw_full_test --parallel 4
 
       - name: Run no-hardware full test
         run: |
@@ -73,22 +73,6 @@ jobs:
           fi
           echo "Found binary: $BINARY"
           "$BINARY" --gtest_output=xml:reports/hw_junit.xml
-
-      - name: Run playback smoke test
-        run: |
-          BAG_PATH=$(find tests/resource/rosbag -maxdepth 1 -name '*.bag' | head -n 1)
-          if [ -z "$BAG_PATH" ]; then
-            echo "No .bag file found in tests/resource/rosbag" >&2
-            exit 1
-          fi
-          BINARY=$(find build -name ob_playback_smoke_test -type f | head -n 1)
-          if [ -z "$BINARY" ]; then
-            echo "ob_playback_smoke_test not found under build" >&2
-            exit 1
-          fi
-          echo "Found binary: $BINARY"
-          echo "Using bag: $BAG_PATH"
-          "$BINARY" "$BAG_PATH"
 
       - name: Upload test reports
         if: always()

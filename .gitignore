@@ -29,6 +29,7 @@ out/
 
 # cache & build output
 build/
+build_wsl/
 build_win_x64/
 build_win_x86/
 build_linux_x86_64/
