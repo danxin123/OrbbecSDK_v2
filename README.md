@@ -41,7 +41,7 @@ It provides high-performance C/C++ APIs and language wrappers for building depth
 
 ### Device Support Policy (v1 vs v2)
 
-For the full v1 vs v2 support policy table and support-level definitions, see:
+For the full v1 vs v2 support policy table and support-level definitions, see:[docs/supported_devices_firmware.md](docs/supported_devices_firmware.md)
 
 
 ### Supported Devices and Firmware
@@ -95,9 +95,16 @@ If you need custom modifications or deep integration, build from source:
 
 ## Environment Setup
 
+Use the one-click setup script for your platform. The commands below are ready to paste.
+
 ### Windows
 
 Register metadata required by frame synchronization and timestamp correctness:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+powershell -ExecutionPolicy Bypass -File .\scripts\env_setup\setup.ps1
+```
 
 - [scripts/env_setup/obsensor_metadata_win10.md](scripts/env_setup/obsensor_metadata_win10.md)
 
@@ -106,10 +113,7 @@ Register metadata required by frame synchronization and timestamp correctness:
 Install udev rules to access devices without running all apps as root:
 
 ```bash
-cd scripts/env_setup
-sudo chmod +x ./install_udev_rules.sh
-sudo ./install_udev_rules.sh
-sudo udevadm control --reload && sudo udevadm trigger
+bash ./scripts/env_setup/setup.sh
 ```
 
 ## Quick Start

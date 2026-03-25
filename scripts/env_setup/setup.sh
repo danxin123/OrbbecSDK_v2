@@ -1,40 +1,42 @@
-#!/bin/bash
+#!/bin/sh
 
 # Copyright (c) Orbbec Inc. All Rights Reserved.
 # Licensed under the MIT License.
 
-# restore current directory
-current_dir=$(pwd)
+set -eu
 
-# cd to the directory where this script is located
-cd "$(dirname "$0")"
-project_dir=$(pwd)
+SCRIPT_DIR=$(dirname "$0")
+SCRIPT_DIR=$(cd "$SCRIPT_DIR" && pwd)
+OS_NAME=$(uname -s)
 
-# set up environment variables
-shared_dir=$project_dir/shared
-examples_dir=$project_dir/examples
+echo "[OrbbecSDK] Environment setup started for ${OS_NAME}"
 
-# clear quarantine bit for macOS
-os_name=$(uname)
-if [[ "$os_name" == "Darwin" ]]; then
-    find . -type f \( -name '*ob_*' -o -name '*.dylib' \) -exec sh -c '
-        for file; do
-            xattr -d com.apple.quarantine "$file" 2>/dev/null || true
-        done
-        ' _ {} +
+if [ "$OS_NAME" = "Linux" ]; then
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "[OrbbecSDK] Re-running with sudo to install udev rules..."
+        exec sudo sh "$0" "$@"
+    fi
+
+    sh "${SCRIPT_DIR}/install_udev_rules.sh"
+    echo "[OrbbecSDK] Linux environment setup completed."
+    exit 0
 fi
 
-# build the examples
-if [ -d "$examples_dir" ] && [ -f "$project_dir/build_examples.sh" ]; then
-    "$project_dir/build_examples.sh"
+if [ "$OS_NAME" = "Darwin" ]; then
+    find "$SCRIPT_DIR" -type f | while IFS= read -r file; do
+        case "$file" in
+            *.dylib|*/ob_*)
+                xattr -d com.apple.quarantine "$file" 2>/dev/null || true
+                ;;
+        esac
+    done
+
+    echo "[OrbbecSDK] Cleared macOS quarantine attributes where applicable."
+    echo "[OrbbecSDK] macOS environment setup completed."
+    exit 0
 fi
 
-# install udev rules
-if [ -d "$shared_dir" ] && [ -f "$shared_dir/install_udev_rules.sh" ]; then
-    echo ""
-    echo "Install udev rules file now..."
-    sudo "$shared_dir/install_udev_rules.sh"
-fi
-
-cd "$current_dir"
+echo "[OrbbecSDK] Unsupported platform: ${OS_NAME}"
+echo "[OrbbecSDK] On Windows, run scripts/env_setup/setup.ps1 instead."
+exit 1
 
