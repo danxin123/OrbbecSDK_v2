@@ -160,7 +160,7 @@ int main(void) try {
     cv::namedWindow(mainWinName, cv::WINDOW_NORMAL);
     cv::resizeWindow(mainWinName, 1280, 720);
 
-    bool     render3D    = false;
+    bool     render3D    = true;
     int      colormapId  = cv::COLORMAP_JET;
     float    overlayAlpha = 0.6f;
     uint32_t saveIndex   = 0;
@@ -203,46 +203,29 @@ int main(void) try {
 
         int panelW = 640;
         int panelH = 360;
-        cv::Mat canvas;
-        std::string leftLabel, rightLabel;
-
+        cv::Mat depthPanel;
         if(render3D) {
-            // 3D mode: left panel is 3D depth rendering, right panel is overlay
             cv::Mat depth3d = ob_smpl::renderDepth3D(depthFrame, colormapId);
             if(!depth3d.empty()) {
-                cv::Mat depth3dPanel;
-                cv::resize(depth3d, depth3dPanel, cv::Size(panelW, panelH * 2));
-                cv::Mat overlayPanel;
-                cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
-                cv::hconcat(depth3dPanel, overlayPanel, canvas);
-                leftLabel = "Depth 3D";
-                rightLabel = "Overlay";
+                cv::resize(depth3d, depthPanel, cv::Size(panelW, panelH));
             }
         }
-        else {
-            // Normal mode: left has depth and color, right has overlay
-            cv::Mat depthPanel, colorPanel, overlayPanel;
+        if(depthPanel.empty()) {
             cv::resize(depthMat, depthPanel, cv::Size(panelW, panelH));
-            cv::resize(colorMat, colorPanel, cv::Size(panelW, panelH));
-            cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
-
-            cv::Mat leftCol;
-            cv::vconcat(depthPanel, colorPanel, leftCol);
-            cv::hconcat(leftCol, overlayPanel, canvas);
-            leftLabel = "Color";
-            rightLabel = "Overlay";
         }
+
+        cv::Mat colorPanel, overlayPanel;
+        cv::resize(colorMat, colorPanel, cv::Size(panelW, panelH));
+        cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
+
+        cv::Mat leftCol, canvas;
+        cv::vconcat(depthPanel, colorPanel, leftCol);
+        cv::hconcat(leftCol, overlayPanel, canvas);
 
         // Draw labels
-        if(render3D) {
-            cv::putText(canvas, leftLabel, cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-            cv::putText(canvas, rightLabel, cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        }
-        else {
-            cv::putText(canvas, "Depth", cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-            cv::putText(canvas, "Color", cv::Point(12, panelH + 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-            cv::putText(canvas, rightLabel, cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        }
+        cv::putText(canvas, render3D ? "Depth 3D" : "Depth", cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        cv::putText(canvas, "Color", cv::Point(12, panelH + 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        cv::putText(canvas, "Overlay", cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
         // Mode indicator and operation prompt
         std::string modeStr = render3D ? "[3D Mode]" : "[Normal Mode]";
