@@ -73,6 +73,7 @@ int main(void) try {
 
     // Create a window for rendering and set the resolution of the window
     ob_smpl::CVWindow win("HDR-Merge", 1280, 720, ob_smpl::ARRANGE_GRID);
+    win.setKeyPrompt("'Esc': Exit");
     win.addLog("The HDR-Merged depth frames are displayed in the last row of the window.");
     while(win.run()) {
         auto frameSet = pipe.waitForFrameset(100);

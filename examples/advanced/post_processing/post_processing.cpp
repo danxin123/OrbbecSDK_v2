@@ -152,6 +152,8 @@ int main() try {
     // Create a window for rendering, and set the resolution of the window
     ob_smpl::CVWindow win("PostProcessing", 1280, 720, ob_smpl::ARRANGE_ONE_ROW);
 
+    win.setKeyPrompt("'Esc': Exit, Use number keys 1-9 to toggle filters");
+
     while(win.run() && !quit_program) {
         // Wait for up to 1000ms for a frameset in blocking mode.
         auto frameSet = pipe.waitForFrameset(1000);

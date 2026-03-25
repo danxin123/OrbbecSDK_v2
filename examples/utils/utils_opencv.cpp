@@ -237,6 +237,8 @@ void CVWindow::resize(int width, int height) {
 
 void CVWindow::setKeyPrompt(const std::string &prompt) {
     prompt_ = defaultKeyMapPrompt + ", " + prompt;
+    // Keep key prompt visible after custom prompt is set.
+    showPrompt_ = true;
 }
 
 void CVWindow::addLog(const std::string &log) {

@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 option(OB_BUILD_PCL_EXAMPLES "Build Point Cloud Library examples" OFF)
 option(OB_BUILD_OPEN3D_EXAMPLES "Build Open3D examples" OFF)
+option(OB_BUILD_ARCHIVE_EXAMPLES "Build archived (superseded) examples" OFF)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

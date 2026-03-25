@@ -8,6 +8,7 @@ option(OB_BUILD_TOOLS "Build tools" ON)
 option(OB_BUILD_DOCS "Build api document and install doc" ON)
 option(OB_BUILD_PCL_EXAMPLES "Build Point Cloud Library examples" OFF)
 option(OB_BUILD_OPEN3D_EXAMPLES "Build Open3D examples" OFF)
+option(OB_BUILD_ARCHIVE_EXAMPLES "Build archived (superseded) examples" OFF)
 option(OB_BUILD_MAIN_PROJECT "Build SDK main project" OFF)
 
 # information options

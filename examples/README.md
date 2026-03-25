@@ -7,126 +7,122 @@
 cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
 cmake --build build --config Release
 
-# Run the quick start example
-./build/bin/ob_quick_start      # Linux
-.\build\win_x64\bin\ob_quick_start.exe  # Windows
+# Run the quick start example (no OpenCV needed)
+./build/bin/ob_quick_start_cli      # Linux
+.\build\win_x64\bin\ob_quick_start_cli.exe  # Windows
 ```
 
-Press **M** to toggle 3D depth rendering, **C** to cycle colormaps.
+## Directory Structure
+
+```
+examples/
+├── beginner/               # 入门级示例，新手从这里开始
+│   ├── quick_start/        # Pipeline 基础 — 终端打印深度数据 (no OpenCV)
+│   ├── rgbd_viewer/        # RGB-D 可视化 + D2C 对齐 + 保存 (OpenCV)
+│   ├── depth_viewer/       # 深度流 + colormap + 3D 渲染 + 保存 (OpenCV)
+│   ├── enumerate_control/  # 设备枚举 + 属性控制 CLI (no OpenCV)
+│   ├── record_playback/    # 录制/回放 .bag 二合一 (OpenCV)
+│   ├── hot_plugin/         # 设备热插拔事件处理 (no OpenCV)
+│   └── imu/                # IMU 六轴 ASCII 可视化 (no OpenCV)
+├── advanced/               # 进阶示例，深入 SDK 功能
+│   ├── align_modes/        # HW vs SW 深度对齐对比 (OpenCV)
+│   ├── camera_params/      # 内外参获取 + 坐标变换 (no OpenCV)
+│   ├── infrared_streams/   # 单/双目 IR + emitter 控制 (OpenCV)
+│   └── ... (其他 advanced 示例)
+├── application/            # 应用级示例
+│   └── 3d_measurement/     # 双击测距 (OpenCV)
+├── c_examples/             # C 语言 API 示例
+├── lidar_examples/         # LiDAR 专用示例
+└── utils/                  # 共享工具库
+```
 
 ## Level 1 — Beginner
 
-Sequential numbered tutorials for getting started with OrbbecSDK.
-
-| # | Example | Description |
-|---|---------|-------------|
-| 01 | [quick_start](beginner/01_quick_start) | Pipeline basics — get frames from RGB-D camera and display them. Press **M** for 3D depth, **C** to cycle colormaps. |
-| 02 | [depth_viewer](beginner/02_depth_viewer) | Depth stream with colormap visualization. |
-| 03 | [color_viewer](beginner/03_color_viewer) | Color stream display with format handling. |
-| 04 | [enumerate](beginner/04_enumerate) | Device discovery — list devices, sensors, and stream profiles. |
-| 05 | [point_cloud](beginner/05_point_cloud) | Generate depth/RGBD point cloud and save as PLY. |
-| 06 | [multi_streams](beginner/06_multi_streams) | Display all streams (color, depth, IR) simultaneously. |
-| 07 | [imu](beginner/07_imu) | Read accelerometer and gyroscope data. |
-| 08 | [infrared](beginner/08_infrared) | Infrared stream display. |
-| 09 | [firmware_update](beginner/09_firmware_update) | OTA firmware upgrade from BIN file. |
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [quick_start](beginner/quick_start) | ✗ | Pipeline 最小示例 — 终端打印中心点深度值 |
+| [rgbd_viewer](beginner/rgbd_viewer) | ✓ | RGB-D 可视化，D2C Align，S 保存，M 3D 渲染，C 切换 colormap |
+| [depth_viewer](beginner/depth_viewer) | ✓ | 深度流可视化，M 3D 渲染，S 保存 16-bit PNG，D 原始深度，C colormap |
+| [enumerate_control](beginner/enumerate_control) | ✗ | 设备/传感器/StreamProfile 枚举 + 属性 get/set CLI 菜单 |
+| [record_playback](beginner/record_playback) | ✓ | 录制所有流到 .bag / 回放 .bag 文件，支持暂停/恢复 |
+| [hot_plugin](beginner/hot_plugin) | ✗ | 设备热插拔回调，R 重启设备触发断连重连 |
+| [imu](beginner/imu) | ✗ | Accel/Gyro 六轴 ASCII 横条图 + 倾斜角估算 |
 
 ## Level 2 — Advanced
 
-Deep-dive into individual SDK features, grouped by category.
+### Depth Processing & Alignment
 
-### Recording & Playback
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [align_modes](advanced/align_modes) | ✓ | HW / SW / Disable 三种 D2C 对齐模式切换对比 |
+| [camera_params](advanced/camera_params) | ✗ | 内参/畸变/外参打印 + 2D⇄3D 坐标变换演示 |
+| [infrared_streams](advanced/infrared_streams) | ✓ | 单/双目 IR 显示，E 切换 emitter，S 保存 |
+| [post_processing](advanced/post_processing) | ✓ | 深度后处理滤波器 |
+| [hdr](advanced/hdr) | ✓ | 深度 HDR 合并 |
+| [confidence](advanced/confidence) | ✓ | 深度 + 置信度流显示 |
+| [preset](advanced/preset) | ✗ | 深度预设值 |
 
-| Example | Description |
-|---------|-------------|
-| [record](advanced/record) | Record color/depth streams to Rosbag file. |
-| [record_nogui](advanced/record_nogui) | CLI-based recording without rendering. |
-| [playback](advanced/playback) | Play back recorded Rosbag data. |
+### Recording & Streaming
+
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [callback](advanced/callback) | ✓ | 帧回调自定义处理 |
+| [laser_interleave](advanced/laser_interleave) | ✓ | 激光交错模式 |
 
 ### Device & System
 
-| Example | Description |
-|---------|-------------|
-| [control](advanced/control) | Adjust device parameters (laser, white balance, etc.). |
-| [hot_plugin](advanced/hot_plugin) | Handle device plug/unplug events. |
-| [forceip](advanced/forceip) | Configure IP for GigE network devices. |
-| [firmware_update (multi)](advanced/multi_devices_firmware_update) | Upgrade firmware on multiple connected devices. |
-| [depth_presets_update](advanced/optional_depth_presets_update) | Update optional depth presets from BIN file. |
-
-### Depth Processing
-
-| Example | Description |
-|---------|-------------|
-| [sync_align](advanced/sync_align) | Synchronize and align depth-to-color streams. |
-| [hw_d2c_align](advanced/hw_d2c_align) | Hardware depth-to-color alignment. |
-| [post_processing](advanced/post_processing) | Apply post-processing filters to depth. |
-| [hdr](advanced/hdr) | HDR merge for depth frames. |
-| [preset](advanced/preset) | Set/get device depth presets. |
-| [coordinate_transform](advanced/coordinate_transform) | Transform between coordinate systems. |
-| [confidence](advanced/confidence) | Depth and confidence stream display. |
-| [decimation](advanced/decimation) | Decimation filter with selectable profiles. |
-
-### Streaming
-
-| Example | Description |
-|---------|-------------|
-| [callback](advanced/callback) | Frame callback with custom data processing. |
-| [common_usages](advanced/common_usages) | Common SDK usage patterns and recipes. |
-| [laser_interleave](advanced/laser_interleave) | Laser interleave mode control. |
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [forceip](advanced/forceip) | ✗ | GigE 设备 IP 配置 |
+| [optional_depth_presets_update](advanced/optional_depth_presets_update) | ✗ | 深度预设值更新 |
+| [metadata](advanced/metadata) | ✗ | 逐帧 metadata 读取 |
+| [save_to_disk](advanced/save_to_disk) | ✓ | 保存色彩/深度帧为图像 |
 
 ### Multi-Device
 
-| Example | Description |
-|---------|-------------|
-| [multi_devices](advanced/multi_devices) | Connect and stream from multiple cameras. |
-| [multi_devices_sync](advanced/multi_devices_sync) | Multi-device hardware synchronization via JSON config. |
-| [multi_devices_sync_gmsltrigger](advanced/multi_devices_sync_gmsltrigger) | GMSL PWM trigger for multi-device sync (Linux only). |
-
-### Utilities & Misc
-
-| Example | Description |
-|---------|-------------|
-| [logger](advanced/logger) | Configure SDK log output level and path. |
-| [metadata](advanced/metadata) | Retrieve per-frame metadata. |
-| [save_to_disk](advanced/save_to_disk) | Save color/depth frames as image files. |
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [multi_devices_sync](advanced/multi_devices_sync) | ✓ | 多设备硬件同步 |
+| [multi_devices_sync_gmsltrigger](advanced/multi_devices_sync_gmsltrigger) | ✓ | GMSL PWM 触发同步 (Linux) |
 
 ### Wrapper Integration
 
-| Example | Description | Requires |
-|---------|-------------|----------|
-| [wrapper_opencv](advanced/wrapper_opencv) | OpenCV integration samples. | OpenCV |
-| [wrapper_pcl](advanced/wrapper_pcl) | PCL point cloud visualization. | PCL |
-| [wrapper_open3d](advanced/wrapper_open3d) | Open3D integration. | Open3D |
+| Example | Requires | Description |
+|---------|----------|-------------|
+| [wrapper_pcl](advanced/wrapper_pcl) | PCL | PCL 点云可视化 |
+| [wrapper_open3d](advanced/wrapper_open3d) | Open3D | Open3D 集成 |
 
-## Specialized — LiDAR
+## Level 3 — Application
 
-See [LiDAR_README.md](LiDAR_README.md) for LiDAR-specific examples.
+| Example | OpenCV | Description |
+|---------|--------|-------------|
+| [3d_measurement](application/3d_measurement) | ✓ | 双击选点 → 3D 距离测量 |
 
-## C Language Examples
+## Specialized
 
-| # | Example | Description |
-|---|---------|-------------|
-| 1 | [c_quick_start](c_examples/0.c_quick_start) | Quick start using the C API. |
-| 2 | [c_enumerate](c_examples/1.c_enumerate) | Device enumeration using the C API. |
-| 3 | [c_depth](c_examples/2.c_depth) | Depth stream using the C API. |
+- **LiDAR** → [LiDAR_README.md](LiDAR_README.md)
+- **C API** → [c_examples/](c_examples/)
 
 ## Learning Path
 
-1. **Start here** → [01_quick_start](beginner/01_quick_start) — Get your first frames displayed
-2. **Explore streams** → [02_depth_viewer](beginner/02_depth_viewer), [03_color_viewer](beginner/03_color_viewer), [08_infrared](beginner/08_infrared)
-3. **Understand devices** → [04_enumerate](beginner/04_enumerate)
-4. **3D output** → [05_point_cloud](beginner/05_point_cloud)
-5. **Alignment** → [sync_align](advanced/sync_align), [hw_d2c_align](advanced/hw_d2c_align)
-6. **Depth quality** → [post_processing](advanced/post_processing), [hdr](advanced/hdr)
-7. **Multi-camera** → [multi_devices](advanced/multi_devices), [multi_devices_sync](advanced/multi_devices_sync)
-8. **Recording** → [record](advanced/record), [playback](advanced/playback)
+1. **Start** → [quick_start](beginner/quick_start) — 最小可运行示例
+2. **See RGB-D** → [rgbd_viewer](beginner/rgbd_viewer) — 可视化 + D2C 对齐
+3. **Depth deep-dive** → [depth_viewer](beginner/depth_viewer) — colormap, 3D, 保存
+4. **Know your device** → [enumerate_control](beginner/enumerate_control) — 枚举 + 属性
+5. **Camera math** → [camera_params](advanced/camera_params) — 内外参与坐标变换
+6. **Alignment** → [align_modes](advanced/align_modes) — HW vs SW 对齐
+7. **Depth quality** → [post_processing](advanced/post_processing), [hdr](advanced/hdr)
+8. **Multi-camera** → [multi_devices_sync](advanced/multi_devices_sync)
+9. **Record** → [record_playback](beginner/record_playback) — 录制 + 回放
+10. **Application** → [3d_measurement](application/3d_measurement) — 真实测距应用
 
 ## Utilities
 
-The [utils/](utils/) directory provides shared utilities used by all examples:
+[utils/](utils/) 目录提供所有示例共享的工具：
 
-- **utils.hpp/cpp** — Key press helpers, timestamp utilities, device type checks
-- **utils_opencv.hpp/cpp** — `CVWindow` class for frame display (5 layout modes), `renderDepth3D()` for 3D depth relief rendering
-- **utils_c.h/c** — C-language utility functions
+- **utils.hpp/cpp** — 按键、时间戳、设备类型判断
+- **utils_opencv.hpp/cpp** — `CVWindow` (5 种布局模式), `renderDepth3D()` 3D 深度渲染
+- **utils_c.h/c** — C 语言工具函数
 
 ## Error Handling
 

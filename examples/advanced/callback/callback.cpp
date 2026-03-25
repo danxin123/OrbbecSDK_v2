@@ -56,6 +56,8 @@ int main(void) try {
     // Create a window for rendering, and set the size of the window.
     ob_smpl::CVWindow win("Callback", 1280, 720, ob_smpl::ARRANGE_GRID);
 
+    win.setKeyPrompt("'Esc': Exit");
+
     while(win.run()) {
         std::lock_guard<std::mutex> lock(framesetMutex);
 

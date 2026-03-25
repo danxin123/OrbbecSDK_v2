@@ -51,6 +51,8 @@ int main(void) try {
     // Create a window for rendering, and set the resolution of the window.
     ob_smpl::CVWindow win("Confidence", 1280, 720, ob_smpl::ARRANGE_GRID);
 
+    win.setKeyPrompt("'Esc': Exit");
+
     while(win.run()) {
         // Wait for up to 100ms for a frameset in blocking mode.
         auto frameSet = pipe.waitForFrameset(100);

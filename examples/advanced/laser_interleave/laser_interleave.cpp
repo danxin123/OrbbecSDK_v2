@@ -81,6 +81,7 @@ int  main(void) try {
 
     // create window for render
     win = std::make_shared<ob_smpl::CVWindow>("Laser On-Off", 1280, 720, ob_smpl::ARRANGE_GRID);
+    win->setKeyPrompt("'Esc': Exit");
     while(win->run()) {
         auto frameSet = pipe.waitForFrameset(100);
         if(frameSet == nullptr) {
