@@ -1,0 +1,66 @@
+name: Sync gh-pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-publish
+  cancel-in-progress: false
+
+jobs:
+  sync-gh-pages:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Sync main to gh-pages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TMP_WT="$(mktemp -d)"
+          TMP_DATA="$(mktemp)"
+          cleanup() {
+            git worktree remove "$TMP_WT" --force >/dev/null 2>&1 || true
+            rm -rf "$TMP_WT" || true
+            rm -f "$TMP_DATA" || true
+          }
+          trap cleanup EXIT
+
+          git fetch origin main gh-pages
+
+          if git cat-file -e origin/gh-pages:docs/dashboard/data.json 2>/dev/null; then
+            git show origin/gh-pages:docs/dashboard/data.json > "$TMP_DATA"
+          else
+            printf '[]\n' > "$TMP_DATA"
+          fi
+
+          git worktree add --detach "$TMP_WT" origin/main
+
+          mkdir -p "$TMP_WT/docs/dashboard"
+          cp "$TMP_DATA" "$TMP_WT/docs/dashboard/data.json"
+
+          pushd "$TMP_WT" >/dev/null
+          git checkout -B gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          if git diff --cached --quiet origin/gh-pages --; then
+            echo "gh-pages is already in sync with main"
+            popd >/dev/null
+            exit 0
+          fi
+
+          git commit -m "ci: sync gh-pages with main"
+          git push --force-with-lease origin gh-pages
+          popd >/dev/null
