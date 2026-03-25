@@ -1,43 +1,43 @@
 # Firmware Update Tool
 
-统一固件升级工具，合并了单设备升级和多设备批量升级功能。
+A unified firmware upgrade tool that combines single-device upgrade and multi-device batch upgrade.
 
-## 用法
+## Usage
 
 ```bash
-# 列出已连接设备
+# List connected devices
 ob_firmware_update -l
 
-# 升级单个设备（仅连接一台时自动选择）
+# Upgrade a single device (auto-select when only one device is connected)
 ob_firmware_update -f firmware.bin
 
-# 按序列号指定设备升级
+# Upgrade a specific device by serial number
 ob_firmware_update -f firmware.bin -s CP1234567890
 
-# 批量升级所有已连接设备
+# Batch upgrade all connected devices
 ob_firmware_update -f firmware.bin -a
 ```
 
-## 参数
+## Arguments
 
-| 参数 | 说明 |
+| Argument | Description |
 |------|------|
-| `-h, --help` | 显示帮助信息 |
-| `-l, --list` | 列出所有已连接设备 |
-| `-f, --file <path>` | 固件文件路径 (.bin / .img) |
-| `-s, --serial <sn>` | 按序列号指定目标设备 |
-| `-a, --all` | 升级所有已连接设备 |
+| `-h, --help` | Show help information |
+| `-l, --list` | List all connected devices |
+| `-f, --file <path>` | Firmware file path (.bin / .img) |
+| `-s, --serial <sn>` | Specify target device by serial number |
+| `-a, --all` | Upgrade all connected devices |
 
-## 功能特性
+## Features
 
-- **单设备模式**: 完整的升级流程，支持 reboot-and-reupdate（部分设备需要两次写入）
-- **批量模式** (`-a`): 依次升级所有设备，最后输出汇总报告（成功/不匹配/失败）
-- 自动检测 ANSI 转义码支持，进度条就地刷新
-- Linux 下自动使用 libuvc 后端以提高稳定性
-- 升级完成后自动重启设备
+- **Single-device mode**: Full upgrade workflow with reboot-and-reupdate support (some devices require two write passes)
+- **Batch mode** (`-a`): Upgrade all devices sequentially and output a summary report (success/mismatch/failure)
+- Auto-detect ANSI escape sequence support and refresh progress bars in place
+- Automatically use the libuvc backend on Linux for better stability
+- Automatically reboot devices after upgrade completes
 
-## 注意事项
+## Notes
 
-- GMSL 设备（如 Gemini335Lg）不支持热插拔
-- 升级过程中请勿断开设备连接
-- `-a` 和 `-s` 不可同时使用
+- GMSL devices (e.g., Gemini335Lg) do not support hot-plug
+- Do not disconnect devices during upgrade
+- `-a` and `-s` cannot be used together

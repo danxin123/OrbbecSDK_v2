@@ -30,7 +30,9 @@ examples/
 │   ├── infrared_streams/   # Single/dual infrared + emitter control (OpenCV)
 │   └── ... (other advanced examples)
 ├── application/            # Application-level examples
-│   └── 3d_measurement/     # Click two points to measure 3D distance (OpenCV)
+│   ├── 3d_measurement/     # Click two points to measure 3D distance (OpenCV)
+│   ├── depth_pcl/          # PCL point cloud visualization examples (PCL)
+│   └── rgbd_open3d/        # Open3D RGB-D real-time visualization example (Open3D)
 ├── c_examples/             # C language API examples
 ├── lidar_examples/         # LiDAR-specific examples
 └── utils/                  # Shared utility library
@@ -85,18 +87,13 @@ examples/
 | [multi_devices_sync](advanced/multi_devices_sync) | ✓ | Multi-device hardware synchronization |
 | [multi_devices_sync_gmsltrigger](advanced/multi_devices_sync_gmsltrigger) | ✓ | GMSL PWM trigger synchronization (Linux) |
 
-### Wrapper Integration
+## Level 3 — Application
 
 | Example | Requires | Description |
 |---------|----------|-------------|
-| [wrapper_pcl](advanced/wrapper_pcl) | PCL | PCL point cloud visualization |
-| [wrapper_open3d](advanced/wrapper_open3d) | Open3D | Open3D integration |
-
-## Level 3 — Application
-
-| Example | OpenCV | Description |
-|---------|--------|-------------|
-| [3d_measurement](application/3d_measurement) | ✓ | Click two points to measure 3D distance |
+| [3d_measurement](application/3d_measurement) | OpenCV | Click two points to measure 3D distance |
+| [depth_pcl](application/depth_pcl) | PCL | Point cloud processing and visualization examples |
+| [rgbd_open3d](application/rgbd_open3d) | Open3D | Capture synchronized RGB-D frames and render in Open3D |
 
 ## Specialized
 
@@ -115,6 +112,7 @@ examples/
 8. **Multi-camera** → [multi_devices_sync](advanced/multi_devices_sync)
 9. **Record** → [record_playback](beginner/record_playback) — Recording + playback
 10. **Application** → [3d_measurement](application/3d_measurement) — Real-world measurement application
+11. **3D Ecosystem (Optional)** → [depth_pcl](application/depth_pcl), [rgbd_open3d](application/rgbd_open3d) — Integrate with PCL/Open3D
 
 ## Utilities
 The [utils/](utils/) directory provides tools shared by all examples:

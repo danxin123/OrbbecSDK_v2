@@ -53,11 +53,11 @@ if(OB_BUILD_LINUX)
 endif()
 
 if (OB_BUILD_PCL_EXAMPLES)
-    add_subdirectory(advanced/wrapper_pcl)
+    add_subdirectory(application/depth_pcl)
 endif()
 
 if (OB_BUILD_OPEN3D_EXAMPLES)
-    add_subdirectory(advanced/wrapper_open3d)
+    add_subdirectory(application/rgbd_open3d)
 endif()
 
 # ============================================================================
