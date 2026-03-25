@@ -373,7 +373,10 @@ bool PlaybackDevicePort::getRecordedPropertyRange(uint32_t propertyId, OBPropert
 std::vector<uint8_t> PlaybackDevicePort::getRecordedStructData(uint32_t propertyId) {
     std::vector<uint8_t> data = reader_->getPropertyData(propertyId);
     if(data.empty()) {
-        LOG_WARN("Failed to get recorded struct data for property id: {}", propertyId);
+        // Missing recorded struct data is not always an error during playback.
+        // Some properties are optional and may be absent in older bags or in bags
+        // recorded from device families that do not expose that property.
+        LOG_DEBUG("No recorded struct data for property id: {}", propertyId);
     }
 
     return data;

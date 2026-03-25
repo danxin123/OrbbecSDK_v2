@@ -81,9 +81,18 @@ void PlaybackDeviceParamManager::initDeviceParams() {
     }
 
     rawData.clear();
-    rawData = port_->getRecordedStructData(OB_OPENNI_DEPTH_PROCESSOR_PARAM);
-    if(!rawData.empty()) {
-        frameProcessParam_ = *(reinterpret_cast<OpenNIFrameProcessParam *>(rawData.data()));
+    // This parameter is optional in playback bags. Older bags or bags recorded
+    // from non-OpenNI devices may not contain it, so absence should fall back
+    // to the default-initialized value instead of producing a warning path.
+    if(port_->isPropertySupported(OB_OPENNI_DEPTH_PROCESSOR_PARAM)) {
+        rawData = port_->getRecordedStructData(OB_OPENNI_DEPTH_PROCESSOR_PARAM);
+        if(rawData.size() == sizeof(OpenNIFrameProcessParam)) {
+            frameProcessParam_ = *(reinterpret_cast<OpenNIFrameProcessParam *>(rawData.data()));
+        }
+        else if(!rawData.empty()) {
+            LOG_WARN("Playback Device: invalid OpenNI depth processor param size, expected: {}, actual: {}", sizeof(OpenNIFrameProcessParam),
+                     rawData.size());
+        }
     }
 }
 

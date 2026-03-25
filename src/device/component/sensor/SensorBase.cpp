@@ -29,8 +29,13 @@ SensorBase::SensorBase(IDevice *owner, OBSensorType sensorType, const std::share
       recoveryCount_(0),
       noStreamTimeoutMs_(DefaultNoStreamTimeoutMs),
       streamInterruptTimeoutMs_(DefaultStreamInterruptTimeoutMs) {
-    enableTimestampAnomalyDetection(true);
-    startStreamRecovery();
+    // Playback devices do not support stream recovery or timestamp anomaly detection.
+    // Skip the default runtime initialization so playback sensor creation does not
+    // emit expected-but-noisy warnings during normal bag replay.
+    if(!owner_->isPlaybackDevice()) {
+        enableTimestampAnomalyDetection(true);
+        startStreamRecovery();
+    }
 
     auto activityRecorder = owner->getComponentT<IDeviceActivityRecorder>(OB_DEV_COMPONENT_DEVICE_ACTIVITY_RECORDER, false);
     if(activityRecorder) {
