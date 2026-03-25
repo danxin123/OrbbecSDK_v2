@@ -153,7 +153,7 @@ bash ./scripts/env_setup/setup.sh
 
 Minimal C++ sample:
 
-![QuickStart Example](docs/resource/QuickStart.jpg)
+![RGBD Example](docs/resource/QuickStart.png)
 
 ```cpp
 // Create a pipeline.
@@ -176,7 +176,7 @@ while(win.run()) {
 // Stop the Pipeline, no frame data will be generated.
 pipe.stop();
 ```
-
+Source code ref [RGBD Viewer](examples/beginner/rgbd_viewer/README.md)
 ## Documentation
 
 - Docs portal: [GitHub Pages](https://orbbec.github.io/OrbbecSDK_v2/)
