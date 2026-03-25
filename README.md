@@ -33,6 +33,39 @@ It provides high-performance C/C++ APIs and language wrappers for building depth
 - [License](#license)
 - [Links](#links)
 
+## Application Scenarios
+
+<table align="center">
+    <tr>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Robotics.png" alt="Robotics" width="100%" /><br />
+            Robotics
+        </td>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Logistics.png" alt="Logistics" width="100%" /><br />
+            Logistics
+        </td>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Healthtech.png" alt="Healthtech" width="100%" /><br />
+            Healthtech
+        </td>
+    </tr>
+    <tr>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Humanoid.png" alt="Humanoid" width="100%" /><br />
+            Humanoid
+        </td>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Lawm-Mowers.png" alt="Lawm-Mowers" width="100%" /><br />
+            Lawm-Mowers
+        </td>
+        <td align="center" width="33.33%">
+            <img src="docs/resource/application/Fitness.png" alt="Fitness" width="100%" /><br />
+            Fitness
+        </td>
+    </tr>
+</table>
+
 ## Core Features
 
 > **See all SDK features:** [docs/sdk_feature_matrix.md](docs/sdk_feature_matrix.md)
