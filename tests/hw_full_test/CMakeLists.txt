@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.14)
 # ============================================================
 
 set(OB_HW_DESTRUCTIVE_TEST_FILTER
-    "TC_CPP_14_Property_HW.TC_CPP_14_07_customer_data:TC_CPP_21_Firmware.TC_CPP_21_08_firmware_update:TC_CPP_21_Firmware.TC_CPP_21_09_update_depth_presets"
+    "TC_CPP_02_Discovery_HW.TC_CPP_02_04_force_ip:TC_CPP_14_Property_HW.TC_CPP_14_07_customer_data:TC_CPP_21_Firmware.TC_CPP_21_08_firmware_update:TC_CPP_21_Firmware.TC_CPP_21_09_update_depth_presets"
 )
 set(OB_HW_NON_DESTRUCTIVE_TEST_FILTER "*-${OB_HW_DESTRUCTIVE_TEST_FILTER}")
 

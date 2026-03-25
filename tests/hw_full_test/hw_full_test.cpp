@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <cstring>
@@ -24,6 +25,13 @@
 #include <vector>
 
 namespace {
+
+std::string toLowerCopy(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
+    return value;
+}
 
 bool hasSensorType(const std::shared_ptr<ob::SensorList> &sensorList, OBSensorType type) {
     if(!sensorList) {
@@ -107,11 +115,58 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_01_usb_device_enum) {
     }
 }
 
+TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_02_net_device_enum_toggle) {
+    /// Test case: net device enum toggle.
+    ENV().skipIfNot335leOr435le();
+
+    auto hasExpectedDevice = [&](const std::shared_ptr<ob::DeviceList> &devList) {
+        if(!devList) {
+            return false;
+        }
+
+        const std::string expectedSerial = ENV().deviceSerial();
+        for(uint32_t i = 0; i < devList->getCount(); ++i) {
+            const char *name = devList->getName(i);
+            const char *serial = devList->getSerialNumber(i);
+            if(name == nullptr || serial == nullptr) {
+                continue;
+            }
+
+            if(!expectedSerial.empty() && expectedSerial == serial) {
+                return true;
+            }
+
+            const std::string nameLower = toLowerCopy(name);
+            if(nameLower.find("335le") != std::string::npos || nameLower.find("435le") != std::string::npos) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    auto devList = ctx_->queryDeviceList();
+    ASSERT_NE(devList, nullptr);
+    ASSERT_GT(devList->getCount(), 0u) << "No devices enumerated after enabling network discovery";
+    EXPECT_TRUE(hasExpectedDevice(devList))
+        << "Expected Gemini 335Le/435Le device was not found after enabling network discovery";
+
+    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(false));
+    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    devList = ctx_->queryDeviceList();
+    ASSERT_NE(devList, nullptr);
+    ASSERT_GT(devList->getCount(), 0u) << "No devices enumerated after re-enabling network discovery";
+    EXPECT_TRUE(hasExpectedDevice(devList))
+        << "Expected Gemini 335Le/435Le device was not found after re-enabling network discovery";
+}
+
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_03_net_device_direct) {
     /// Test case: net device direct.
-    if(ENV().deviceType() != "gemini-335le") {
-        GTEST_SKIP() << "Test requires Gemini 335Le, current: " << ENV().deviceType();
-    }
     // Read required inputs from environment variables.
     const char *ip = std::getenv("ORBBEC_NET_IP");
     if(!ip) {
@@ -126,9 +181,6 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_03_net_device_direct) {
 
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
     /// Test case: force ip.
-    if(ENV().deviceType() != "gemini-335le") {
-        GTEST_SKIP() << "Test requires Gemini 335Le, current: " << ENV().deviceType();
-    }
     // Read the target device MAC address and desired static IP from environment variables.
     // ORBBEC_NET_MAC  — device MAC, e.g. "aa:bb:cc:dd:ee:ff"
     // ORBBEC_NET_IP   — desired static IPv4, e.g. "192.168.1.100"
@@ -288,9 +340,6 @@ TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_04_basic_info_fields) {
 
 TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_05_net_device_info) {
     /// Test case: net device info.
-    if(ENV().deviceType() != "gemini-335le") {
-        GTEST_SKIP() << "Test requires Gemini 335Le, current: " << ENV().deviceType();
-    }
     auto devList = ctx_->queryDeviceList();
     for(uint32_t i = 0; i < devList->getCount(); i++) {
         auto connType = std::string(devList->getConnectionType(i));
@@ -336,9 +385,6 @@ TEST_F(TC_CPP_04_DeviceInfo, TC_CPP_04_02_id_fields) {
 
 TEST_F(TC_CPP_04_DeviceInfo, TC_CPP_04_03_net_ip_info) {
     /// Test case: net ip info.
-    if(ENV().deviceType() != "gemini-335le") {
-        GTEST_SKIP() << "Test requires Gemini 335Le, current: " << ENV().deviceType();
-    }
     auto ip = devInfo_->getIpAddress();
     ASSERT_NE(ip, nullptr);
     EXPECT_NE(std::string(ip), "0.0.0.0");
@@ -1778,6 +1824,59 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_14_hdr_interleave) {
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_15_structured_read_group) {
     /// Test case: structured read group.
     SUCCEED();
+}
+
+TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_16_sdk_level_property) {
+    /// Test case: sdk level property.
+    struct BoolPropertyCase {
+        OBPropertyID id;
+        const char  *name;
+    };
+
+    struct IntPropertyCase {
+        OBPropertyID id;
+        const char  *name;
+    };
+
+    const std::vector<BoolPropertyCase> boolProperties = {
+        { OB_PROP_HEARTBEAT_BOOL, "OB_PROP_HEARTBEAT_BOOL" },
+        { OB_PROP_WATCHDOG_BOOL, "OB_PROP_WATCHDOG_BOOL" },
+        { OB_PROP_EXTERNAL_SIGNAL_RESET_BOOL, "OB_PROP_EXTERNAL_SIGNAL_RESET_BOOL" },
+        { OB_PROP_TIMER_RESET_TRIGGER_OUT_ENABLE_BOOL, "OB_PROP_TIMER_RESET_TRIGGER_OUT_ENABLE_BOOL" },
+    };
+
+    const std::vector<IntPropertyCase> intProperties = {
+        { OB_PROP_DEVICE_COMMUNICATION_TYPE_INT, "OB_PROP_DEVICE_COMMUNICATION_TYPE_INT" },
+        { OB_PROP_DEVICE_WORK_MODE_INT, "OB_PROP_DEVICE_WORK_MODE_INT" },
+        { OB_PROP_USB_POWER_STATE_INT, "OB_PROP_USB_POWER_STATE_INT" },
+    };
+
+    int readablePropertyCount = 0;
+
+    for(const auto &property : boolProperties) {
+        if(!device_->isPropertySupported(property.id, OB_PERMISSION_READ)) {
+            continue;
+        }
+
+        EXPECT_NO_THROW({
+            (void)device_->getBoolProperty(property.id);
+        }) << "Failed to read " << property.name;
+        ++readablePropertyCount;
+    }
+
+    for(const auto &property : intProperties) {
+        if(!device_->isPropertySupported(property.id, OB_PERMISSION_READ)) {
+            continue;
+        }
+
+        EXPECT_NO_THROW({
+            (void)device_->getIntProperty(property.id);
+        }) << "Failed to read " << property.name;
+        ++readablePropertyCount;
+    }
+
+    EXPECT_GT(readablePropertyCount, 0)
+        << "Current device does not expose any readable SDK-level property from the validation set";
 }
 
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_17_unsupported_property_safe) {

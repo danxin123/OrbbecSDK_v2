@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -38,7 +39,6 @@ public:
     }
 
     bool hardwareAvailable() const { return hwAvailable_; }
-    const std::string &deviceType() const { return deviceType_; }
     const std::string &deviceSerial() const { return deviceSerial_; }
     int  deviceCount() const { return deviceCount_; }
     const std::string &playbackBagPath() const { return bagPath_; }
@@ -47,6 +47,40 @@ public:
     const std::string &depthPresetPath() const { return depthPresetPath_; }
     bool allowDestructive() const { return allowDestructive_; }
     void setAllowDestructive(bool allowDestructive) { allowDestructive_ = allowDestructive; }
+
+    // Helper: Check if device PID matches 335Le or 435Le
+    static bool isPid335leOr435le(int pid) {
+        return pid == 0x080e || pid == 0x0815;
+    }
+
+    // Helper: Check if device PID matches 335Le
+    static bool isPid335le(int pid) {
+        return pid == 0x080e;
+    }
+
+    // Helper: Check if device PID matches 435Le
+    static bool isPid435le(int pid) {
+        return pid == 0x0815;
+    }
+
+    // Helper: Check if device PID matches 335Lg
+    static bool isPid335lg(int pid) {
+        return pid == 0x080B;
+    }
+
+    // Helper: Convert PID to readable model type string.
+    static std::string pidTypeName(int pid) {
+        if(isPid335le(pid)) {
+            return "gemini-335le";
+        }
+        if(isPid435le(pid)) {
+            return "gemini-435le";
+        }
+        if(isPid335lg(pid)) {
+            return "gemini-335lg";
+        }
+        return "unknown";
+    }
 
     void skipIfNoHardware() const {
         if(!hwAvailable_) {
@@ -72,17 +106,26 @@ public:
         }
     }
 
-    void skipIfNot335le() const {
+
+    void skipIfNot335leOr435le() const {
         skipIfNoHardware();
-        if(deviceType_ != "gemini-335le") {
-            GTEST_SKIP() << "Test requires Gemini 335Le, current: " << deviceType_;
+        int pid = 0;
+        if(!tryGetFirstDevicePid(pid)) {
+            GTEST_SKIP() << "No connected device found for PID check";
+        }
+        if(!isPid335leOr435le(pid)) {
+            GTEST_SKIP() << "Test requires Gemini 335Le/435Le, current pid: 0x" << std::hex << pid;
         }
     }
 
     void skipIfNot335lg() const {
         skipIfNoHardware();
-        if(deviceType_ != "gemini-335lg") {
-            GTEST_SKIP() << "Test requires Gemini 335Lg, current: " << deviceType_;
+        int pid = 0;
+        if(!tryGetFirstDevicePid(pid)) {
+            GTEST_SKIP() << "No connected device found for PID check";
+        }
+        if(!isPid335lg(pid)) {
+            GTEST_SKIP() << "Test requires Gemini 335Lg, current pid: 0x" << std::hex << pid;
         }
     }
 
@@ -102,7 +145,6 @@ public:
 private:
     TestEnvironment() {
         hwAvailable_     = true;
-        deviceType_      = getEnv("DEVICE_TYPE", "gemini-335");
         deviceSerial_    = getEnv("DEVICE_SERIAL");
 
         bagPath_ = getEnv("PLAYBACK_BAG_PATH");
@@ -147,6 +189,36 @@ private:
     static std::string getEnv(const char *name, const char *fallback = "") {
         const char *val = std::getenv(name);
         return val ? std::string(val) : std::string(fallback);
+    }
+
+    static bool tryGetFirstDevicePid(int &pid) {
+        try {
+            auto ctx = std::make_shared<ob::Context>();
+            if(!ctx) {
+                return false;
+            }
+
+            auto devList = ctx->queryDeviceList();
+            if(!devList || devList->deviceCount() == 0) {
+                return false;
+            }
+
+            auto dev = devList->getDevice(0);
+            if(!dev) {
+                return false;
+            }
+
+            auto info = dev->getDeviceInfo();
+            if(!info) {
+                return false;
+            }
+
+            pid = info->getPid();
+            return true;
+        }
+        catch(...) {
+            return false;
+        }
     }
 
     // ---------------------------------------------------------------------------
@@ -336,7 +408,6 @@ private:
     }
 
     bool        hwAvailable_;
-    std::string deviceType_;
     std::string deviceSerial_;
     int         deviceCount_;
     std::string bagPath_;
@@ -364,9 +435,63 @@ protected:
 // ---------------------------------------------------------------------------
 class HardwareTest : public SDKTestBase {
 protected:
+    int         caseStartPid_ = 0;
+    std::string caseStartType_;
+
     void SetUp() override {
         if(!env_.hardwareAvailable()) {
             GTEST_SKIP() << "HARDWARE_AVAILABLE is not 'true' — skipping hardware test";
+        }
+
+        if(!captureCurrentDeviceState(caseStartPid_, caseStartType_)) {
+            GTEST_SKIP() << "No connected device detected before test setup";
+        }
+    }
+
+    void TearDown() override {
+        int         endPid = 0;
+        std::string endType;
+
+        ASSERT_TRUE(captureCurrentDeviceState(endPid, endType))
+            << "Device is unavailable during teardown; device may have been unplugged or switched";
+
+        EXPECT_EQ(endPid, caseStartPid_)
+            << "Device PID changed during test execution; start pid: 0x" << std::hex << caseStartPid_
+            << ", end pid: 0x" << endPid;
+        EXPECT_EQ(endType, caseStartType_)
+            << "Device type changed during test execution; start type: " << caseStartType_
+            << ", end type: " << endType;
+    }
+
+private:
+    static bool captureCurrentDeviceState(int &pid, std::string &type) {
+        try {
+            auto ctx = std::make_shared<ob::Context>();
+            if(!ctx) {
+                return false;
+            }
+
+            auto devList = ctx->queryDeviceList();
+            if(!devList || devList->deviceCount() == 0) {
+                return false;
+            }
+
+            auto dev = devList->getDevice(0);
+            if(!dev) {
+                return false;
+            }
+
+            auto info = dev->getDeviceInfo();
+            if(!info) {
+                return false;
+            }
+
+            pid = info->getPid();
+            type = TestEnvironment::pidTypeName(pid);
+            return true;
+        }
+        catch(...) {
+            return false;
         }
     }
 };
@@ -417,5 +542,6 @@ protected:
         devInfo_.reset();
         device_.reset();
         ctx_.reset();
+        HardwareTest::TearDown();
     }
 };

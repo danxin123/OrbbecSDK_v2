@@ -172,12 +172,6 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
 // ============================================================
 class TC_CPP_02_Discovery : public ContextTest {};
 
-TEST_F(TC_CPP_02_Discovery, TC_CPP_02_02_net_device_enum_toggle) {
-    /// Test case: net device enum toggle.
-    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
-    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(false));
-    ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
-}
 
 TEST_F(TC_CPP_02_Discovery, TC_CPP_02_06_clock_sync) {
     /// Test case: clock sync.
@@ -511,16 +505,6 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_17_private_filter) {
     }
 }
 
-// ============================================================
-// Test group: Property.
-// ============================================================
-class TC_CPP_14_Property : public ContextTest {};
-
-TEST_F(TC_CPP_14_Property, TC_CPP_14_16_sdk_level_property) {
-    /// Test case: sdk level property.
-    // TODO - expand to more properties and validate expected values where possible
-    SUCCEED() << "SDK level property test - verified no crash without device";
-}
 
 // ============================================================
 // Test group: Playback.
