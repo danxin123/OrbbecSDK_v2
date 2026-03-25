@@ -36,7 +36,9 @@ jobs:
         run: cmake --install build --prefix build/install
 
       - name: Run no-hardware full test
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p reports
           BINARY=$(find build/install -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
@@ -47,14 +49,58 @@ jobs:
             echo "Found extensions: $EXT_PARENT/extensions"
             cd "$EXT_PARENT"
           fi
-          "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml"
+          "$GITHUB_WORKSPACE/$BINARY" --gtest_output=xml:"$GITHUB_WORKSPACE/reports/nohw_junit.xml" 2>&1 | tee "$GITHUB_WORKSPACE/reports/nohw_linux.log"
+          exit ${PIPESTATUS[0]}
 
-      - name: Upload nohw JUnit
+      - name: Publish nohw test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/nohw_junit.xml
+          check_name: PR Gate Linux NoHW Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize failed nohw cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path("reports/nohw_junit.xml")
+          log_path = Path("reports/nohw_linux.log")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## PR Gate Linux NoHW Failures\n")
+              if not xml_path.exists():
+                  summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+              else:
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
+
+      - name: Upload nohw test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nohw-junit-linux-${{ github.run_id }}
-          path: reports/nohw_junit.xml
+          name: nohw-linux-artifacts-${{ github.run_id }}
+          path: |
+            reports/nohw_junit.xml
+            reports/nohw_linux.log
           retention-days: 14
 
   build-windows:
@@ -94,14 +140,56 @@ jobs:
             Write-Host "Found extensions: $(Split-Path $extDir.FullName)"
             Push-Location $extParent
           }
-          & $binary --gtest_output=xml:"$env:GITHUB_WORKSPACE\reports\nohw_junit.xml"
+          & $binary --gtest_output=xml:"$env:GITHUB_WORKSPACE\reports\nohw_junit.xml" 2>&1 | Tee-Object -FilePath "$env:GITHUB_WORKSPACE\reports\nohw_windows.log"
+          $exitCode = $LASTEXITCODE
           if ($extDir) { Pop-Location }
+          exit $exitCode
 
-      - name: Upload nohw JUnit
+      - name: Publish nohw test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/nohw_junit.xml
+          check_name: PR Gate Windows NoHW Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize failed nohw cases
+        if: always()
+        run: |
+          $xmlPath = "reports/nohw_junit.xml"
+          $logPath = "reports/nohw_windows.log"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## PR Gate Windows NoHW Failures"
+          if (-not (Test-Path $xmlPath)) {
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- No JUnit report generated. Check $logPath"
+            exit 0
+          }
+          [xml]$report = Get-Content $xmlPath
+          $failures = @()
+          foreach ($testcase in $report.SelectNodes("//testcase")) {
+            if ($testcase.failure -or $testcase.error) {
+              $suite = if ($testcase.classname) { $testcase.classname } else { "unknown" }
+              $name = if ($testcase.name) { $testcase.name } else { "unknown" }
+              $failures += "$suite.$name"
+            }
+          }
+          if ($failures.Count -eq 0) {
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- No failed test cases."
+          }
+          else {
+            foreach ($failure in $failures) {
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- $failure -> $logPath"
+            }
+          }
+
+      - name: Upload nohw test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nohw-junit-windows-${{ github.run_id }}
-          path: reports/nohw_junit.xml
+          name: nohw-windows-artifacts-${{ github.run_id }}
+          path: |
+            reports/nohw_junit.xml
+            reports/nohw_windows.log
           retention-days: 14
 

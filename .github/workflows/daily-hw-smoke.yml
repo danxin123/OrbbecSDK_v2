@@ -47,11 +47,13 @@ jobs:
             -DOB_BUILD_TOOLS=OFF \
             -DOB_BUILD_DOCS=OFF
 
-      - name: Build all test targets
+      - name: Build non-destructive test targets
         run: cmake --build build --target extensions ob_nohw_full_test ob_hw_full_test --parallel 4
 
       - name: Run no-hardware full test
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p reports
           BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           if [ -z "$BINARY" ]; then
@@ -59,27 +61,78 @@ jobs:
             exit 1
           fi
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/nohw_junit.xml
+          "$BINARY" --gtest_output=xml:reports/nohw_junit.xml 2>&1 | tee reports/nohw.log
+          exit ${PIPESTATUS[0]}
 
-      - name: Run hardware full test
+      - name: Run non-destructive hardware test
         env:
           HARDWARE_AVAILABLE: "true"
           DEVICE_TYPE: gemini-335
+        shell: bash
         run: |
+          set -euo pipefail
           BINARY=$(find build -name ob_hw_full_test -type f | head -n 1)
           if [ -z "$BINARY" ]; then
             echo "ob_hw_full_test not found under build" >&2
             exit 1
           fi
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/hw_junit.xml
+          "$BINARY" --gtest_output=xml:reports/hw_junit.xml 2>&1 | tee reports/hw.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Publish daily test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/*.xml
+          check_name: Daily HW Smoke Test Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize failed daily cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          entries = [
+              ("NoHW", Path("reports/nohw_junit.xml"), Path("reports/nohw.log")),
+              ("Hardware", Path("reports/hw_junit.xml"), Path("reports/hw.log")),
+          ]
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## Daily HW Smoke Failures\n")
+              for title, xml_path, log_path in entries:
+                  summary.write(f"### {title}\n")
+                  if not xml_path.exists():
+                      summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+                      continue
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: daily-hw-reports-${{ github.run_id }}
-          path: reports/*.xml
+          path: |
+            reports/*.xml
+            reports/*.log
           retention-days: 30
 
   infra-summary:

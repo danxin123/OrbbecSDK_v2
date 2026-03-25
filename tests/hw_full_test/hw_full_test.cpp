@@ -198,10 +198,6 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
 
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_05_hotplug_reboot) {
     /// Test case: hotplug reboot.
-    if(!ENV().allowDestructive()) {
-        GTEST_SKIP() << "ALLOW_DESTRUCTIVE_TESTS not set — skipping destructive test";
-    }
-
     std::atomic<bool> removedCalled{false};
     std::atomic<bool> addedCalled{false};
 
@@ -565,8 +561,6 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_08_sensor_repeated_start_stop) {
 TEST_F(TC_CPP_06_Sensor, TC_CPP_06_09_sensor_after_reboot) {
     /// Test case: sensor after reboot.
     // Reboots the device, waits for reconnection, then verifies sensor enumeration and depth streaming.
-    ENV().skipUnlessDestructive();
-
     // Save the serial number so we can reopen the same device after reboot.
     auto sn = std::string(devInfo_->getSerialNumber());
 
@@ -2279,10 +2273,6 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_06_calibration_param_list) {
 TEST_F(TC_CPP_21_Firmware, TC_CPP_21_07_reboot) {
     /// Test case: reboot.
     // Reboots the device and verifies it reconnects and is responsive.
-    if(!ENV().allowDestructive()) {
-        GTEST_SKIP() << "ALLOW_DESTRUCTIVE_TESTS not set — skipping destructive test";
-    }
-
     auto sn = std::string(devInfo_->getSerialNumber());
 
     // Register a callback to detect reconnection.
@@ -2358,7 +2348,7 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_08_firmware_update) {
 
 TEST_F(TC_CPP_21_Firmware, TC_CPP_21_09_update_depth_presets) {
     /// Test case: update depth presets.
-    // Requires ALLOW_DESTRUCTIVE_TESTS=true and a preset .bin reachable via env var
+    // Requires destructive mode and a preset .bin reachable via env var
     // DEPTH_PRESET_PATH, or auto-discovered from tests/resource/present/.
     if(!ENV().allowDestructive()) {
         GTEST_SKIP() << "ALLOW_DESTRUCTIVE_TESTS not set — skipping depth preset update";
@@ -2393,6 +2383,10 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_09_update_depth_presets) {
     }
 
     EXPECT_TRUE(done) << "Depth preset update did not complete within 2 minutes";
+    if(done && (lastState.load() == ERR_MISMATCH || lastState.load() == ERR_UNSUPPORT_DEV)) {
+        GTEST_SKIP() << "Depth preset resource is not compatible with the connected device; state="
+                     << static_cast<int>(lastState.load());
+    }
     EXPECT_EQ(lastState.load(), STAT_DONE)
         << "Depth preset update ended with state " << static_cast<int>(lastState.load());
 }
@@ -2492,134 +2486,3 @@ TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_04_device_temperature) {
     SUCCEED();
 }
 
-// ============================================================
-// FirmwareUpgradeEnvironment
-// Runs a firmware upgrade before any test when:
-//   ALLOW_DESTRUCTIVE_TESTS=true  AND  a firmware .bin is discoverable
-// Prints progress to stdout so it is visible even in quiet GTest mode.
-// ============================================================
-class FirmwareUpgradeEnvironment : public ::testing::Environment {
-public:
-    void SetUp() override {
-        if(!ENV().allowDestructive() || ENV().firmwarePath().empty()) {
-            return;
-        }
-
-        const std::string &fwPath = ENV().firmwarePath();
-        std::cout << "\n[FW-UPGRADE] ===== Pre-test firmware upgrade =====\n"
-                  << "[FW-UPGRADE] File: " << fwPath << "\n";
-
-        // Open the first connected device.
-        auto ctx = std::make_shared<ob::Context>();
-        std::shared_ptr<ob::DeviceList> devList;
-        try { devList = ctx->queryDeviceList(); }
-        catch(const ob::Error &e) {
-            std::cout << "[FW-UPGRADE] queryDeviceList() failed: " << e.getMessage()
-                      << " — skipping upgrade.\n";
-            return;
-        }
-        if(!devList || devList->deviceCount() == 0) {
-            std::cout << "[FW-UPGRADE] No device found — skipping upgrade.\n";
-            return;
-        }
-
-        auto device = devList->getDevice(0);
-        auto info   = device->getDeviceInfo();
-        const std::string sn   = info->getSerialNumber() ? info->getSerialNumber() : "";
-        const std::string name = info->getName()         ? info->getName()         : "?";
-        std::cout << "[FW-UPGRADE] Device: " << name << "  SN=" << sn << "\n";
-
-        std::atomic<OBFwUpdateState> lastState{STAT_START};
-        std::atomic<uint8_t>         lastPercent{0};
-        std::mutex                   mtx;
-        std::condition_variable      cv;
-        bool                         done = false;
-
-        ob::Device::DeviceFwUpdateCallback cb =
-            [&](OBFwUpdateState state, const char *msg, uint8_t percent) {
-                lastState   = state;
-                lastPercent = percent;
-                std::cout << "[FW-UPGRADE] " << static_cast<int>(percent) << "% "
-                          << (msg ? msg : "") << "\n" << std::flush;
-                if(state == STAT_DONE || state < 0) {
-                    std::lock_guard<std::mutex> lk(mtx);
-                    done = true;
-                    cv.notify_all();
-                }
-            };
-
-        try {
-            device->updateFirmware(fwPath.c_str(), cb, /*async=*/true);
-        }
-        catch(const ob::Error &e) {
-            std::cout << "[FW-UPGRADE] Failed to start update: " << e.getMessage() << "\n";
-            return;
-        }
-
-        // Wait up to 5 minutes for the update to finish.
-        {
-            std::unique_lock<std::mutex> lk(mtx);
-            if(!cv.wait_for(lk, std::chrono::minutes(5), [&]{ return done; })) {
-                std::cout << "[FW-UPGRADE] TIMEOUT — upgrade did not complete within 5 minutes.\n";
-                return;
-            }
-        }
-
-        OBFwUpdateState finalState = lastState.load();
-        if(finalState < 0) {
-            std::cout << "[FW-UPGRADE] FAILED with error state "
-                      << static_cast<int>(finalState) << "\n";
-            return;
-        }
-
-        std::cout << "[FW-UPGRADE] Upgrade completed (state="
-                  << static_cast<int>(finalState) << "). Waiting for device reboot...\n";
-
-        // Release the device handle before the reboot disconnects it.
-        device.reset();
-        devList.reset();
-
-        if(!sn.empty()) {
-            waitForReconnect(ctx, sn);
-        }
-
-        std::cout << "[FW-UPGRADE] ===== Firmware upgrade done =====\n\n";
-    }
-
-private:
-    static void waitForReconnect(const std::shared_ptr<ob::Context> &ctx, const std::string & /*sn*/) {
-        std::atomic<bool> reconnected{false};
-        auto cbId = ctx->registerDeviceChangedCallback(
-            [&](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
-                if(added && added->getCount() > 0) reconnected = true;
-            });
-
-        constexpr int kMaxWaitMs = 60000;
-        constexpr int kPollMs   = 500;
-        for(int elapsed = 0; !reconnected.load() && elapsed < kMaxWaitMs; elapsed += kPollMs) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(kPollMs));
-        }
-        ctx->unregisterDeviceChangedCallback(cbId);
-
-        if(reconnected.load()) {
-            // Extra settle time for the device to fully initialize after reconnect.
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            std::cout << "[FW-UPGRADE] Device reconnected and ready.\n";
-        }
-        else {
-            std::cout << "[FW-UPGRADE] Device did not reconnect within 60 s.\n";
-        }
-    }
-};
-
-// ============================================================
-// main
-// ============================================================
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    // FirmwareUpgradeEnvironment runs SetUp() before any test suite begins.
-    // It is a no-op unless ALLOW_DESTRUCTIVE_TESTS=true and a firmware file
-    // is present in tests/resource/firmware/ (or FIRMWARE_FILE_PATH is set).
-    ::testing::AddGlobalTestEnvironment(new FirmwareUpgradeEnvironment());
-    return RUN_ALL_TESTS();
-}

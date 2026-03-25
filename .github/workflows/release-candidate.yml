@@ -38,7 +38,9 @@ jobs:
         run: cmake --build build --target extensions ob_nohw_full_test --parallel 4
 
       - name: Run no-hardware full test
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p reports
           BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           if [ -z "$BINARY" ]; then
@@ -46,14 +48,58 @@ jobs:
             exit 1
           fi
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml
+          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml 2>&1 | tee reports/rc_nohw.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Publish rc-linux test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/rc_nohw_junit.xml
+          check_name: RC Linux NoHW Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize rc-linux failed cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path("reports/rc_nohw_junit.xml")
+          log_path = Path("reports/rc_nohw.log")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## RC Linux NoHW Failures\n")
+              if not xml_path.exists():
+                  summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+              else:
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
 
       - name: Upload rc-linux reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rc-linux-report-${{ github.run_id }}
-          path: reports/*.xml
+          path: |
+            reports/*.xml
+            reports/*.log
           retention-days: 30
 
   rc-windows-build:
@@ -99,7 +145,7 @@ jobs:
       - name: Run examples smoke
         run: bash scripts/run_examples.sh
 
-  rc-hw-full:
+  rc-hw-normal:
     needs: branch-guard
     runs-on: [self-hosted, linux, sdk, usb, gemini-335]
     steps:
@@ -123,11 +169,13 @@ jobs:
             -DOB_BUILD_TOOLS=OFF \
             -DOB_BUILD_DOCS=OFF
 
-      - name: Build all test targets
+      - name: Build normal hardware test targets
         run: cmake --build build --target extensions ob_nohw_full_test ob_hw_full_test --parallel 4
 
       - name: Run no-hardware full test
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p reports
           BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           if [ -z "$BINARY" ]; then
@@ -135,31 +183,179 @@ jobs:
             exit 1
           fi
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml
+          "$BINARY" --gtest_output=xml:reports/rc_nohw_junit.xml 2>&1 | tee reports/rc_nohw.log
+          exit ${PIPESTATUS[0]}
 
-      - name: Run hardware full test
+      - name: Run non-destructive hardware test
         env:
           HARDWARE_AVAILABLE: "true"
           DEVICE_TYPE: gemini-335
+        shell: bash
         run: |
+          set -euo pipefail
           BINARY=$(find build -name ob_hw_full_test -type f | head -n 1)
           if [ -z "$BINARY" ]; then
             echo "ob_hw_full_test not found under build" >&2
             exit 1
           fi
           echo "Found binary: $BINARY"
-          "$BINARY" --gtest_output=xml:reports/rc_hw_junit.xml
+          "$BINARY" --gtest_output=xml:reports/rc_hw_normal_junit.xml 2>&1 | tee reports/rc_hw_normal.log
+          exit ${PIPESTATUS[0]}
 
-      - name: Upload rc-hw reports
+      - name: Publish rc-hw-normal test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: |
+            reports/rc_nohw_junit.xml
+            reports/rc_hw_normal_junit.xml
+          check_name: RC Normal Hardware Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize rc-hw-normal failed cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          entries = [
+              ("RC NoHW", Path("reports/rc_nohw_junit.xml"), Path("reports/rc_nohw.log")),
+              ("RC Hardware Normal", Path("reports/rc_hw_normal_junit.xml"), Path("reports/rc_hw_normal.log")),
+          ]
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## RC Normal Hardware Failures\n")
+              for title, xml_path, log_path in entries:
+                  summary.write(f"### {title}\n")
+                  if not xml_path.exists():
+                      summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+                      continue
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
+
+      - name: Upload rc-hw-normal reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rc-hw-report-${{ github.run_id }}
-          path: reports/*.xml
+          name: rc-hw-normal-report-${{ github.run_id }}
+          path: |
+            reports/*.xml
+            reports/*.log
+          retention-days: 30
+
+  rc-hw-destructive:
+    needs: branch-guard
+    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Device health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/device_health_check.sh
+          bash scripts/device_health_check.sh
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build destructive hardware test target
+        run: cmake --build build --target extensions ob_hw_destructive_test --parallel 4
+
+      - name: Run destructive hardware test
+        env:
+          HARDWARE_AVAILABLE: "true"
+          DEVICE_TYPE: gemini-335
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          BINARY=$(find build -name ob_hw_destructive_test -type f | head -n 1)
+          if [ -z "$BINARY" ]; then
+            echo "ob_hw_destructive_test not found under build" >&2
+            exit 1
+          fi
+          echo "Found binary: $BINARY"
+          "$BINARY" --gtest_output=xml:reports/rc_hw_destructive_junit.xml 2>&1 | tee reports/rc_hw_destructive.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Publish rc-hw-destructive test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/rc_hw_destructive_junit.xml
+          check_name: RC Destructive Hardware Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize rc-hw-destructive failed cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path("reports/rc_hw_destructive_junit.xml")
+          log_path = Path("reports/rc_hw_destructive.log")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## RC Destructive Hardware Failures\n")
+              if not xml_path.exists():
+                  summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+              else:
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
+
+      - name: Upload rc-hw-destructive reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-hw-destructive-report-${{ github.run_id }}
+          path: |
+            reports/*.xml
+            reports/*.log
           retention-days: 30
 
   rc-summary:
-    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux, rc-hw-full]
+    needs: [rc-linux, rc-windows-build, rc-docs-check, rc-examples-linux, rc-hw-normal, rc-hw-destructive]
     if: always()
     runs-on: ubuntu-22.04
     steps:
@@ -180,4 +376,40 @@ jobs:
           echo "- Windows build: ${{ needs.rc-windows-build.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Docs check: ${{ needs.rc-docs-check.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Examples smoke: ${{ needs.rc-examples-linux.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Hardware full test: ${{ needs.rc-hw-full.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Hardware normal test: ${{ needs.rc-hw-normal.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Hardware destructive test: ${{ needs.rc-hw-destructive.result }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summarize release-candidate failed cases
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          entries = [
+              ("RC Linux NoHW", Path("all_reports/rc_nohw_junit.xml"), Path("all_reports/rc_nohw.log")),
+              ("RC Hardware Normal", Path("all_reports/rc_hw_normal_junit.xml"), Path("all_reports/rc_hw_normal.log")),
+              ("RC Hardware Destructive", Path("all_reports/rc_hw_destructive_junit.xml"), Path("all_reports/rc_hw_destructive.log")),
+          ]
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## RC Failed Test Quick Links\n")
+              for title, xml_path, log_path in entries:
+                  summary.write(f"### {title}\n")
+                  if not xml_path.exists():
+                      summary.write(f"- No JUnit report downloaded. Check {log_path.as_posix()} if present.\n")
+                      continue
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY

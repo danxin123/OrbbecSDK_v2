@@ -3,7 +3,7 @@
 
 /// @file test_common.hpp
 /// Shared GoogleTest infrastructure for OrbbecSDK V2 tests.
-/// Provides TestEnvironment (env-var driven), skip helpers, and fixture base classes.
+/// Provides TestEnvironment, skip helpers, and fixture base classes.
 
 #pragma once
 
@@ -28,7 +28,7 @@
 #endif
 
 // ---------------------------------------------------------------------------
-// TestEnvironment — singleton that reads env vars once
+// TestEnvironment — singleton that reads env vars once and supports process-local overrides
 // ---------------------------------------------------------------------------
 class TestEnvironment {
 public:
@@ -46,6 +46,7 @@ public:
     const std::string &firmwarePath() const { return firmwarePath_; }
     const std::string &depthPresetPath() const { return depthPresetPath_; }
     bool allowDestructive() const { return allowDestructive_; }
+    void setAllowDestructive(bool allowDestructive) { allowDestructive_ = allowDestructive; }
 
     void skipIfNoHardware() const {
         if(!hwAvailable_) {

@@ -29,9 +29,52 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p reports/nightly
           BINARY=$(find build -name ob_nohw_full_test -type f | head -n 1)
           echo "Found binary: $BINARY"
-          "$BINARY"
+          "$BINARY" --gtest_output=xml:reports/nightly/nohw_junit.xml 2>&1 | tee reports/nightly/nohw.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Publish nightly nohw report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/nightly/nohw_junit.xml
+          check_name: Nightly NoHW Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize nightly failed cases
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path("reports/nightly/nohw_junit.xml")
+          log_path = Path("reports/nightly/nohw.log")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## Nightly NoHW Failures\n")
+              if not xml_path.exists():
+                  summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
+              else:
+                  failures = []
+                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
+                      if testcase.find("failure") is not None or testcase.find("error") is not None:
+                          suite = testcase.get("classname") or "unknown"
+                          name = testcase.get("name") or "unknown"
+                          failures.append(f"{suite}.{name}")
+                  if failures:
+                      for item in failures:
+                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
+                  else:
+                      summary.write("- No failed test cases.\n")
+          PY
 
       - name: Save nightly summary artifact
         shell: bash
@@ -42,8 +85,12 @@ jobs:
           echo "status=PASS" >> reports/nightly/nightly_summary.txt
 
       - name: Upload nightly artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nightly-summary
-          path: reports/nightly/nightly_summary.txt
+          path: |
+            reports/nightly/nightly_summary.txt
+            reports/nightly/nohw_junit.xml
+            reports/nightly/nohw.log
           retention-days: 30
