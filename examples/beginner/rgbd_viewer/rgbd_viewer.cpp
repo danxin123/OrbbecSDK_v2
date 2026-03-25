@@ -164,7 +164,6 @@ int main(void) try {
     int      colormapId  = cv::COLORMAP_JET;
     float    overlayAlpha = 0.6f;
     uint32_t saveIndex   = 0;
-    bool     depth3DWindowVisible = false;
 
     std::cout << "RGBD Viewer Controls: M/m=Toggle 3D, S/s=Save PNG, C/c=Cycle Colormap, +/-=Overlay Alpha, Esc=Exit" << std::endl;
 
@@ -204,35 +203,54 @@ int main(void) try {
 
         int panelW = 640;
         int panelH = 360;
-        cv::Mat depthPanel, colorPanel, overlayPanel;
-        cv::resize(depthMat, depthPanel, cv::Size(panelW, panelH));
-        cv::resize(colorMat, colorPanel, cv::Size(panelW, panelH));
-        cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
-
-        cv::Mat leftCol;
-        cv::vconcat(depthPanel, colorPanel, leftCol);
         cv::Mat canvas;
-        cv::hconcat(leftCol, overlayPanel, canvas);
+        std::string leftLabel, rightLabel;
 
-        cv::putText(canvas, "Depth", cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        cv::putText(canvas, "Color", cv::Point(12, panelH + 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        cv::putText(canvas, "Overlay", cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        if(render3D) {
+            // 3D mode: left panel is 3D depth rendering, right panel is overlay
+            cv::Mat depth3d = ob_smpl::renderDepth3D(depthFrame, colormapId);
+            if(!depth3d.empty()) {
+                cv::Mat depth3dPanel;
+                cv::resize(depth3d, depth3dPanel, cv::Size(panelW, panelH * 2));
+                cv::Mat overlayPanel;
+                cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
+                cv::hconcat(depth3dPanel, overlayPanel, canvas);
+                leftLabel = "Depth 3D";
+                rightLabel = "Overlay";
+            }
+        }
+        else {
+            // Normal mode: left has depth and color, right has overlay
+            cv::Mat depthPanel, colorPanel, overlayPanel;
+            cv::resize(depthMat, depthPanel, cv::Size(panelW, panelH));
+            cv::resize(colorMat, colorPanel, cv::Size(panelW, panelH));
+            cv::resize(overlayMat, overlayPanel, cv::Size(panelW, panelH * 2));
+
+            cv::Mat leftCol;
+            cv::vconcat(depthPanel, colorPanel, leftCol);
+            cv::hconcat(leftCol, overlayPanel, canvas);
+            leftLabel = "Color";
+            rightLabel = "Overlay";
+        }
+
+        // Draw labels
+        if(render3D) {
+            cv::putText(canvas, leftLabel, cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+            cv::putText(canvas, rightLabel, cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        }
+        else {
+            cv::putText(canvas, "Depth", cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+            cv::putText(canvas, "Color", cv::Point(12, panelH + 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+            cv::putText(canvas, rightLabel, cv::Point(panelW + 12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        }
+
+        // Mode indicator and operation prompt
+        std::string modeStr = render3D ? "[3D Mode]" : "[Normal Mode]";
+        cv::putText(canvas, modeStr, cv::Point(12, panelH * 2 - 40), cv::FONT_HERSHEY_DUPLEX, 0.6, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
         cv::putText(canvas, "M:3D  S:Save  C:Colormap  +/-:Alpha  Esc:Exit", cv::Point(12, panelH * 2 - 14), cv::FONT_HERSHEY_DUPLEX, 0.55, cv::Scalar(255, 255, 255), 1,
                     cv::LINE_AA);
 
         cv::imshow(mainWinName, canvas);
-
-        if(render3D) {
-            cv::Mat depth3d = ob_smpl::renderDepth3D(depthFrame, colormapId);
-            if(!depth3d.empty()) {
-                cv::imshow("Depth 3D", depth3d);
-                depth3DWindowVisible = true;
-            }
-        }
-        else if(depth3DWindowVisible) {
-            safeDestroyWindow("Depth 3D");
-            depth3DWindowVisible = false;
-        }
 
         int key = cv::waitKey(1);
         if(key == ESC_KEY) {
@@ -280,7 +298,6 @@ int main(void) try {
 
     pipe->stop();
     safeDestroyWindow(mainWinName.c_str());
-    safeDestroyWindow("Depth 3D");
 
     return 0;
 }
