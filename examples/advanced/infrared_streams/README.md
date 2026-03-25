@@ -1,32 +1,34 @@
 # Infrared Streams
 
-自动检测并显示单目或双目红外流，支持 emitter 控制和帧保存。
+Auto-detect and display single or dual infrared streams with emitter control and frame saving.
 
-## 功能
+## Features
 
-| 按键 | 功能 |
-|------|------|
-| **E** | 切换 IR emitter/laser 开关（查看有无结构光 pattern 的差异） |
-| **S** | 保存当前 IR 帧为 PNG |
-| **ESC** | 退出 |
+| Key | Function |
+|-----|----------|
+| **E** | Toggle IR emitter/laser (observe structured light pattern difference) |
+| **S** | Save current IR frame as PNG |
+| **ESC** | Exit |
 
-- 自动检测 `OB_SENSOR_IR` / `OB_SENSOR_IR_LEFT` / `OB_SENSOR_IR_RIGHT`
-- 双目设备自动并排显示左右 IR 流
-- 启动时打印每路 IR 流的分辨率、帧率、格式
+- Auto-detect `OB_SENSOR_IR` / `OB_SENSOR_IR_LEFT` / `OB_SENSOR_IR_RIGHT`
+- Stereo devices auto-display left and right IR streams side-by-side
+- Print resolution, frame rate, and format of each IR stream on startup
 
-## 涵盖知识点
+## Key Concepts
 
-- 多 IR 传感器枚举与 `enableVideoStream(sensorType, ...)`
-- `OB_PROP_LASER_BOOL` 属性控制 emitter
-- IR 帧格式处理（Y8 / Y16）
-- `CVWindow` 的 `ARRANGE_ONE_ROW` 布局
+- Multi-IR sensor enumeration with `enableVideoStream(sensorType, ...)`
+- `OB_PROP_LASER_BOOL` property to control emitter
+- IR frame format handling (Y8 / Y16)
+- `CVWindow` with `ARRANGE_ONE_ROW` layout
 
-## 运行
+## Run
+
 ```bash
-./ob_infrared_streams
+./build/bin/ob_infrared_streams        # Linux
+.\build\win_x64\bin\ob_infrared_streams.exe  # Windows
 ```
 
-## 依赖
+## Dependencies
 
 - OrbbecSDK v2
-- OpenCV（用于可视化窗口和保存图片）
+- OpenCV (for visualization window and image saving)

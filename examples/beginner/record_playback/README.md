@@ -1,29 +1,32 @@
 # Record & Playback Example
 
-将设备流录制为 `.bag` 文件并回放的二合一示例。
+Record device streams to `.bag` file and play them back — a two-in-one example.
 
-## 功能
+## Features
 
-| 模式 | 说明 |
-|------|------|
-| **Record** | 自动启用设备所有 sensor，录制到 `.bag`。可视化窗口实时展示数据，终端显示 FPS。`S` 暂停/恢复录制，`ESC` 停止并保存。 |
-| **Playback** | 加载 `.bag` 文件回放，CVWindow 可视化。播放结束自动 replay。`ESC` 退出。 |
+| Mode | Description |
+|------|-------------|
+| **Record** | Auto-enable all device sensors, record to `.bag` file. Visualization window shows data in real-time, terminal displays FPS. `S`=pause/resume recording, `ESC`=stop and save. |
+| **Playback** | Load `.bag` file for playback with CVWindow visualization. Auto-replay when playback ends. `ESC`=exit. |
 
-## 涵盖知识点
+## Key Concepts
 
-- `ob::RecordDevice` 录制 API（pause / resume / flush）
-- `ob::PlaybackDevice` 回放 API（getDuration / setPlaybackStatusChangeCallback）
-- Pipeline callback 模式
-- Config enableStream 全传感器枚举
-- 多线程 + condition_variable 实现 auto-replay
+- `ob::RecordDevice` API (pause / resume / flush)
+- `ob::PlaybackDevice` API (getDuration / setPlaybackStatusChangeCallback)
+- Pipeline callback pattern
+- Config enableStream for full sensor enumeration
+- Multi-threading + condition_variable for auto-replay
 
-## 运行
+## Run
+
 ```bash
-./ob_record_playback
+./build/bin/ob_record_playback        # Linux
+.\build\win_x64\bin\ob_record_playback.exe  # Windows
 ```
-按菜单选择 `1`（录制）或 `2`（回放），`q` 退出。
 
-## 依赖
+Select `1` for record or `2` for playback, `q` to exit.
+
+## Dependencies
 
 - OrbbecSDK v2
-- OpenCV（用于可视化窗口）
+- OpenCV (for visualization window)
