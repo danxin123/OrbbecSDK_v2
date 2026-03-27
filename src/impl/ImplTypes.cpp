@@ -50,7 +50,6 @@ void translate_exception(const char *name, std::string args, ob_error **result) 
     }
 }
 
-
 #ifdef __cplusplus
 }
 #endif

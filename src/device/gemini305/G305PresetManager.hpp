@@ -20,8 +20,8 @@ namespace libobsensor {
 struct G305Preset {
     // device/global
     std::string depthWorkMode;
-    
-    //ae configuration
+
+    // ae configuration
     int aeReference;
     int aeStrategy;
 

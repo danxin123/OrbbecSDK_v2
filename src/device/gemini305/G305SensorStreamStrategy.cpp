@@ -97,8 +97,8 @@ void G305SensorStreamStrategy::validateDepthAndIrStream(const std::vector<std::s
         if(streamType != OB_STREAM_DEPTH && streamType != OB_STREAM_IR_LEFT && streamType != OB_STREAM_IR_RIGHT) {
             continue;
         }
-        auto vsp  = profile->as<VideoStreamProfile>();
-        auto decimationConfig= vsp->getDecimationConfig();
+        auto vsp              = profile->as<VideoStreamProfile>();
+        auto decimationConfig = vsp->getDecimationConfig();
         auto iter =
             std::find_if(tempStartedStreamList.begin(), tempStartedStreamList.end(), [vsp, decimationConfig](const std::shared_ptr<const StreamProfile> &sp) {
                 auto cmpStreamType = sp->getType();
@@ -107,7 +107,8 @@ void G305SensorStreamStrategy::validateDepthAndIrStream(const std::vector<std::s
                 }
                 auto cmpVsp              = sp->as<VideoStreamProfile>();
                 auto cmpDecimationConfig = cmpVsp->getDecimationConfig();
-                return decimationConfig.originWidth != cmpDecimationConfig.originWidth || decimationConfig.originHeight != cmpDecimationConfig.originHeight || cmpVsp->getFps() != vsp->getFps();
+                return decimationConfig.originWidth != cmpDecimationConfig.originWidth || decimationConfig.originHeight != cmpDecimationConfig.originHeight
+                       || cmpVsp->getFps() != vsp->getFps();
             });
         if(iter != tempStartedStreamList.end()) {
             throw unsupported_operation_exception(utils::string::to_string()

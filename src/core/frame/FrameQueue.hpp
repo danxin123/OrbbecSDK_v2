@@ -91,7 +91,7 @@ public:
                         break;
                     }
 
-                    if (!queue_.empty()) {
+                    if(!queue_.empty()) {
                         frame = queue_.front();
                         queue_.pop();
                     }
@@ -142,7 +142,7 @@ public:
         callback_ = nullptr;
         stopping_ = false;
         flushing_ = false;
-        stopped_   = true;
+        stopped_  = true;
     }
 
 private:

@@ -68,7 +68,7 @@ template void DynamicLibraryManager::pushToLibrary<std::vector<DeviceIdentifier>
 template void DynamicLibraryManager::pushToLibrary<std::vector<DeviceInfoEntry>>(std::shared_ptr<dylib>, uint16_t, const std::vector<DeviceInfoEntry> &);
 
 void DynamicLibraryManager::setExtensionDeviceInfo() {
-    std::vector<std::string> extensions = { "frameprocessor", "firmwareupdater" };
+    std::vector<std::string>      extensions = { "frameprocessor", "firmwareupdater" };
     std::vector<DeviceIdentifier> pure330;
     std::copy_if(G330DevPids.begin(), G330DevPids.end(), std::back_inserter(pure330), [&](const DeviceIdentifier &dev) {
         return std::find_if(DaBaiADevPids.begin(), DaBaiADevPids.end(), [&](const DeviceIdentifier &d2) { return d2.vid_ == dev.vid_ && d2.pid_ == dev.pid_; })

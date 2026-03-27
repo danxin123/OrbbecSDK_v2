@@ -150,7 +150,7 @@ void DeviceBase::fetchExtensionInfo() {
             }
             // retry if empty
             --retryCount;
-        } while(retryCount>=0);
+        } while(retryCount >= 0);
         if(extensionInfo_.empty()) {
             LOG_ERROR("Failed to get ExtensionInfo data!");
         }

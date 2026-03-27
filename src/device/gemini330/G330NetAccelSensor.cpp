@@ -9,12 +9,10 @@
 
 namespace libobsensor {
 
-
-G330NetAccelSensor::G330NetAccelSensor(IDevice *owner, const std::shared_ptr<ISourcePort> &backend, const std::shared_ptr<ImuStreamer> &streamer) 
+G330NetAccelSensor::G330NetAccelSensor(IDevice *owner, const std::shared_ptr<ISourcePort> &backend, const std::shared_ptr<ImuStreamer> &streamer)
     : AccelSensor(owner, backend, streamer) {}
 
-G330NetAccelSensor::~G330NetAccelSensor() noexcept {
-}
+G330NetAccelSensor::~G330NetAccelSensor() noexcept {}
 
 void G330NetAccelSensor::start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) {
     auto     rtpStreamPort = std::dynamic_pointer_cast<RTPStreamPort>(backend_);

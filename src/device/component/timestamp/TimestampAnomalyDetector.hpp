@@ -24,4 +24,4 @@ private:
     uint32_t                                 cacheFps_;
     std::atomic<bool>                        needDetect_;
 };
-} // namespace libobsensor
+}  // namespace libobsensor

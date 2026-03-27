@@ -604,9 +604,9 @@ void PlaybackDevice::initProperties() {
         return;
     }
 
-    frameTransformAccessor_ = std::make_shared<PlaybackFrameTransformPropertyAccessor>(port_, this);
-    auto filterAccessor     = std::make_shared<PlaybackFilterPropertyAccessor>(port_, this);
-    auto vendorAccessor     = getComponentT<PlaybackVendorPropertyAccessor>(OB_DEV_COMPONENT_MAIN_PROPERTY_ACCESSOR).get();
+    frameTransformAccessor_    = std::make_shared<PlaybackFrameTransformPropertyAccessor>(port_, this);
+    auto       filterAccessor  = std::make_shared<PlaybackFilterPropertyAccessor>(port_, this);
+    auto       vendorAccessor  = getComponentT<PlaybackVendorPropertyAccessor>(OB_DEV_COMPONENT_MAIN_PROPERTY_ACCESSOR).get();
     const bool hasAccelProfile = !port_->getStreamProfileList(OB_SENSOR_ACCEL).empty();
     const bool hasGyroProfile  = !port_->getStreamProfileList(OB_SENSOR_GYRO).empty();
 

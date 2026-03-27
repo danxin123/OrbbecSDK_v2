@@ -33,7 +33,7 @@ private:
     std::pair<uint16_t, OBPropertyType> OBPropertyToOpCode(uint32_t propertyId, bool set);
 
 private:
-    IDevice *                    owner_;
+    IDevice                     *owner_;
     std::shared_ptr<ISourcePort> backend_;
     std::mutex                   mutex_;
     std::vector<uint8_t>         recvData_;

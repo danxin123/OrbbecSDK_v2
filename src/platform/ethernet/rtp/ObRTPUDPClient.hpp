@@ -29,7 +29,7 @@ private:
     void socketClose();
     void frameReceive();
     void frameProcess();
-    
+
 private:
     std::string       localIp_;
     std::string       serverIp_;
@@ -44,7 +44,7 @@ private:
     std::thread receiverThread_;
     std::thread callbackThread_;
 
-    ObRTPPacketQueue    rtpQueue_;
+    ObRTPPacketQueue     rtpQueue_;
     ObRTPPacketProcessor rtpProcessor_;
 
     std::mutex              rtpPacketMutex_;

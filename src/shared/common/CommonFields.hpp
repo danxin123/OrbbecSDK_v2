@@ -24,9 +24,9 @@ typedef enum {
     OB_DEVICE_GROUP_DABAIA           = 3,
     OB_DEVICE_GROUP_GEMINI330_DABAIA = 4,
     // Gemini 330 detailed info (DeviceInfoEntry)
-    OB_DEVICE_GROUP_GEMINI330_INFO   = 5,
+    OB_DEVICE_GROUP_GEMINI330_INFO = 5,
     // Gemini 435 series (DeviceIdentifier)
-    OB_DEVICE_GROUP_GEMINI435LE      = 6,
+    OB_DEVICE_GROUP_GEMINI435LE = 6,
 } DeviceGroupType;
 
 //  XML base nodes

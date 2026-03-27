@@ -25,16 +25,16 @@ public:
 
     StreamProfileList getD2CDepthProfileList(std::shared_ptr<const StreamProfile> colorProfile, OBAlignMode alignMode);
 
-    OBCameraParam getCameraParam();
-    OBCameraParam getCameraParam(uint32_t colorWidth, uint32_t colorHeight, uint32_t depthWidth, uint32_t depthHeight);
+    OBCameraParam      getCameraParam();
+    OBCameraParam      getCameraParam(uint32_t colorWidth, uint32_t colorHeight, uint32_t depthWidth, uint32_t depthHeight);
     OBCalibrationParam getCalibrationParam(std::shared_ptr<Config> cfg);
 
     void enableFrameSync();
     void disableFrameSync();
 
     std::shared_ptr<const Config> getConfig();
-    void switchConfig(std::shared_ptr<const Config> cfg);
-    
+    void                          switchConfig(std::shared_ptr<const Config> cfg);
+
 private:
     inline void startStream();
     inline void stopStream();
@@ -68,9 +68,8 @@ private:
 
     std::shared_ptr<FrameAggregator> frameAggregator_;
 
-    int maxFrameQueueSize_ = 10;
-    float maxFrameDelay_ = 0.0f;
+    int   maxFrameQueueSize_ = 10;
+    float maxFrameDelay_     = 0.0f;
 };
 
 }  // namespace libobsensor
-

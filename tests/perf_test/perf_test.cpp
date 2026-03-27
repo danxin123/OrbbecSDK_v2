@@ -40,7 +40,8 @@ static int getEnvInt(const char *name, int defaultVal) {
     const char *val = std::getenv(name);
     if(val) {
         int v = std::atoi(val);
-        if(v > 0) return v;
+        if(v > 0)
+            return v;
     }
     return defaultVal;
 }
@@ -50,7 +51,7 @@ static int getEnvInt(const char *name, int defaultVal) {
 // ===================================================================
 struct PerfConfig {
     int durationSec = 60;
-    int cpuThreads  = 0;    // 0 = std::thread::hardware_concurrency()
+    int cpuThreads  = 0;  // 0 = std::thread::hardware_concurrency()
     int ioThreads   = 2;
 
     static PerfConfig &instance() {
@@ -65,16 +66,18 @@ struct PerfConfig {
                 printUsage();
                 continue;
             }
-            if(tryParse(arg, "--duration=", durationSec)) continue;
-            if(tryParse(arg, "--cpu-threads=", cpuThreads)) continue;
-            if(tryParse(arg, "--io-threads=", ioThreads)) continue;
+            if(tryParse(arg, "--duration=", durationSec))
+                continue;
+            if(tryParse(arg, "--cpu-threads=", cpuThreads))
+                continue;
+            if(tryParse(arg, "--io-threads=", ioThreads))
+                continue;
         }
     }
 
     void printCurrent() const {
         std::cout << "[PerfConfig] duration=" << durationSec << "s"
-                  << "  cpu-threads=" << (cpuThreads == 0 ? "auto" : std::to_string(cpuThreads))
-                  << "  io-threads=" << ioThreads << "\n";
+                  << "  cpu-threads=" << (cpuThreads == 0 ? "auto" : std::to_string(cpuThreads)) << "  io-threads=" << ioThreads << "\n";
     }
 
 private:
@@ -86,9 +89,11 @@ private:
 
     static bool tryParse(const std::string &arg, const char *prefix, int &out) {
         std::string pfx(prefix);
-        if(arg.compare(0, pfx.size(), pfx) != 0) return false;
+        if(arg.compare(0, pfx.size(), pfx) != 0)
+            return false;
         int v = std::atoi(arg.c_str() + pfx.size());
-        if(v >= 0) out = v;
+        if(v >= 0)
+            out = v;
         return true;
     }
 
@@ -112,17 +117,22 @@ void parsePerfArgs(int argc, char **argv) {
 // ===================================================================
 static std::string streamLabel(OBFrameType type) {
     switch(type) {
-    case OB_FRAME_DEPTH:    return "depth";
-    case OB_FRAME_COLOR:    return "color";
+    case OB_FRAME_DEPTH:
+        return "depth";
+    case OB_FRAME_COLOR:
+        return "color";
     case OB_FRAME_IR:
     case OB_FRAME_IR_LEFT:
-    case OB_FRAME_IR_RIGHT: return "ir";
-    default:                return "other_" + std::to_string(static_cast<int>(type));
+    case OB_FRAME_IR_RIGHT:
+        return "ir";
+    default:
+        return "other_" + std::to_string(static_cast<int>(type));
     }
 }
 
 static OBFrameType normalizeFrameType(OBFrameType type) {
-    if(type == OB_FRAME_IR_LEFT || type == OB_FRAME_IR_RIGHT) return OB_FRAME_IR;
+    if(type == OB_FRAME_IR_LEFT || type == OB_FRAME_IR_RIGHT)
+        return OB_FRAME_IR;
     return type;
 }
 
@@ -131,7 +141,7 @@ static OBFrameType normalizeFrameType(OBFrameType type) {
 // ===================================================================
 struct FrameRecord {
     uint64_t sdkIndex;
-    int64_t  metaFrameNumber;    // -1 if metadata unavailable
+    int64_t  metaFrameNumber;  // -1 if metadata unavailable
     uint64_t hwTimestampUs;
     uint64_t sysTimestampUs;
     uint64_t globalTimestampUs;
@@ -154,11 +164,11 @@ struct StreamStats {
     uint64_t sdkIndexDrops       = 0;
 
     // timestamp continuity
-    uint64_t prevHwTs        = 0;
-    uint64_t prevSysTs       = 0;
-    uint64_t prevGlobalTs    = 0;
-    uint64_t hwTsAnomalies   = 0;
-    uint64_t sysTsAnomalies  = 0;
+    uint64_t prevHwTs          = 0;
+    uint64_t prevSysTs         = 0;
+    uint64_t prevGlobalTs      = 0;
+    uint64_t hwTsAnomalies     = 0;
+    uint64_t sysTsAnomalies    = 0;
     uint64_t globalTsAnomalies = 0;
 };
 
@@ -207,11 +217,12 @@ static float getProcessCpuUsage() {
     }
 
     int64_t sysDelta  = systemTime - sLastSystemTime;
-    int64_t timeDelta = timeNow    - sLastTime;
+    int64_t timeDelta = timeNow - sLastTime;
     sLastSystemTime   = systemTime;
     sLastTime         = timeNow;
 
-    if(timeDelta == 0) return 0.0f;
+    if(timeDelta == 0)
+        return 0.0f;
     return static_cast<float>(static_cast<double>(sysDelta) * 100.0 / static_cast<double>(timeDelta));
 }
 
@@ -229,10 +240,12 @@ static float getProcessCpuUsage() {
     std::ostringstream cmd;
     cmd << "top -bn1 -p " << pid << " | grep " << pid << " | awk '{print $9}'";
     FILE *fp = popen(cmd.str().c_str(), "r");
-    if(!fp) return -1.0f;
+    if(!fp)
+        return -1.0f;
     char  buf[128];
     float usage = -1.0f;
-    if(fgets(buf, sizeof(buf), fp)) usage = std::strtof(buf, nullptr);
+    if(fgets(buf, sizeof(buf), fp))
+        usage = std::strtof(buf, nullptr);
     pclose(fp);
     return usage;
 }
@@ -252,8 +265,12 @@ static float getProcessMemoryMB() {
 
 #else
 
-static float getProcessCpuUsage() { return -1.0f; }
-static float getProcessMemoryMB() { return -1.0f; }
+static float getProcessCpuUsage() {
+    return -1.0f;
+}
+static float getProcessMemoryMB() {
+    return -1.0f;
+}
 
 #endif
 
@@ -262,12 +279,15 @@ static float getProcessMemoryMB() { return -1.0f; }
 // ===================================================================
 class CpuStressor {
 public:
-    ~CpuStressor() { stop(); }
+    ~CpuStressor() {
+        stop();
+    }
 
     void start(unsigned int numThreads = 0) {
         if(numThreads == 0) {
             numThreads = std::thread::hardware_concurrency();
-            if(numThreads == 0) numThreads = 4;
+            if(numThreads == 0)
+                numThreads = 4;
         }
         running_ = true;
         for(unsigned int i = 0; i < numThreads; ++i) {
@@ -276,7 +296,8 @@ public:
                 while(running_.load(std::memory_order_relaxed)) {
                     for(int j = 0; j < 100000; ++j) {
                         val = val * 1.000001 + 0.000001;
-                        if(val > 1e10) val = 1.0;
+                        if(val > 1e10)
+                            val = 1.0;
                     }
                 }
             });
@@ -286,14 +307,15 @@ public:
 
     void stop() {
         running_ = false;
-        for(auto &t : threads_) {
-            if(t.joinable()) t.join();
+        for(auto &t: threads_) {
+            if(t.joinable())
+                t.join();
         }
         threads_.clear();
     }
 
 private:
-    std::atomic<bool>        running_{false};
+    std::atomic<bool>        running_{ false };
     std::vector<std::thread> threads_;
 };
 
@@ -302,14 +324,16 @@ private:
 // ===================================================================
 class IoStressor {
 public:
-    ~IoStressor() { stop(); }
+    ~IoStressor() {
+        stop();
+    }
 
     void start(int numThreads = 2) {
         running_ = true;
         for(int i = 0; i < numThreads; ++i) {
             threads_.emplace_back([this, i]() {
-                std::string        filename = "perf_io_stress_" + std::to_string(i) + ".tmp";
-                std::vector<char>  buf(1024 * 1024, 'X');   // 1 MB
+                std::string       filename = "perf_io_stress_" + std::to_string(i) + ".tmp";
+                std::vector<char> buf(1024 * 1024, 'X');  // 1 MB
 
                 while(running_.load(std::memory_order_relaxed)) {
                     // Write ~10 MB
@@ -322,8 +346,7 @@ public:
                     // Read back
                     {
                         std::ifstream f(filename, std::ios::binary);
-                        while(f.read(buf.data(), static_cast<std::streamsize>(buf.size()))
-                              && running_.load(std::memory_order_relaxed)) {
+                        while(f.read(buf.data(), static_cast<std::streamsize>(buf.size())) && running_.load(std::memory_order_relaxed)) {
                         }
                     }
                 }
@@ -335,14 +358,15 @@ public:
 
     void stop() {
         running_ = false;
-        for(auto &t : threads_) {
-            if(t.joinable()) t.join();
+        for(auto &t: threads_) {
+            if(t.joinable())
+                t.join();
         }
         threads_.clear();
     }
 
 private:
-    std::atomic<bool>        running_{false};
+    std::atomic<bool>        running_{ false };
     std::vector<std::thread> threads_;
 };
 
@@ -360,7 +384,7 @@ protected:
     std::map<OBFrameType, std::ofstream *> csvMap_;
 
     // resource monitor
-    std::atomic<bool>           resourceRunning_{false};
+    std::atomic<bool>           resourceRunning_{ false };
     std::thread                 resourceThread_;
     std::vector<ResourceSample> resourceSamples_;
 
@@ -377,7 +401,11 @@ protected:
     void TearDown() override {
         stopResourceMonitor();
         if(pipeline_) {
-            try { pipeline_->stop(); } catch(...) {}
+            try {
+                pipeline_->stop();
+            }
+            catch(...) {
+            }
         }
         closeCsvFiles();
         pipeline_.reset();
@@ -389,7 +417,7 @@ protected:
     // ----------------------------------------------------------
     void openCsv(OBFrameType normalizedType) {
         std::string name = csvPrefix_ + "_" + streamLabel(normalizedType) + "_frames.csv";
-        auto *ofs = new std::ofstream(name);
+        auto       *ofs  = new std::ofstream(name);
         if(ofs->is_open()) {
             *ofs << "SdkIndex,MetaFrameNumber,"
                     "HwTimestamp_us,SysTimestamp_us,GlobalTimestamp_us,FPS\n";
@@ -400,29 +428,30 @@ protected:
     // Called inside mu_ lock from processFrame
     void writeCsvRow(OBFrameType normalizedType, const FrameRecord &r) {
         auto it = csvMap_.find(normalizedType);
-        if(it == csvMap_.end() || !it->second || !it->second->is_open()) return;
-        *(it->second) << r.sdkIndex << "," << r.metaFrameNumber << ","
-                      << r.hwTimestampUs << "," << r.sysTimestampUs << ","
-                      << r.globalTimestampUs << "," << r.fps << "\n";
+        if(it == csvMap_.end() || !it->second || !it->second->is_open())
+            return;
+        *(it->second) << r.sdkIndex << "," << r.metaFrameNumber << "," << r.hwTimestampUs << "," << r.sysTimestampUs << "," << r.globalTimestampUs << ","
+                      << r.fps << "\n";
     }
 
     // Called after stopResourceMonitor() — writes a separate resource CSV
     void writeResourceCsv() {
-        std::string name = csvPrefix_ + "_resource.csv";
+        std::string   name = csvPrefix_ + "_resource.csv";
         std::ofstream ofs(name);
-        if(!ofs.is_open()) return;
+        if(!ofs.is_open())
+            return;
         ofs << "ElapsedSec,CPU_Percent,Memory_MB\n";
-        for(auto &s : resourceSamples_) {
-            ofs << std::fixed << std::setprecision(2)
-                << s.elapsedSec << "," << s.cpuPercent << "," << s.memoryMB << "\n";
+        for(auto &s: resourceSamples_) {
+            ofs << std::fixed << std::setprecision(2) << s.elapsedSec << "," << s.cpuPercent << "," << s.memoryMB << "\n";
         }
         ofs.close();
     }
 
     void closeCsvFiles() {
-        for(auto &kv : csvMap_) {
+        for(auto &kv: csvMap_) {
             if(kv.second) {
-                if(kv.second->is_open()) kv.second->close();
+                if(kv.second->is_open())
+                    kv.second->close();
                 delete kv.second;
             }
         }
@@ -433,36 +462,38 @@ protected:
     // Frame processing (called from pipeline callback thread)
     // ----------------------------------------------------------
     void processFrame(std::shared_ptr<ob::Frame> frame) {
-        if(!frame) return;
+        if(!frame)
+            return;
 
         OBFrameType ntype = normalizeFrameType(frame->getType());
         if(ntype != OB_FRAME_DEPTH && ntype != OB_FRAME_COLOR && ntype != OB_FRAME_IR)
             return;
 
         FrameRecord rec;
-        rec.sdkIndex        = frame->getIndex();
-        rec.hwTimestampUs   = frame->getTimeStampUs();
-        rec.sysTimestampUs  = frame->getSystemTimeStampUs();
+        rec.sdkIndex          = frame->getIndex();
+        rec.hwTimestampUs     = frame->getTimeStampUs();
+        rec.sysTimestampUs    = frame->getSystemTimeStampUs();
         rec.globalTimestampUs = frame->getGlobalTimeStampUs();
-        rec.metaFrameNumber = frame->hasMetadata(OB_FRAME_METADATA_TYPE_FRAME_NUMBER)
-                                  ? frame->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER)
-                                  : -1;
+        rec.metaFrameNumber   = frame->hasMetadata(OB_FRAME_METADATA_TYPE_FRAME_NUMBER) ? frame->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER) : -1;
 
         rec.fps = 0;
         try {
             auto profile = frame->getStreamProfile();
             if(profile) {
                 auto vp = profile->as<ob::VideoStreamProfile>();
-                if(vp) rec.fps = static_cast<int>(vp->getFps());
+                if(vp)
+                    rec.fps = static_cast<int>(vp->getFps());
             }
-        } catch(...) {}
+        }
+        catch(...) {
+        }
 
         std::lock_guard<std::mutex> lock(mu_);
-        auto &st = statsMap_[ntype];
+        auto                       &st = statsMap_[ntype];
 
         if(st.totalFrames == 0) {
-            st.streamName        = streamLabel(ntype);
-            st.fps               = rec.fps;
+            st.streamName         = streamLabel(ntype);
+            st.fps                = rec.fps;
             st.expectedIntervalUs = (rec.fps > 0) ? (1e6 / static_cast<double>(rec.fps)) : 0;
         }
 
@@ -524,20 +555,22 @@ protected:
             auto start = std::chrono::steady_clock::now();
             while(resourceRunning_.load(std::memory_order_relaxed)) {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                if(!resourceRunning_.load(std::memory_order_relaxed)) break;
+                if(!resourceRunning_.load(std::memory_order_relaxed))
+                    break;
 
                 auto   now     = std::chrono::steady_clock::now();
                 double elapsed = std::chrono::duration<double>(now - start).count();
                 float  cpu     = getProcessCpuUsage();
                 float  mem     = getProcessMemoryMB();
-                resourceSamples_.push_back({elapsed, cpu, mem});
+                resourceSamples_.push_back({ elapsed, cpu, mem });
             }
         });
     }
 
     void stopResourceMonitor() {
         resourceRunning_ = false;
-        if(resourceThread_.joinable()) resourceThread_.join();
+        if(resourceThread_.joinable())
+            resourceThread_.join();
     }
 
     // ----------------------------------------------------------
@@ -548,7 +581,7 @@ protected:
         std::cout << "\n========== Performance Test Summary [" << csvPrefix_ << "] ==========\n";
         std::cout << "Duration: " << durationSec_ << " seconds\n\n";
 
-        for(auto &kv : statsMap_) {
+        for(auto &kv: statsMap_) {
             auto &st = kv.second;
             std::cout << "--- " << st.streamName << " (fps=" << st.fps << ") ---\n"
                       << "  Total frames:              " << st.totalFrames << "\n"
@@ -563,11 +596,13 @@ protected:
 
         if(!resourceSamples_.empty()) {
             float avgCpu = 0, avgMem = 0, maxCpu = 0, maxMem = 0;
-            for(auto &s : resourceSamples_) {
+            for(auto &s: resourceSamples_) {
                 avgCpu += s.cpuPercent;
                 avgMem += s.memoryMB;
-                if(s.cpuPercent > maxCpu) maxCpu = s.cpuPercent;
-                if(s.memoryMB  > maxMem) maxMem = s.memoryMB;
+                if(s.cpuPercent > maxCpu)
+                    maxCpu = s.cpuPercent;
+                if(s.memoryMB > maxMem)
+                    maxMem = s.memoryMB;
             }
             float n = static_cast<float>(resourceSamples_.size());
             avgCpu /= n;
@@ -588,19 +623,16 @@ protected:
     // ----------------------------------------------------------
     void assertDropRate(double maxRate) {
         std::lock_guard<std::mutex> lock(mu_);
-        for(auto &kv : statsMap_) {
+        for(auto &kv: statsMap_) {
             auto &st = kv.second;
-            EXPECT_GT(st.totalFrames, 0u)
-                << st.streamName << ": received 0 frames in " << durationSec_ << " s";
+            EXPECT_GT(st.totalFrames, 0u) << st.streamName << ": received 0 frames in " << durationSec_ << " s";
 
-            if(st.totalFrames == 0) continue;
+            if(st.totalFrames == 0)
+                continue;
 
-            double dropRate = static_cast<double>(st.metaIndexDrops)
-                              / static_cast<double>(st.totalFrames);
-            EXPECT_LT(dropRate, maxRate)
-                << st.streamName << " meta-index drop rate: "
-                << std::fixed << std::setprecision(2) << (dropRate * 100.0) << " %"
-                << " (" << st.metaIndexDrops << " / " << st.totalFrames << ")";
+            double dropRate = static_cast<double>(st.metaIndexDrops) / static_cast<double>(st.totalFrames);
+            EXPECT_LT(dropRate, maxRate) << st.streamName << " meta-index drop rate: " << std::fixed << std::setprecision(2) << (dropRate * 100.0) << " %"
+                                         << " (" << st.metaIndexDrops << " / " << st.totalFrames << ")";
         }
     }
 
@@ -616,7 +648,9 @@ protected:
             if(device_->isGlobalTimestampSupported()) {
                 device_->enableGlobalTimestamp(true);
             }
-        } catch(...) {}
+        }
+        catch(...) {
+        }
 
         // Configure streams
         auto config = std::make_shared<ob::Config>();
@@ -635,11 +669,13 @@ protected:
 
         // Pipeline callback
         auto callback = [this](std::shared_ptr<ob::FrameSet> frameset) {
-            if(!frameset) return;
+            if(!frameset)
+                return;
             uint32_t count = frameset->getCount();
             for(uint32_t i = 0; i < count; ++i) {
                 auto frame = frameset->getFrameByIndex(i);
-                if(frame) processFrame(frame);
+                if(frame)
+                    processFrame(frame);
             }
         };
 
@@ -648,7 +684,8 @@ protected:
         try {
             pipeline_->start(config, callback);
             started = true;
-        } catch(const ob::Error &e) {
+        }
+        catch(const ob::Error &e) {
             std::cout << "[PerfTest] Start with depth+color+IR failed: " << e.what() << "\n";
         }
 
@@ -668,11 +705,11 @@ protected:
         stopResourceMonitor();
 
         writeResourceCsv();
-        for(auto &kv : csvMap_) {
-            if(kv.second && kv.second->is_open()) kv.second->flush();
+        for(auto &kv: csvMap_) {
+            if(kv.second && kv.second->is_open())
+                kv.second->flush();
         }
-        std::cout << "[PerfTest] Reports saved: " << csvPrefix_ << "_*_frames.csv, "
-                  << csvPrefix_ << "_resource.csv\n";
+        std::cout << "[PerfTest] Reports saved: " << csvPrefix_ << "_*_frames.csv, " << csvPrefix_ << "_resource.csv\n";
         printSummary();
     }
 };
@@ -682,21 +719,20 @@ protected:
 // ===================================================================
 TEST_F(PerfStreamTest, TC_PERF_01_frame_drop_detection) {
     runStreamingTest("baseline");
-    assertDropRate(0.01);   // expect < 1 % drop
+    assertDropRate(0.01);  // expect < 1 % drop
 }
 
 // ===================================================================
 // TC_PERF_02 — Frame-drop under CPU stress
 // ===================================================================
 TEST_F(PerfStreamTest, TC_PERF_02_frame_drop_under_cpu_stress) {
-    unsigned int cpuThreads = static_cast<unsigned int>(
-        PerfConfig::instance().cpuThreads);
+    unsigned int cpuThreads = static_cast<unsigned int>(PerfConfig::instance().cpuThreads);
 
     CpuStressor stressor;
-    stressor.start(cpuThreads);   // 0 → hardware_concurrency()
+    stressor.start(cpuThreads);  // 0 → hardware_concurrency()
 
     runStreamingTest("cpu_stress");
-    assertDropRate(0.05);          // allow up to 5 % under stress
+    assertDropRate(0.05);  // allow up to 5 % under stress
     // stressor.stop() called automatically by destructor
 }
 
@@ -710,6 +746,6 @@ TEST_F(PerfStreamTest, TC_PERF_03_frame_drop_under_io_stress) {
     stressor.start(ioThreads);
 
     runStreamingTest("io_stress");
-    assertDropRate(0.05);          // allow up to 5 % under stress
+    assertDropRate(0.05);  // allow up to 5 % under stress
     // stressor.stop() called automatically by destructor
 }

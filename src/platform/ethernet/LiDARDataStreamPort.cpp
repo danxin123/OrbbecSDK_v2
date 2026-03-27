@@ -9,7 +9,8 @@
 
 namespace libobsensor {
 
-LiDARDataStreamPort::LiDARDataStreamPort(std::shared_ptr<const LiDARDataStreamPortInfo> portInfo) : portInfo_(portInfo), isStreaming_(false), callback_(nullptr) {}
+LiDARDataStreamPort::LiDARDataStreamPort(std::shared_ptr<const LiDARDataStreamPortInfo> portInfo)
+    : portInfo_(portInfo), isStreaming_(false), callback_(nullptr) {}
 
 LiDARDataStreamPort::~LiDARDataStreamPort() noexcept {
     stop();
@@ -65,7 +66,7 @@ void LiDARDataStreamPort::stop() {
 void LiDARDataStreamPort::readData() {
     const int              PACK_SIZE = 1500;  // max size of UDP packet
     int                    readSize  = 0;
-    uint8_t *              data      = nullptr;
+    uint8_t               *data      = nullptr;
     std::shared_ptr<Frame> frame;
 
     while(isStreaming_.load()) {

@@ -313,7 +313,6 @@ std::shared_ptr<Frame> HDRMerge::merge(std::shared_ptr<const Frame> first_fs, st
                 else
                     mergeFramesUsingIr<uint16_t>(d, d0, d1, (uint16_t *)second_ir->getData(), (uint16_t *)first_ir->getData(), width, height);
             }
-
         }
         else {
             mergeFramesUsingOnlyDepth(d, d0, d1, width, height);
@@ -325,4 +324,3 @@ std::shared_ptr<Frame> HDRMerge::merge(std::shared_ptr<const Frame> first_fs, st
 }
 
 }  // namespace libobsensor
-

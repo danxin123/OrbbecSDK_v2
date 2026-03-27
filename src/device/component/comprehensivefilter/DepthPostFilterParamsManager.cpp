@@ -14,8 +14,8 @@ DepthPostFilterParamsManager::DepthPostFilterParamsManager(IDevice *owner) : Dev
 DepthPostFilterParamsManager::~DepthPostFilterParamsManager() noexcept {}
 
 void DepthPostFilterParamsManager::fetchParamFromDevice() {
-    auto owner      = getOwner();
-    auto propServer = owner->getPropertyServer();
+    auto                 owner      = getOwner();
+    auto                 propServer = owner->getPropertyServer();
     std::vector<uint8_t> data;
     BEGIN_TRY_EXECUTE({
         propServer->getRawData(
@@ -84,7 +84,7 @@ void DepthPostFilterParamsManager::parseFilterParams(const uint8_t *data, const 
 
 bool DepthPostFilterParamsManager::calculateChecksum(const uint8_t *data, DepthPostFilterHeader *filterHeader) {
     const uint8_t *paramDataStart = data + filterHeader->header_size;
-    uint32_t sum = 0;
+    uint32_t       sum            = 0;
     for(uint32_t i = 0; i < filterHeader->data_size; i++) {
         sum += paramDataStart[i];
     }

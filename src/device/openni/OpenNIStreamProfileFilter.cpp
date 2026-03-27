@@ -131,7 +131,7 @@ void OpenNIStreamProfileFilter::fetchEffectiveStreamProfiles() {
         colorEffectiveStreamProfiles_.push_back({ OB_SENSOR_COLOR, OB_FORMAT_MJPG, 1920, 1080, 15 });
         colorEffectiveStreamProfiles_.push_back({ OB_SENSOR_COLOR, OB_FORMAT_MJPG, 1920, 1080, 30 });
 
-        //YUYV
+        // YUYV
         colorEffectiveStreamProfiles_.push_back({ OB_SENSOR_COLOR, OB_FORMAT_YUYV, 320, 240, 5 });
         colorEffectiveStreamProfiles_.push_back({ OB_SENSOR_COLOR, OB_FORMAT_YUYV, 320, 240, 10 });
         colorEffectiveStreamProfiles_.push_back({ OB_SENSOR_COLOR, OB_FORMAT_YUYV, 320, 240, 15 });

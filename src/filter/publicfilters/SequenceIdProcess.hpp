@@ -31,4 +31,3 @@ protected:
 };
 
 }  // namespace libobsensor
-

@@ -9,8 +9,7 @@
 #include <vector>
 
 struct SystemInfo {
-    SystemInfo(const std::string &time, float cpuUsage, float memUsage) :
-        time(time), cpuUsage(cpuUsage), memUsage(memUsage) {}
+    SystemInfo(const std::string &time, float cpuUsage, float memUsage) : time(time), cpuUsage(cpuUsage), memUsage(memUsage) {}
 
     std::string time;
     float       cpuUsage;

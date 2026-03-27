@@ -112,7 +112,9 @@ public:
     OBUvcBackendType getBackendType() const override;
 
 #ifdef __ANDROID__
-    virtual std::string getUsbConnectType() override {return "";}
+    virtual std::string getUsbConnectType() override {
+        return "";
+    }
 #endif
 
 private:

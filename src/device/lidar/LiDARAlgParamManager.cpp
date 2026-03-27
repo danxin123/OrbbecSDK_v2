@@ -38,7 +38,7 @@ void LiDARAlgParamManager::bindIntrinsic(std::vector<std::shared_ptr<const Strea
 }
 
 void LiDARAlgParamManager::fetchParamFromDevice() {
-    if (getOwner()->getFirmwareVersionInt() < 1000007) {
+    if(getOwner()->getFirmwareVersionInt() < 1000007) {
         LOG_DEBUG("Use default IMU calibration params");
         imuCalibParam_ = IMUCorrector::getDefaultImuCalibParam();
         return;

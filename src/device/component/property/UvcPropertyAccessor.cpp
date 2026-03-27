@@ -61,8 +61,8 @@ UvcPropertyAccessor::UvcPropertyAccessor(const std::shared_ptr<ISourcePort> &bac
 }
 
 void UvcPropertyAccessor::setPropertyValue(uint32_t propertyId, const OBPropertyValue &value) {
-    auto    uvcDevicePort = std::dynamic_pointer_cast<UvcDevicePort>(backend_);
-    int32_t val;
+    auto            uvcDevicePort = std::dynamic_pointer_cast<UvcDevicePort>(backend_);
+    int32_t         val;
     OBPropertyValue fixValue;
 
     switch(propertyId) {

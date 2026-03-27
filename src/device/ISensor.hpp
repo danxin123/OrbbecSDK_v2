@@ -80,4 +80,3 @@ struct ob_sensor_list_t {
 #ifdef __cplusplus
 }
 #endif
-

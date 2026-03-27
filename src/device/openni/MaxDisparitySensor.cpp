@@ -28,31 +28,31 @@ MaxDisparitySensor::MaxDisparitySensor(IDevice *owner, OBSensorType sensorType, 
 MaxDisparitySensor::~MaxDisparitySensor() noexcept {}
 
 void MaxDisparitySensor::start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) {
-    auto                                 owner          = getOwner();
-    auto                                 propertyServer = owner->getPropertyServer();
+    auto                                 owner             = getOwner();
+    auto                                 propertyServer    = owner->getPropertyServer();
     std::shared_ptr<const StreamProfile> playStreamProfile = sp;
     OBPropertyValue                      value;
     value.intValue = 1;
 
-    auto inVsp            = sp->as<const VideoStreamProfile>();
+    auto inVsp = sp->as<const VideoStreamProfile>();
     for(const auto &entry: profileVirtualRealMap_) {
         auto virtualSp  = entry.first;
         auto virtualVsp = virtualSp->as<const VideoStreamProfile>();
         if(virtualVsp->getHeight() == inVsp->getHeight() && virtualVsp->getFps() == inVsp->getFps() && virtualVsp->getFormat() == inVsp->getFormat()) {
-            playStreamProfile           = entry.second;
-            value.intValue              = 0;
+            playStreamProfile = entry.second;
+            value.intValue    = 0;
             break;
         }
     }
 
     TRY_EXECUTE({ propertyServer->setPropertyValue(OB_PROP_DEPTH_LOAD_ENGINE_GROUP_PARAM_INT, value, PROP_ACCESS_INTERNAL); })
 
-    bool foundProcessParam = false;
-    OpenNIFrameProcessParam processParam = { 1, 0, 0, 0, 0, 0, 0 };
-    currentProcessParam_                 = { 1, 0, 0, 0, 0, 0, 0 };
-    auto it = profileProcessParamMap_.find(sp);
+    bool                    foundProcessParam = false;
+    OpenNIFrameProcessParam processParam      = { 1, 0, 0, 0, 0, 0, 0 };
+    currentProcessParam_                      = { 1, 0, 0, 0, 0, 0, 0 };
+    auto it                                   = profileProcessParamMap_.find(sp);
     if(it != profileProcessParamMap_.end()) {
-        processParam = it->second;
+        processParam      = it->second;
         foundProcessParam = true;
     }
 
@@ -102,8 +102,8 @@ void MaxDisparitySensor::initProfileVirtualRealMap() {
     StreamProfileList realProfileList;
     StreamProfileList virtualProfileList;
     for(const auto &streamProfile: profileList) {
-        auto vsp = streamProfile->as<const VideoStreamProfile>();
-        OpenNIFrameProcessParam processParam = {1,0,0,0,0,0,0};
+        auto                    vsp          = streamProfile->as<const VideoStreamProfile>();
+        OpenNIFrameProcessParam processParam = { 1, 0, 0, 0, 0, 0, 0 };
         if(vsp->getHeight() == REAL_PROFILE_HEIGHT_320 || vsp->getHeight() == REAL_PROFILE_HEIGHT_160) {
             processParam.dstWidth  = vsp->getWidth();
             processParam.dstHeight = vsp->getHeight();

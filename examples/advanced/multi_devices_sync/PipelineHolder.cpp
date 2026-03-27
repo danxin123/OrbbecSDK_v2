@@ -1,9 +1,7 @@
 #include "PipelineHolder.hpp"
 
-
 PipelineHolder::PipelineHolder(std::shared_ptr<ob::Pipeline> pipeline, OBSensorType sensorType, std::string deviceSN, int deviceIndex)
-    : startStream_(false), pipeline_(pipeline), sensorType_(sensorType), deviceSN_(deviceSN), deviceIndex_(deviceIndex) {
-}
+    : startStream_(false), pipeline_(pipeline), sensorType_(sensorType), deviceSN_(deviceSN), deviceIndex_(deviceIndex) {}
 
 PipelineHolder::~PipelineHolder() {
     release();
@@ -23,9 +21,7 @@ void PipelineHolder::startStream() {
             std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
             config->enableStream(streamProfile);
 
-            pipeline_->start(config, [this](std::shared_ptr<ob::FrameSet> frameSet) {
-                processFrame(frameSet);
-            });
+            pipeline_->start(config, [this](std::shared_ptr<ob::FrameSet> frameSet) { processFrame(frameSet); });
             startStream_ = true;
         }
     }
@@ -44,10 +40,10 @@ void PipelineHolder::processFrame(std::shared_ptr<ob::FrameSet> frameSet) {
     if(!startStream_) {
         return;
     }
-    
+
     {
         std::lock_guard<std::mutex> lock(queueMutex_);
-        auto obFrame = frameSet->getFrame(frameType_);
+        auto                        obFrame = frameSet->getFrame(frameType_);
         if(obFrame) {
             if(obFrames.size() >= static_cast<size_t>(maxFrameSize_)) {
                 obFrames.pop();

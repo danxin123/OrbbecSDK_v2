@@ -13,7 +13,7 @@
 #ifdef OB_BOLT_OPENGL_COMPAT
 #ifdef __linux__
 #include <GL/glx.h>
-#elif(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#elif (defined(WIN32) || defined(_WIN32) || defined(WINCE))
 #include <GL/gl.h>
 #include <GL/wglext.h>
 #define glXGetCurrentContext wglGetCurrentContext

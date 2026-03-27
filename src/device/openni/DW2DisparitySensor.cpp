@@ -28,16 +28,16 @@ DW2DisparitySensor::DW2DisparitySensor(IDevice *owner, OBSensorType sensorType, 
 DW2DisparitySensor::~DW2DisparitySensor() noexcept {}
 
 void DW2DisparitySensor::start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) {
-    auto                                 owner          = getOwner();
-    auto                                 propertyServer = owner->getPropertyServer();
+    auto                                 owner             = getOwner();
+    auto                                 propertyServer    = owner->getPropertyServer();
     std::shared_ptr<const StreamProfile> playStreamProfile = sp;
 
-    auto inVsp            = sp->as<const VideoStreamProfile>();
+    auto inVsp = sp->as<const VideoStreamProfile>();
     for(const auto &entry: profileVirtualRealMap_) {
         auto virtualSp  = entry.first;
         auto virtualVsp = virtualSp->as<const VideoStreamProfile>();
         if(virtualVsp->getHeight() == inVsp->getHeight() && virtualVsp->getFps() == inVsp->getFps() && virtualVsp->getFormat() == inVsp->getFormat()) {
-            playStreamProfile           = entry.second;
+            playStreamProfile = entry.second;
             break;
         }
     }
@@ -45,9 +45,9 @@ void DW2DisparitySensor::start(std::shared_ptr<const StreamProfile> sp, FrameCal
     bool                    foundProcessParam = false;
     OpenNIFrameProcessParam processParam      = { 1, 0, 0, 0, 0, 0, 0 };
     currentProcessParam_                      = { 1, 0, 0, 0, 0, 0, 0 };
-    auto it = profileProcessParamMap_.find(sp);
+    auto it                                   = profileProcessParamMap_.find(sp);
     if(it != profileProcessParamMap_.end()) {
-        processParam = it->second;
+        processParam      = it->second;
         foundProcessParam = true;
     }
 
@@ -97,8 +97,8 @@ void DW2DisparitySensor::initProfileVirtualRealMap() {
     StreamProfileList realProfileList;
     StreamProfileList virtualProfileList;
     for(const auto &streamProfile: profileList) {
-        auto vsp = streamProfile->as<const VideoStreamProfile>();
-        OpenNIFrameProcessParam processParam = {1,0,0,0,0,0,0};
+        auto                    vsp          = streamProfile->as<const VideoStreamProfile>();
+        OpenNIFrameProcessParam processParam = { 1, 0, 0, 0, 0, 0, 0 };
         if(vsp->getWidth() == REAL_PROFILE_WIDTH_540 || vsp->getWidth() == REAL_PROFILE_WIDTH_270) {
             processParam.dstWidth  = vsp->getWidth();
             processParam.dstHeight = vsp->getHeight();

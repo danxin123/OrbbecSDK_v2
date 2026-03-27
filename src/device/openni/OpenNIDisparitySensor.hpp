@@ -43,6 +43,5 @@ protected:
 
     OpenNIFrameProcessParam              currentProcessParam_ = { 1, 0, 0, 0, 0, 0, 0 };
     std::vector<OpenNIFrameProcessParam> playbackProcessParam_;
-
 };
 }  // namespace libobsensor

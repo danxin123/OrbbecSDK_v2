@@ -128,4 +128,3 @@ OB_EXPORT void ob_device_timer_sync_with_host(ob_device *device, ob_error **erro
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-

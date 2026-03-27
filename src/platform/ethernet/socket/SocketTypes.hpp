@@ -1,7 +1,7 @@
 // Copyright (c) Orbbec Inc. All Rights Reserved.
 // Licensed under the MIT License.
 
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #else
@@ -27,8 +27,7 @@
 
 namespace libobsensor {
 
-
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
 #define GET_LAST_ERROR() WSAGetLastError()
 #define ERR_ADDR_IN_USE WSAEADDRINUSE
 #else
@@ -36,6 +35,4 @@ namespace libobsensor {
 #define ERR_ADDR_IN_USE EADDRINUSE
 #endif
 
-
 }  // namespace libobsensor
-

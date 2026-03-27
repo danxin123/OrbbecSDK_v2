@@ -166,14 +166,16 @@ void FrameTimestampCalculatorOverUvcSCR::calculate(std::shared_ptr<Frame> frame)
 
 void FrameTimestampCalculatorOverUvcSCR::clear() {}
 
-G435LeFrameTimestampCalculatorDeviceTime::G435LeFrameTimestampCalculatorDeviceTime(IDevice *device, uint64_t deviceTimeFreq, uint64_t frameTimeFreq, uint64_t clockFreq)
+G435LeFrameTimestampCalculatorDeviceTime::G435LeFrameTimestampCalculatorDeviceTime(IDevice *device, uint64_t deviceTimeFreq, uint64_t frameTimeFreq,
+                                                                                   uint64_t clockFreq)
     : DeviceComponentBase(device) {
-    baseCalculator_ = std::make_shared<FrameTimestampCalculatorBaseDeviceTime>(device, deviceTimeFreq, frameTimeFreq);
+    baseCalculator_   = std::make_shared<FrameTimestampCalculatorBaseDeviceTime>(device, deviceTimeFreq, frameTimeFreq);
     directCalculator_ = std::make_shared<FrameTimestampCalculatorDirectly>(device, clockFreq);
 }
 
-void G435LeFrameTimestampCalculatorDeviceTime::calculate(std::shared_ptr<Frame> frame)  {
-    if(frame->getFormat() == OB_FORMAT_YUYV || frame->getFormat() == OB_FORMAT_I420 ||frame->getFormat() == OB_FORMAT_Y8 || frame->getFormat() == OB_FORMAT_Y10) {
+void G435LeFrameTimestampCalculatorDeviceTime::calculate(std::shared_ptr<Frame> frame) {
+    if(frame->getFormat() == OB_FORMAT_YUYV || frame->getFormat() == OB_FORMAT_I420 || frame->getFormat() == OB_FORMAT_Y8
+       || frame->getFormat() == OB_FORMAT_Y10) {
         directCalculator_->calculate(frame);
     }
     else {
@@ -187,4 +189,3 @@ void G435LeFrameTimestampCalculatorDeviceTime::clear() {
 }
 
 }  // namespace libobsensor
-

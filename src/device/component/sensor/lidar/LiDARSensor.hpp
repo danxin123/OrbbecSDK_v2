@@ -16,7 +16,6 @@ public:
     void stop() override;
 
 private:
-
 private:
     std::shared_ptr<IStreamer> streamer_;
 };

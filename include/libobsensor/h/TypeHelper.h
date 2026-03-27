@@ -16,7 +16,7 @@ extern "C" {
  *
  * @return OBFormat of "char*" type.
  */
-OB_EXPORT const char* ob_format_type_to_string(OBFormat type);
+OB_EXPORT const char *ob_format_type_to_string(OBFormat type);
 
 /**
  * @brief Convert OBFrameType to " char* " type and then return.
@@ -25,7 +25,7 @@ OB_EXPORT const char* ob_format_type_to_string(OBFormat type);
  *
  * @return OBFrameType of "char*" type.
  */
-OB_EXPORT const char* ob_frame_type_to_string(OBFrameType type);
+OB_EXPORT const char *ob_frame_type_to_string(OBFrameType type);
 
 /**
  * @brief Convert OBStreamType to " char* " type and then return.
@@ -34,7 +34,7 @@ OB_EXPORT const char* ob_frame_type_to_string(OBFrameType type);
  *
  * @return OBStreamType of "char*" type.
  */
-OB_EXPORT const char* ob_stream_type_to_string(OBStreamType type);
+OB_EXPORT const char *ob_stream_type_to_string(OBStreamType type);
 
 /**
  * @brief Convert OBSensorType to " char* " type and then return.
@@ -43,7 +43,7 @@ OB_EXPORT const char* ob_stream_type_to_string(OBStreamType type);
  *
  * @return OBSensorType of "char*" type.
  */
-OB_EXPORT const char* ob_sensor_type_to_string(OBSensorType type);
+OB_EXPORT const char *ob_sensor_type_to_string(OBSensorType type);
 
 /**
  * @brief Convert OBIMUSampleRate to " char* " type and then return.
@@ -52,7 +52,7 @@ OB_EXPORT const char* ob_sensor_type_to_string(OBSensorType type);
  *
  * @return OBIMUSampleRate of "char*" type.
  */
-OB_EXPORT const char* ob_imu_rate_type_to_string(OBIMUSampleRate type);
+OB_EXPORT const char *ob_imu_rate_type_to_string(OBIMUSampleRate type);
 
 /**
  * @brief Convert OBGyroFullScaleRange to " char* " type and then return.
@@ -61,7 +61,7 @@ OB_EXPORT const char* ob_imu_rate_type_to_string(OBIMUSampleRate type);
  *
  * @return OBGyroFullScaleRange of "char*" type.
  */
-OB_EXPORT const char* ob_gyro_range_type_to_string(OBGyroFullScaleRange type);
+OB_EXPORT const char *ob_gyro_range_type_to_string(OBGyroFullScaleRange type);
 
 /**
  * @brief Convert OBAccelFullScaleRange to " char* " type and then return.
@@ -70,7 +70,7 @@ OB_EXPORT const char* ob_gyro_range_type_to_string(OBGyroFullScaleRange type);
  *
  * @return OBAccelFullScaleRange of "char*" type.
  */
-OB_EXPORT const char* ob_accel_range_type_to_string(OBAccelFullScaleRange type);
+OB_EXPORT const char *ob_accel_range_type_to_string(OBAccelFullScaleRange type);
 
 /**
  * @brief Convert OBLiDARScanRate to " char* " type and then return.
@@ -87,7 +87,7 @@ OB_EXPORT const char *ob_lidar_scan_rate_type_to_string(OBLiDARScanRate type);
  *
  * @return OBFrameMetadataType of "char*" type.
  */
-OB_EXPORT const char* ob_meta_data_type_to_string(OBFrameMetadataType type);
+OB_EXPORT const char *ob_meta_data_type_to_string(OBFrameMetadataType type);
 
 /**
  * @brief Convert OBStreamType to OBSensorType.

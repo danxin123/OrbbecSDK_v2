@@ -93,7 +93,7 @@ struct V4L2FrameBufferGmsl {
 
 struct V4lDeviceInfoGmsl {
     std::string     name;
-    v4l2_capability cap;  // capabilities
+    v4l2_capability cap;                    // capabilities
     bool            metadataPrependedMode;  // metadata are stored in frame data
 };
 

@@ -164,7 +164,7 @@ std::shared_ptr<Frame> ThresholdFilter::process(std::shared_ptr<const Frame> fra
 
     std::lock_guard<std::mutex>       cutOffLock(mtx_);
     std::shared_ptr<const DepthFrame> depth;
-    if (frame->is<FrameSet>()) {
+    if(frame->is<FrameSet>()) {
         auto fset = frame->as<FrameSet>();
         auto df   = fset->getFrame(OB_FRAME_DEPTH);
         if(!df) {
@@ -200,7 +200,7 @@ std::shared_ptr<Frame> ThresholdFilter::process(std::shared_ptr<const Frame> fra
     }
 
     if(frame->is<FrameSet>()) {
-        auto frameSet = FrameFactory::createFrameFromOtherFrame(frame);
+        auto frameSet    = FrameFactory::createFrameFromOtherFrame(frame);
         auto outFrameSet = frameSet->as<FrameSet>();
         outFrameSet->pushFrame(std::move(outFrame));
         return frameSet;
@@ -264,4 +264,3 @@ std::shared_ptr<Frame> PixelValueOffset::process(std::shared_ptr<const Frame> fr
 }
 
 }  // namespace libobsensor
-

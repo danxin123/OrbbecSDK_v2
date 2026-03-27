@@ -92,4 +92,3 @@ bool        cvt2Boolean(const std::string &string, bool &dst);
 }  // namespace string
 }  // namespace utils
 }  // namespace libobsensor
-

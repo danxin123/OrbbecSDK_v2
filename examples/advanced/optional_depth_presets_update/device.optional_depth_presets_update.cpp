@@ -57,9 +57,9 @@ int main() try {
             break;
         }
 
-        uint8_t index                 = 0;
-        uint8_t count                 = static_cast<uint8_t>(pathList.size());
-        char(*filePaths)[OB_PATH_MAX] = new char[count][OB_PATH_MAX];
+        uint8_t index                  = 0;
+        uint8_t count                  = static_cast<uint8_t>(pathList.size());
+        char (*filePaths)[OB_PATH_MAX] = new char[count][OB_PATH_MAX];
 
         // copy paths
         std::cout << "\nPreset file paths you input: " << std::endl;

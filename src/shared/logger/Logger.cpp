@@ -239,7 +239,7 @@ void Logger::loadEnvConfig() {
 
     std::string defaultLogFileName = OB_DEFAULT_LOG_FILE_NAME;
     sdkLibName_                    = utils::getSDKLibraryName();
-    defaultLogFileName = sdkLibName_ + ".log.txt";
+    defaultLogFileName             = sdkLibName_ + ".log.txt";
 
     // log level
     if(!envConfig->getIntValue("Log.LogLevel", globalLogLevel)) {

@@ -80,4 +80,3 @@ std::shared_ptr<Frame> SequenceIdFilter::process(std::shared_ptr<const Frame> fr
 }
 
 }  // namespace libobsensor
-

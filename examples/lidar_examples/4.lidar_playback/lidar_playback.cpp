@@ -43,7 +43,6 @@ int main(void) try {
         frameCount++;
     };
 
-
     std::mutex                    replayMutex;
     std::condition_variable       replayCv;
     std::atomic<OBPlaybackStatus> playStatus(OB_PLAYBACK_STOPPED);

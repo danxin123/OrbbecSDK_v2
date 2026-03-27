@@ -27,22 +27,23 @@ static void safeDestroyWindow(const char *name) {
 void saveDepthFrame(const std::shared_ptr<ob::DepthFrame> &depthFrame, uint32_t index) {
     std::string name = "depth_" + std::to_string(depthFrame->getWidth()) + "x" + std::to_string(depthFrame->getHeight()) + "_" + std::to_string(index) + ".png";
     cv::Mat     mat(depthFrame->getHeight(), depthFrame->getWidth(), CV_16UC1, depthFrame->getData());
-    cv::imwrite(name, mat, {cv::IMWRITE_PNG_COMPRESSION, 0});
+    cv::imwrite(name, mat, { cv::IMWRITE_PNG_COMPRESSION, 0 });
     std::cout << "Saved: " << name << std::endl;
 }
 
 // Save the current color frame as an 8-bit PNG.
 void saveColorFrame(const std::shared_ptr<ob::ColorFrame> &colorFrame, uint32_t index) {
-    auto converter = std::make_shared<ob::FormatConvertFilter>();
+    auto                       converter = std::make_shared<ob::FormatConvertFilter>();
     std::shared_ptr<ob::Frame> rgbFrame;
 
     if(colorFrame->getFormat() == OB_FORMAT_MJPG) {
         converter->setFormatConvertType(FORMAT_MJPG_TO_BGR);
-        auto bgrFrame   = converter->process(colorFrame);
-        auto videoFrame = bgrFrame->as<ob::VideoFrame>();
-        std::string name = "color_" + std::to_string(videoFrame->getWidth()) + "x" + std::to_string(videoFrame->getHeight()) + "_" + std::to_string(index) + ".png";
+        auto        bgrFrame   = converter->process(colorFrame);
+        auto        videoFrame = bgrFrame->as<ob::VideoFrame>();
+        std::string name =
+            "color_" + std::to_string(videoFrame->getWidth()) + "x" + std::to_string(videoFrame->getHeight()) + "_" + std::to_string(index) + ".png";
         cv::Mat mat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
-        cv::imwrite(name, mat, {cv::IMWRITE_PNG_COMPRESSION, 0});
+        cv::imwrite(name, mat, { cv::IMWRITE_PNG_COMPRESSION, 0 });
         std::cout << "Saved: " << name << std::endl;
         return;
     }
@@ -58,10 +59,11 @@ void saveColorFrame(const std::shared_ptr<ob::ColorFrame> &colorFrame, uint32_t 
         rgbFrame = std::const_pointer_cast<ob::Frame>(std::static_pointer_cast<const ob::Frame>(colorFrame));
     }
     else if(colorFrame->getFormat() == OB_FORMAT_BGR) {
-        auto videoFrame = colorFrame->as<ob::VideoFrame>();
-        std::string name = "color_" + std::to_string(videoFrame->getWidth()) + "x" + std::to_string(videoFrame->getHeight()) + "_" + std::to_string(index) + ".png";
+        auto        videoFrame = colorFrame->as<ob::VideoFrame>();
+        std::string name =
+            "color_" + std::to_string(videoFrame->getWidth()) + "x" + std::to_string(videoFrame->getHeight()) + "_" + std::to_string(index) + ".png";
         cv::Mat mat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
-        cv::imwrite(name, mat, {cv::IMWRITE_PNG_COMPRESSION, 0});
+        cv::imwrite(name, mat, { cv::IMWRITE_PNG_COMPRESSION, 0 });
         std::cout << "Saved: " << name << std::endl;
         return;
     }
@@ -71,11 +73,11 @@ void saveColorFrame(const std::shared_ptr<ob::ColorFrame> &colorFrame, uint32_t 
     }
 
     converter->setFormatConvertType(FORMAT_RGB_TO_BGR);
-    auto bgrFrame   = converter->process(rgbFrame);
-    auto videoFrame = bgrFrame->as<ob::VideoFrame>();
+    auto        bgrFrame   = converter->process(rgbFrame);
+    auto        videoFrame = bgrFrame->as<ob::VideoFrame>();
     std::string name = "color_" + std::to_string(videoFrame->getWidth()) + "x" + std::to_string(videoFrame->getHeight()) + "_" + std::to_string(index) + ".png";
-    cv::Mat mat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
-    cv::imwrite(name, mat, {cv::IMWRITE_PNG_COMPRESSION, 0});
+    cv::Mat     mat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
+    cv::imwrite(name, mat, { cv::IMWRITE_PNG_COMPRESSION, 0 });
     std::cout << "Saved: " << name << std::endl;
 }
 
@@ -123,9 +125,9 @@ static cv::Mat depthFrameToColorized(const std::shared_ptr<ob::DepthFrame> &dept
         return cv::Mat();
     }
 
-    uint32_t width = depthFrame->getWidth();
+    uint32_t width  = depthFrame->getWidth();
     uint32_t height = depthFrame->getHeight();
-    float scale = depthFrame->getValueScale();
+    float    scale  = depthFrame->getValueScale();
 
     cv::Mat rawMat(height, width, CV_16UC1, depthFrame->getData());
     cv::Mat depthMm;
@@ -160,10 +162,10 @@ int main(void) try {
     cv::namedWindow(mainWinName, cv::WINDOW_NORMAL);
     cv::resizeWindow(mainWinName, 1280, 720);
 
-    bool     render3D    = true;
-    int      colormapId  = cv::COLORMAP_JET;
+    bool     render3D     = true;
+    int      colormapId   = cv::COLORMAP_JET;
     float    overlayAlpha = 0.6f;
-    uint32_t saveIndex   = 0;
+    uint32_t saveIndex    = 0;
 
     std::cout << "RGBD Viewer Controls: M/m=Toggle 3D, S/s=Save PNG, C/c=Cycle Colormap, +/-=Overlay Alpha, Esc=Exit" << std::endl;
 
@@ -177,7 +179,7 @@ int main(void) try {
             continue;
         }
 
-        auto alignedFrame = alignFilter->process(frameSet);
+        auto alignedFrame    = alignFilter->process(frameSet);
         auto alignedFrameSet = alignedFrame ? alignedFrame->as<ob::FrameSet>() : nullptr;
         if(!alignedFrameSet) {
             continue;
@@ -201,8 +203,8 @@ int main(void) try {
         cv::Mat overlayMat;
         cv::addWeighted(colorMat, 1.0f - overlayAlpha, depthMat, overlayAlpha, 0.0, overlayMat);
 
-        int panelW = 640;
-        int panelH = 360;
+        int     panelW = 640;
+        int     panelH = 360;
         cv::Mat depthPanel;
         if(render3D) {
             cv::Mat depth3d = ob_smpl::renderDepth3D(depthFrame, colormapId);
@@ -230,8 +232,8 @@ int main(void) try {
         // Mode indicator and operation prompt
         std::string modeStr = render3D ? "[3D Mode]" : "[Normal Mode]";
         cv::putText(canvas, modeStr, cv::Point(12, panelH * 2 - 40), cv::FONT_HERSHEY_DUPLEX, 0.6, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-        cv::putText(canvas, "M:3D  S:Save  C:Colormap  +/-:Alpha  Esc:Exit", cv::Point(12, panelH * 2 - 14), cv::FONT_HERSHEY_DUPLEX, 0.55, cv::Scalar(255, 255, 255), 1,
-                    cv::LINE_AA);
+        cv::putText(canvas, "M:3D  S:Save  C:Colormap  +/-:Alpha  Esc:Exit", cv::Point(12, panelH * 2 - 14), cv::FONT_HERSHEY_DUPLEX, 0.55,
+                    cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
         cv::imshow(mainWinName, canvas);
 
@@ -244,10 +246,10 @@ int main(void) try {
             std::cout << (render3D ? "3D depth rendering ON" : "3D depth rendering OFF") << std::endl;
         }
         else if(key == 'c' || key == 'C') {
-            const int maps[]   = {cv::COLORMAP_JET, cv::COLORMAP_TURBO, cv::COLORMAP_MAGMA, cv::COLORMAP_INFERNO, cv::COLORMAP_PLASMA};
-            const char *names[] = {"JET", "TURBO", "MAGMA", "INFERNO", "PLASMA"};
-            const int count    = sizeof(maps) / sizeof(maps[0]);
-            int idx            = 0;
+            const int   maps[]  = { cv::COLORMAP_JET, cv::COLORMAP_TURBO, cv::COLORMAP_MAGMA, cv::COLORMAP_INFERNO, cv::COLORMAP_PLASMA };
+            const char *names[] = { "JET", "TURBO", "MAGMA", "INFERNO", "PLASMA" };
+            const int   count   = sizeof(maps) / sizeof(maps[0]);
+            int         idx     = 0;
             for(int i = 0; i < count; i++) {
                 if(maps[i] == colormapId) {
                     idx = (i + 1) % count;

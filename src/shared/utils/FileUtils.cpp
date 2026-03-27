@@ -94,24 +94,22 @@ int mkDirs(const char *dir) {
 
 std::string getCurrentWorkDirectory() {
 #ifdef WIN32
-    wchar_t buffer[MAX_PATH] = {0};
-    HMODULE hModule = NULL;
-    if (!GetModuleHandleExW(
-        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-        (LPCWSTR)&getCurrentWorkDirectory,&hModule)) 
-    {
+    wchar_t buffer[MAX_PATH] = { 0 };
+    HMODULE hModule          = NULL;
+    if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)&getCurrentWorkDirectory,
+                           &hModule)) {
         LOG_ERROR("Failed to get module handle");
         return "";
     }
 
-    if (!GetModuleFileNameW(hModule, buffer, MAX_PATH)) {
+    if(!GetModuleFileNameW(hModule, buffer, MAX_PATH)) {
         LOG_ERROR("Failed to get module file name");
         return "";
     }
 
     std::wstring wpathStr(buffer);
-    size_t last_slash = wpathStr.find_last_of(L"\\/");
-    if (last_slash != std::wstring::npos) {
+    size_t       last_slash = wpathStr.find_last_of(L"\\/");
+    if(last_slash != std::wstring::npos) {
         wpathStr = wpathStr.substr(0, last_slash);
     }
 
@@ -121,10 +119,10 @@ std::string getCurrentWorkDirectory() {
 
     return pathStr;
 #else
-    Dl_info info;
+    Dl_info     info;
     std::string pathStr = "";
-    if(dladdr((void *)getCurrentWorkDirectory, &info)) { 
-        pathStr = info.dli_fname;
+    if(dladdr((void *)getCurrentWorkDirectory, &info)) {
+        pathStr             = info.dli_fname;
         size_t lastSlashPos = pathStr.rfind('/');
         if(lastSlashPos != std::string::npos) {
             return pathStr.substr(0, lastSlashPos);
@@ -252,4 +250,3 @@ std::string removeExtensionOfFileName(const std::string &fileName) {
 
 }  // namespace utils
 }  // namespace libobsensor
-

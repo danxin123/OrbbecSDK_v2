@@ -32,7 +32,7 @@ public:
     virtual ~VideoSensor() noexcept override;
 
     virtual void start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) override;
-    void stop() override;
+    void         stop() override;
 
     virtual void updateFormatFilterConfig(const std::vector<FormatFilterConfig> &configs);
     void         setStreamProfileList(const StreamProfileList &profileList) override;
@@ -53,7 +53,7 @@ protected:
     std::shared_ptr<const StreamProfile> currentBackendStreamProfile_;
     StreamProfileList                    backendStreamProfileList_;
 
-    std::shared_ptr<IFrameMetadataModifier> frameMetadataModifier_;
+    std::shared_ptr<IFrameMetadataModifier>        frameMetadataModifier_;
     std::shared_ptr<IFrameMetadataParserContainer> frameMetadataParserContainer_;
 };
 

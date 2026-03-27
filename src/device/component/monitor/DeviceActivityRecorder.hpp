@@ -30,9 +30,9 @@ private:
     }
 
 private:
-    static constexpr uint32_t                         activityCount_ = static_cast<uint32_t>(DeviceActivity::Count);
-    std::array<std::atomic<int64_t>, activityCount_>  lastActive_{};
-    std::atomic<int64_t>                              lastActiveOverall_{ 0 };
+    static constexpr uint32_t                        activityCount_ = static_cast<uint32_t>(DeviceActivity::Count);
+    std::array<std::atomic<int64_t>, activityCount_> lastActive_{};
+    std::atomic<int64_t>                             lastActiveOverall_{ 0 };
 };
 
 }  // namespace libobsensor

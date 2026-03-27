@@ -16,10 +16,9 @@
 
 namespace hw_test_main {
 
-static const char *kDestructiveTestFilter =
-    "TC_CPP_14_Property_HW.TC_CPP_14_07_customer_data:"
-    "TC_CPP_21_Firmware.TC_CPP_21_08_firmware_update:"
-    "TC_CPP_21_Firmware.TC_CPP_21_09_update_depth_presets";
+static const char *kDestructiveTestFilter = "TC_CPP_14_Property_HW.TC_CPP_14_07_customer_data:"
+                                            "TC_CPP_21_Firmware.TC_CPP_21_08_firmware_update:"
+                                            "TC_CPP_21_Firmware.TC_CPP_21_09_update_depth_presets";
 
 inline void setDefaultFilterIfUnset(const std::string &filter) {
     auto &currentFilter = ::testing::GTEST_FLAG(filter);
@@ -45,7 +44,7 @@ public:
         std::cout << "\n[FW-UPGRADE] ===== Pre-test firmware upgrade =====\n"
                   << "[FW-UPGRADE] File: " << fwPath << "\n";
 
-        auto ctx = std::make_shared<ob::Context>();
+        auto                            ctx = std::make_shared<ob::Context>();
         std::shared_ptr<ob::DeviceList> devList;
         try {
             devList = ctx->queryDeviceList();
@@ -60,10 +59,10 @@ public:
             return;
         }
 
-        auto device = devList->getDevice(0);
-        auto info   = device->getDeviceInfo();
-        const std::string sn   = info->getSerialNumber() ? info->getSerialNumber() : "";
-        const std::string name = info->getName() ? info->getName() : "?";
+        auto              device = devList->getDevice(0);
+        auto              info   = device->getDeviceInfo();
+        const std::string sn     = info->getSerialNumber() ? info->getSerialNumber() : "";
+        const std::string name   = info->getName() ? info->getName() : "?";
         std::cout << "[FW-UPGRADE] Device: " << name << "  SN=" << sn << "\n";
 
         std::atomic<OBFwUpdateState> lastState{ STAT_START };
@@ -105,8 +104,7 @@ public:
             return;
         }
 
-        std::cout << "[FW-UPGRADE] Upgrade completed (state=" << static_cast<int>(finalState)
-                  << "). Triggering automatic reboot...\n";
+        std::cout << "[FW-UPGRADE] Upgrade completed (state=" << static_cast<int>(finalState) << "). Triggering automatic reboot...\n";
 
         auto reconnectWaiter = beginWaitForReconnect(ctx);
 
@@ -134,7 +132,7 @@ public:
 
 private:
     struct ReconnectWaiter {
-        OBCallbackId             callbackId = INVALID_CALLBACK_ID;
+        OBCallbackId                       callbackId = INVALID_CALLBACK_ID;
         std::shared_ptr<std::atomic<bool>> reconnected;
     };
 
@@ -142,8 +140,8 @@ private:
         ReconnectWaiter waiter;
         waiter.reconnected = std::make_shared<std::atomic<bool>>(false);
         auto reconnected   = waiter.reconnected;
-        waiter.callbackId  = ctx->registerDeviceChangedCallback(
-            [reconnected](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
+        waiter.callbackId =
+            ctx->registerDeviceChangedCallback([reconnected](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
                 if(added && added->getCount() > 0) {
                     reconnected->store(true);
                 }

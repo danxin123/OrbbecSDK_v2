@@ -13,5 +13,5 @@ double getBagFileVersion();
 bool validateBagFileVersion(double recordVersion);
 
 std::string createUnsupportedBagFileVersionMessage(double recordedVersion);
-} // namespace utils
+}  // namespace utils
 }  // namespace libobsensor

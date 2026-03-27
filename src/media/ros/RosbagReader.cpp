@@ -399,9 +399,9 @@ std::shared_ptr<Frame> RosReader::createImuFrame(const rosbag::MessageInstance &
 std::shared_ptr<Frame> RosReader::createVideoFrame(const rosbag::MessageInstance &msg) {
     auto                         videoMsgTopic = msg.getTopic();
     sensor_msgs::Image::ConstPtr imagePtr      = msg.instantiate<sensor_msgs::Image>();
-    auto                         frame         = libobsensor::FrameFactory::createVideoFrameFromUserBuffer(
-        RosTopic::getFrameTypeIdentifier(videoMsgTopic), convertStringToFormat(imagePtr->encoding), imagePtr->width, imagePtr->height,
-        (uint8_t *)imagePtr->data.data(), imagePtr->data.size());
+    auto                         frame =
+        libobsensor::FrameFactory::createVideoFrameFromUserBuffer(RosTopic::getFrameTypeIdentifier(videoMsgTopic), convertStringToFormat(imagePtr->encoding),
+                                                                  imagePtr->width, imagePtr->height, (uint8_t *)imagePtr->data.data(), imagePtr->data.size());
 
     frame->updateMetadata(imagePtr->metadata.data(), imagePtr->metadatasize);
     frame->setNumber(imagePtr->number);

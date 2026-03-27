@@ -34,9 +34,9 @@
 // Command-line arguments
 // ============================================================
 struct CmdArgs {
-    bool        showHelp     = false;
-    bool        listOnly     = false;
-    bool        updateAll    = false;
+    bool        showHelp  = false;
+    bool        listOnly  = false;
+    bool        updateAll = false;
     std::string firmwarePath;
     std::string serial;
 };
@@ -45,11 +45,11 @@ struct CmdArgs {
 // Per-update state (reset before each device update)
 // ============================================================
 struct UpdateState {
-    std::atomic<bool> firstCall{true};
-    std::atomic<bool> needReupdate{false};
-    std::atomic<bool> success{false};
-    std::atomic<bool> mismatch{false};
-    std::atomic<bool> failure{false};
+    std::atomic<bool> firstCall{ true };
+    std::atomic<bool> needReupdate{ false };
+    std::atomic<bool> success{ false };
+    std::atomic<bool> mismatch{ false };
+    std::atomic<bool> failure{ false };
 };
 
 static bool g_ansiEscapeSupported = false;
@@ -62,8 +62,7 @@ static bool        parseArguments(int argc, char *argv[], CmdArgs &args);
 static void        printDeviceList(const std::vector<std::shared_ptr<ob::Device>> &devices);
 static void        firmwareUpdateCallback(UpdateState &state, OBFwUpdateState cbState, const char *message, uint8_t percent);
 static bool        updateSingleDevice(std::shared_ptr<ob::Device> device, const std::string &firmwarePath, UpdateState &state);
-static bool        waitForDeviceReboot(std::shared_ptr<ob::Context> context, const std::string &serial,
-                                       std::shared_ptr<ob::Device> &outDevice);
+static bool        waitForDeviceReboot(std::shared_ptr<ob::Context> context, const std::string &serial, std::shared_ptr<ob::Device> &outDevice);
 static std::string connectionTypeStr(const char *ct);
 
 // ============================================================
@@ -143,8 +142,9 @@ int main(int argc, char *argv[]) try {
 
             UpdateState state;
             try {
-                devices[i]->updateFirmware(args.firmwarePath.c_str(),
-                                           [&state](OBFwUpdateState s, const char *msg, uint8_t pct) { firmwareUpdateCallback(state, s, msg, pct); }, false);
+                devices[i]->updateFirmware(
+                    args.firmwarePath.c_str(), [&state](OBFwUpdateState s, const char *msg, uint8_t pct) { firmwareUpdateCallback(state, s, msg, pct); },
+                    false);
             }
             catch(ob::Error &e) {
                 std::cerr << "  Error: " << e.what() << std::endl;
@@ -162,23 +162,23 @@ int main(int argc, char *argv[]) try {
         // Summary
         std::cout << "\n========== Upgrade Summary ==========" << std::endl;
         std::cout << "Success   (" << successList.size() << "):" << std::endl;
-        for(auto &d : successList)
+        for(auto &d: successList)
             std::cout << "  - " << d->getDeviceInfo()->getName() << "  SN: " << d->getDeviceInfo()->getSerialNumber() << std::endl;
 
         std::cout << "Mismatch  (" << mismatchList.size() << "):" << std::endl;
-        for(auto &d : mismatchList)
+        for(auto &d: mismatchList)
             std::cout << "  - " << d->getDeviceInfo()->getName() << "  SN: " << d->getDeviceInfo()->getSerialNumber() << std::endl;
         if(!mismatchList.empty())
             std::cout << "  (check firmware file matches the device model)" << std::endl;
 
         std::cout << "Failed    (" << failedList.size() << "):" << std::endl;
-        for(auto &d : failedList)
+        for(auto &d: failedList)
             std::cout << "  - " << d->getDeviceInfo()->getName() << "  SN: " << d->getDeviceInfo()->getSerialNumber() << std::endl;
 
         // Reboot successful devices
         if(!successList.empty()) {
             std::cout << "\nRebooting " << successList.size() << " successfully updated device(s)..." << std::endl;
-            for(auto &d : successList) {
+            for(auto &d: successList) {
                 try {
                     d->reboot();
                 }
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) try {
         targetDevice = devices[0];
     }
     else {
-        for(auto &d : devices) {
+        for(auto &d: devices) {
             if(std::string(d->getDeviceInfo()->getSerialNumber()) == args.serial) {
                 targetDevice = d;
                 break;
@@ -382,7 +382,7 @@ static bool parseArguments(int argc, char *argv[], CmdArgs &args) {
     // Check file extension
     if(args.firmwarePath.size() > 4) {
         std::string ext = args.firmwarePath.substr(args.firmwarePath.size() - 4);
-        for(auto &c : ext)
+        for(auto &c: ext)
             c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
         if(ext != ".bin" && ext != ".img") {
             std::cerr << "Error: firmware file must be .bin or .img." << std::endl;
@@ -485,8 +485,8 @@ static void firmwareUpdateCallback(UpdateState &state, OBFwUpdateState cbState, 
 static bool updateSingleDevice(std::shared_ptr<ob::Device> device, const std::string &firmwarePath, UpdateState &state) {
     std::cout << "\nUpgrading firmware, please wait...\n" << std::endl;
     try {
-        device->updateFirmware(firmwarePath.c_str(),
-                               [&state](OBFwUpdateState s, const char *msg, uint8_t pct) { firmwareUpdateCallback(state, s, msg, pct); }, false);
+        device->updateFirmware(
+            firmwarePath.c_str(), [&state](OBFwUpdateState s, const char *msg, uint8_t pct) { firmwareUpdateCallback(state, s, msg, pct); }, false);
     }
     catch(ob::Error &e) {
         std::cerr << "\n  Upgrade error: " << e.what() << std::endl;

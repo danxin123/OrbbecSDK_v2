@@ -45,9 +45,9 @@ int main(void) {
 
     // Wait frameset in a loop, exit when ESC is pressed.
     while(true) {
-        const ob_frame *frameset = NULL;
-const ob_frame *depth_frame = NULL;
-uint64_t index;
+        const ob_frame *frameset    = NULL;
+        const ob_frame *depth_frame = NULL;
+        uint64_t        index;
 
         // Wait for a key press
         char key = ob_smpl_wait_for_key_press(10);
@@ -122,7 +122,6 @@ uint64_t index;
 
     ob_delete_pipeline(pipeline, &error);
     check_ob_error(&error);
-    
+
     return 0;
 }
-

@@ -102,4 +102,3 @@ std::shared_ptr<const SourcePortInfo> HidDevicePort::getSourcePortInfo() const {
 }
 
 }  // namespace libobsensor
-

@@ -14,22 +14,22 @@ namespace libobsensor {
 #define G435Le_UVC_METADATA_SIZE 108
 #pragma pack(push, 2)
 struct G435LeCommonUvcMetadata {
-    uint8_t                       magic[8];         //fixed magic:"ORBBEC"
-    uint32_t                      data_len;         //Length of the entire metadata data structure
-    uint32_t                      frame_counter;
-    uint32_t                      timestamp_fsin_h32;
-    uint32_t                      timestamp_fsin_l32;
-    uint32_t                      timestamp_sof_sec;
-    uint32_t                      timestamp_sof_nsec;
-    uint32_t                      exposure;
-    uint32_t                      timestamp_sync_in_h32;
-    uint32_t                      timestamp_sync_in_l32;
-    uint32_t                      timestamp_lpps_h32;
-    uint32_t                      timestamp_lpps_l32;
-    uint32_t                      timestamp_offset_h32;
-    uint32_t                      timestamp_offset_l32;
-    uint16_t                      digital_gain;
-    uint16_t                      analog_gain;
+    uint8_t  magic[8];  // fixed magic:"ORBBEC"
+    uint32_t data_len;  // Length of the entire metadata data structure
+    uint32_t frame_counter;
+    uint32_t timestamp_fsin_h32;
+    uint32_t timestamp_fsin_l32;
+    uint32_t timestamp_sof_sec;
+    uint32_t timestamp_sof_nsec;
+    uint32_t exposure;
+    uint32_t timestamp_sync_in_h32;
+    uint32_t timestamp_sync_in_l32;
+    uint32_t timestamp_lpps_h32;
+    uint32_t timestamp_lpps_l32;
+    uint32_t timestamp_offset_h32;
+    uint32_t timestamp_offset_l32;
+    uint16_t digital_gain;
+    uint16_t analog_gain;
 
     struct bitmap_union_0_fields {
         uint8_t frame_type : 4;            // depth/disparity/lmono/rmono/YUV422/mjpeg
@@ -92,7 +92,7 @@ struct G435LeDepthUvcMetadata : public G435LeCommonUvcMetadata {
 
 #pragma pack(pop)
 
-static_assert(sizeof(G435LeColorUvcMetadata) ==G435Le_UVC_METADATA_SIZE, "G435LeColorUvcMetadata size mismatch!");
+static_assert(sizeof(G435LeColorUvcMetadata) == G435Le_UVC_METADATA_SIZE, "G435LeColorUvcMetadata size mismatch!");
 static_assert(sizeof(G435LeDepthUvcMetadata) == G435Le_UVC_METADATA_SIZE, "G435LeDepthUvcMetadata size mismatch!");
 
 }  // namespace libobsensor

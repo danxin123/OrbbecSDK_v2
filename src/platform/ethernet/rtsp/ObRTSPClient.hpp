@@ -31,8 +31,8 @@ enum RTSPState {
 
 class ObRTSPClient : public RTSPClient {
 public:
-    static ObRTSPClient *createNew(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback, int verbosityLevel = 0,
-                                   portNumBits tunnelOverHTTPPortNum = 0, int socketNumToServer = -1);
+    static ObRTSPClient *createNew(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback,
+                                   int verbosityLevel = 0, portNumBits tunnelOverHTTPPortNum = 0, int socketNumToServer = -1);
 
     virtual ~ObRTSPClient() noexcept override;
 
@@ -41,8 +41,8 @@ public:
     void stopStream();
 
 protected:
-    ObRTSPClient(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback, int verbosityLevel = 0, portNumBits tunnelOverHTTPPortNum = 0,
-                 int socketNumToServer = -1);
+    ObRTSPClient(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback,
+                 int verbosityLevel = 0, portNumBits tunnelOverHTTPPortNum = 0, int socketNumToServer = -1);
 
 private:
     void DESCRIBE();
@@ -74,7 +74,7 @@ private:
 
 private:
     std::shared_ptr<const StreamProfile> profile_;
-    MutableFrameCallback frameCallback_;
+    MutableFrameCallback                 frameCallback_;
 
     std::string                 errorMsg_;
     CommandState                commandState_ = CMD_DONE;
@@ -92,4 +92,3 @@ private:
 };
 
 }  // namespace libobsensor
-

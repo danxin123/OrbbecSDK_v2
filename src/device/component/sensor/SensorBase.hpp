@@ -47,7 +47,7 @@ public:
     // when start Stream fails or interrupts, try to recover by restarting the stream; If Timeout<0, never timeout. if Timeout=0, use default timeout.
     void enableStreamRecovery(uint32_t maxRecoveryCount = DefaultMaxRecoveryCount, int noStreamTimeoutMs = DefaultNoStreamTimeoutMs,
                               int streamInterruptTimeoutMs = DefaultStreamInterruptTimeoutMs);
-     void startStreamRecovery();
+    void startStreamRecovery();
     // stop trying to recover the stream
     void disableStreamRecovery();
     // Waits for the sensor to finish the recovering process.
@@ -86,7 +86,7 @@ protected:
     std::map<uint32_t, StreamStateChangedCallback> streamStateChangedCallbacks_;
     uint32_t                                       StreamStateChangedCallbackTokenCounter_ = 0;
 
-    std::recursive_mutex                 streamRecoverMutex_;
+    std::recursive_mutex streamRecoverMutex_;
 
     std::mutex                 streamStateMutex_;
     std::condition_variable    streamStateCv_;

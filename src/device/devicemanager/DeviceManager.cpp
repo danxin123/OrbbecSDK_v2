@@ -314,7 +314,7 @@ void DeviceManager::enableDeviceClockSync(void *caller, uint64_t repeatInterval)
                             // ensure fitting after time sync
                             auto globalTspFitter = dev->getComponentT<IGlobalTimestampFitter>(libobsensor::OB_DEV_COMPONENT_GLOBAL_TIMESTAMP_FILTER);
                             globalTspFitter->reFitting(false);
-                            });
+                        });
                     }
                 }
             }

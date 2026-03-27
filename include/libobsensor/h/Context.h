@@ -110,7 +110,7 @@ OB_EXPORT ob_device *ob_create_net_device_ex(ob_context *context, const char *ad
 
 /**
  * @brief Set a device plug-in callback function
- * 
+ *
  * @deprecated This function is deprecated. Please use ob_register_device_changed_callback() instead.
  *
  * @attention The added and removed device lists returned through the callback interface need to be released manually

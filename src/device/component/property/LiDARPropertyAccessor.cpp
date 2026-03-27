@@ -43,21 +43,21 @@ const std::unordered_map<uint32_t, LiDAROpCode> LiDAROperationInfomap = {
     { OB_PROP_LIDAR_MEMS_FRENQUENCY_FLOAT,
       { HpOpCode::OPCODE_SET_MEMS_FRENQUENCY, HpOpCode::OPCODE_GET_MEMS_FRENQUENCY, OB_FLOAT_PROPERTY } },  // set/get mems frequency
     { OB_PROP_LIDAR_MEMS_FOV_FACTOR_FLOAT,
-      { HpOpCode::OPCODE_SET_MEMS_FOV_FACTOR, HpOpCode::OPCODE_GET_MEMS_FOV_FACTOR, OB_FLOAT_PROPERTY } },                       // set/get mems fov factor
-    { OB_PROP_LIDAR_MEMS_ON_OFF_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_UNSUPPORTED, OB_INT_PROPERTY } },          // mems on/off
-    { OB_PROP_LIDAR_RESTART_MEMS_INT, { HpOpCode::OPCODE_RESTART_MEMS, HpOpCode::OPCODE_UNSUPPORTED, OB_INT_PROPERTY } },        // restart mems
+      { HpOpCode::OPCODE_SET_MEMS_FOV_FACTOR, HpOpCode::OPCODE_GET_MEMS_FOV_FACTOR, OB_FLOAT_PROPERTY } },                          // set/get mems fov factor
+    { OB_PROP_LIDAR_MEMS_ON_OFF_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_UNSUPPORTED, OB_INT_PROPERTY } },             // mems on/off
+    { OB_PROP_LIDAR_RESTART_MEMS_INT, { HpOpCode::OPCODE_RESTART_MEMS, HpOpCode::OPCODE_UNSUPPORTED, OB_INT_PROPERTY } },           // restart mems
     { OB_RAW_DATA_LIDAR_PRODUCT_MODEL, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_PRODUCT_MODEL, OB_STRUCT_PROPERTY } },  // get product model
     { OB_RAW_DATA_LIDAR_FIRMWARE_VERSION,
-      { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_FIRMWARE_VERSION, OB_STRUCT_PROPERTY } },                                     // get firmware version
-    { OB_RAW_DATA_LIDAR_FPGA_VERSION, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_FPGA_VERSION, OB_STRUCT_PROPERTY } },         // get fpga version
-    { OB_STRUCT_LIDAR_STATUS_INFO, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_STATUS_INFO, OB_STRUCT_PROPERTY } },             // get status info
-    { OB_PROP_LIDAR_WARNING_INFO_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_WARNING_INFO, OB_INT_PROPERTY } },            // get warning info
-    { OB_PROP_LIDAR_MOTOR_SPIN_SPEED_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_MOTOR_SPIN_SPEED, OB_INT_PROPERTY } },    // get spin speed
+      { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_FIRMWARE_VERSION, OB_STRUCT_PROPERTY } },                                   // get firmware version
+    { OB_RAW_DATA_LIDAR_FPGA_VERSION, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_FPGA_VERSION, OB_STRUCT_PROPERTY } },       // get fpga version
+    { OB_STRUCT_LIDAR_STATUS_INFO, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_STATUS_INFO, OB_STRUCT_PROPERTY } },           // get status info
+    { OB_PROP_LIDAR_WARNING_INFO_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_WARNING_INFO, OB_INT_PROPERTY } },          // get warning info
+    { OB_PROP_LIDAR_MOTOR_SPIN_SPEED_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_MOTOR_SPIN_SPEED, OB_INT_PROPERTY } },  // get spin speed
     { OB_PROP_LIDAR_MCU_TEMPERATURE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_MCU_TEMPERATURE, OB_INT_PROPERTY } },    // get mcu temperature
     { OB_PROP_LIDAR_FPGA_TEMPERATURE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_FPGA_TEMPERATURE, OB_INT_PROPERTY } },  // get fpga temperature
-    { OB_RAW_DATA_LIDAR_MOTOR_VERSION, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_MOTOR_VERSION, OB_STRUCT_PROPERTY } },  // get motor version
-    { OB_PROP_LIDAR_APD_HIGH_VOLTAGE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_APD_HIGH_VOLTAGE, OB_INT_PROPERTY } },    // get apd high voltage
-    { OB_PROP_LIDAR_APD_TEMPERATURE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_APD_TEMPERATURE, OB_INT_PROPERTY } },  // get apd temperature
+    { OB_RAW_DATA_LIDAR_MOTOR_VERSION, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_MOTOR_VERSION, OB_STRUCT_PROPERTY } },     // get motor version
+    { OB_PROP_LIDAR_APD_HIGH_VOLTAGE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_APD_HIGH_VOLTAGE, OB_INT_PROPERTY } },  // get apd high voltage
+    { OB_PROP_LIDAR_APD_TEMPERATURE_INT, { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_APD_TEMPERATURE, OB_INT_PROPERTY } },    // get apd temperature
     { OB_PROP_LIDAR_TX_HIGH_POWER_VOLTAGE_INT,
       { HpOpCode::OPCODE_UNSUPPORTED, HpOpCode::OPCODE_GET_TX_HIGH_POWER_VOLTAGE, OB_INT_PROPERTY } },  // get tx high power voltage
     { OB_PROP_LIDAR_TX_LOWER_POWER_VOLTAGE_INT,
@@ -278,7 +278,7 @@ void LiDARPropertyAccessor::getPropertyRange(uint32_t propertyId, OBPropertyRang
         range->def.intValue  = 0;
         break;
     }
-    case OB_PROP_LIDAR_MCU_TEMPERATURE_INT: 
+    case OB_PROP_LIDAR_MCU_TEMPERATURE_INT:
     case OB_PROP_LIDAR_APD_TEMPERATURE_INT:
     case OB_PROP_LIDAR_FPGA_TEMPERATURE_INT: {
         range->min.intValue  = 0;
@@ -295,10 +295,10 @@ void LiDARPropertyAccessor::getPropertyRange(uint32_t propertyId, OBPropertyRang
         break;
     }
     case OB_PROP_LIDAR_APD_HIGH_VOLTAGE_INT: {
-        range->min.intValue    = 70;
-        range->max.intValue    = 200;
-        range->step.intValue   = 1;
-        range->def.intValue    = 70;
+        range->min.intValue  = 70;
+        range->max.intValue  = 200;
+        range->step.intValue = 1;
+        range->def.intValue  = 70;
         break;
     }
     case OB_PROP_LIDAR_TX_HIGH_POWER_VOLTAGE_INT: {

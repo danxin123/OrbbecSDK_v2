@@ -178,4 +178,3 @@ bool cvt2Double(const std::string &string, double &dst) {
 }  // namespace string
 }  // namespace utils
 }  // namespace libobsensor
-

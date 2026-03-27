@@ -308,7 +308,7 @@ const std::vector<uint8_t> &PropertyServer::getStructureData(uint32_t propertyId
         throw invalid_value_exception(utils::string::to_string() << "Property " << propId << " does not support structure data getting");
     }
     utils::Timer timer;
-    const auto & data = structAccessor->getStructureData(propId);
+    const auto  &data = structAccessor->getStructureData(propId);
     for(auto &callback: it->second.accessCallbacks) {
         callback(propertyId, data.data(), data.size(), PROP_OP_READ);
     }
@@ -390,7 +390,7 @@ const std::vector<uint8_t> &PropertyServer::getStructureDataProtoV1_1(uint32_t p
         throw invalid_value_exception(utils::string::to_string() << "Property" << propId << " does not support structure data getting over proto v1.1");
     }
     utils::Timer timer;
-    const auto & data = structAccessor->getStructureDataProtoV1_1(propId, cmdVersion);
+    const auto  &data = structAccessor->getStructureDataProtoV1_1(propId, cmdVersion);
     for(auto callback: it->second.accessCallbacks) {
         callback(propertyId, data.data(), data.size(), PROP_OP_READ);
     }
@@ -445,7 +445,7 @@ const std::vector<uint8_t> &PropertyServer::getStructureDataListProtoV1_1(uint32
         throw invalid_value_exception(utils::string::to_string() << "Property" << propId << " does not support structure data list getting over proto v1.1");
     }
     utils::Timer timer;
-    const auto & data = structAccessor->getStructureDataListProtoV1_1(propId, cmdVersion);
+    const auto  &data = structAccessor->getStructureDataListProtoV1_1(propId, cmdVersion);
     for(auto callback: it->second.accessCallbacks) {
         callback(propertyId, data.data(), data.size(), PROP_OP_READ);
     }

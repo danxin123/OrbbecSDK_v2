@@ -12,7 +12,7 @@
 #include "libobsensor/h/ObTypes.h"
 #include "IAlignImpl.hpp"
 
-#if(defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm__))
+#if (defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm__))
 #include "SSE2NEON.h"
 #else
 #include <xmmintrin.h>

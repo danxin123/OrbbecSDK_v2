@@ -10,7 +10,7 @@ namespace libobsensor {
 
 class IStreamer {
 public:
-    virtual ~IStreamer() noexcept = default;
+    virtual ~IStreamer() noexcept                                                                         = default;
     virtual void startStream(std::shared_ptr<const StreamProfile> profile, MutableFrameCallback callback) = 0;
     virtual void stopStream(std::shared_ptr<const StreamProfile> profile)                                 = 0;
 };

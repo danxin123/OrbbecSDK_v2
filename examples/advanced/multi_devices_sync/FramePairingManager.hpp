@@ -6,7 +6,6 @@
 #include <mutex>
 #include <condition_variable>
 
-
 class FramePairingManager {
 public:
     FramePairingManager();
@@ -28,7 +27,7 @@ private:
     bool     timestampPairingEnable_;
     uint64_t timestampPairingRange_;
 
-    std::vector<std::shared_ptr<PipelineHolder>> pipelineHolderList_;
+    std::vector<std::shared_ptr<PipelineHolder>>   pipelineHolderList_;
     std::map<int, std::shared_ptr<PipelineHolder>> depthPipelineHolderList_;
     std::map<int, std::shared_ptr<PipelineHolder>> colorPipelineHolderList_;
 };

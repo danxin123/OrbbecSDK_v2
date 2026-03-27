@@ -236,4 +236,3 @@ public:
 };
 
 }  // namespace ob
-

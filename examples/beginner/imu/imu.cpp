@@ -70,8 +70,8 @@ int main() try {
     uint64_t frameCount = 0;
     auto     t0         = std::chrono::steady_clock::now();
 
-    const float ACCEL_MAX = 20.0f;   // m/s^2 (a bit over 2g)
-    const float GYRO_MAX  = 10.0f;   // rad/s
+    const float ACCEL_MAX = 20.0f;  // m/s^2 (a bit over 2g)
+    const float GYRO_MAX  = 10.0f;  // rad/s
 
     while(true) {
         auto key = ob_smpl::waitForKeyPressed(1);

@@ -38,9 +38,8 @@ public:
 
 private:
     std::shared_ptr<FirmwareUpdateContext> ctx_;
-    DeviceFwUpdateCallback deviceFwUpdateCallback_;
+    DeviceFwUpdateCallback                 deviceFwUpdateCallback_;
     std::thread                            updateThread_;
 };
 
 }  // namespace libobsensor
-

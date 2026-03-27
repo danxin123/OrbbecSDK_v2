@@ -21,7 +21,7 @@ RosWriter::~RosWriter() {
 }
 
 void RosWriter::stop(bool hasError) {
-    if (file_) {
+    if(file_) {
         file_.reset();
         file_ = nullptr;
 
@@ -137,7 +137,7 @@ void RosWriter::writeLiDARFrame(std::shared_ptr<const Frame> curFrame) {
 
     try {
         sensor_msgs::PointCloud2Ptr frameMsg(new sensor_msgs::PointCloud2());
-        frameMsg->header.stamp = orbbecRosbag::Time(std::chrono::duration<double>(timestampUs).count());
+        frameMsg->header.stamp    = orbbecRosbag::Time(std::chrono::duration<double>(timestampUs).count());
         frameMsg->header.frame_id = "camera_link";  // for point cloud rendering
 
         auto     dataSize  = curFrame->getDataSize();
@@ -338,8 +338,8 @@ void RosWriter::writeVideoStreamProfile(const OBSensorType sensorType, const std
         auto                 spDistortion = videoStreamProfile->getDistortion();
         std::array<float, 8> distortion   = { spDistortion.k1, spDistortion.k2, spDistortion.k3, spDistortion.k4,
                                               spDistortion.k5, spDistortion.k6, spDistortion.p1, spDistortion.p2 };
-        streamInfoMsg->cameraDistortion = distortion;
-        streamInfoMsg->distortionModel  = static_cast<uint8_t>(spDistortion.model);
+        streamInfoMsg->cameraDistortion   = distortion;
+        streamInfoMsg->distortionModel    = static_cast<uint8_t>(spDistortion.model);
 
         auto spIntrinsic                  = videoStreamProfile->getIntrinsic();
         streamInfoMsg->cameraIntrinsic[0] = spIntrinsic.fx;

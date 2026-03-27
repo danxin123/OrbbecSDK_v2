@@ -13,8 +13,8 @@ class UsbDeviceEnumerator : public IDeviceEnumerator, public std::enable_shared_
 public:
     UsbDeviceEnumerator(DeviceChangedCallback callback);
     ~UsbDeviceEnumerator() noexcept override;
-    DeviceEnumInfoList       getDeviceInfoList() override;
-    void                     setDeviceChangedCallback(DeviceChangedCallback callback) override;
+    DeviceEnumInfoList getDeviceInfoList() override;
+    void               setDeviceChangedCallback(DeviceChangedCallback callback) override;
 
 private:
     bool               onPlatformDeviceChanged(OBDeviceChangedType changeType, std::string devUid);
@@ -27,7 +27,7 @@ private:
 
 private:
     std::shared_ptr<Platform> platform_;
-    bool                   destroy_ = false;
+    bool                      destroy_ = false;
 
     std::shared_ptr<IDeviceWatcher> deviceWatcher_;
 

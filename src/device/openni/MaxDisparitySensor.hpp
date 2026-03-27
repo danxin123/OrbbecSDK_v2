@@ -17,7 +17,5 @@ public:
 private:
     std::map<std::shared_ptr<const StreamProfile>, std::shared_ptr<const StreamProfile>> profileVirtualRealMap_;
     std::map<std::shared_ptr<const StreamProfile>, OpenNIFrameProcessParam>              profileProcessParamMap_;
-
 };
-}  // namespace libobs
-
+}  // namespace libobsensor

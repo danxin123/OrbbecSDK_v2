@@ -33,7 +33,8 @@ public:
 
     /**
      * @brief Enables or disables the software noise removal filter.
-     * @note OrbebcSDK have a internal Noise removal filter, and it's default is on. If you use hardware noise removal filter, it is recommended to disable the internal filter.
+     * @note OrbebcSDK have a internal Noise removal filter, and it's default is on. If you use hardware noise removal filter, it is recommended to disable the
+     * internal filter.
      */
     void enableSwNoiseRemoveFilter(bool enable);
 

@@ -57,8 +57,8 @@ void doRecord() {
     }
 
     // Frame counting for FPS display
-    std::mutex                      frameMutex;
-    std::map<OBFrameType, uint64_t> frameCountMap;
+    std::mutex                          frameMutex;
+    std::map<OBFrameType, uint64_t>     frameCountMap;
     std::shared_ptr<const ob::FrameSet> renderFrameSet;
 
     pipe->start(config, [&](std::shared_ptr<ob::FrameSet> frameSet) {
@@ -66,7 +66,7 @@ void doRecord() {
             return;
         std::lock_guard<std::mutex> lock(frameMutex);
         renderFrameSet = frameSet;
-        auto count = frameSet->getCount();
+        auto count     = frameSet->getCount();
         for(uint32_t i = 0; i < count; i++) {
             auto frame = frameSet->getFrameByIndex(i);
             if(frame)
@@ -81,7 +81,7 @@ void doRecord() {
 
     ob_smpl::CVWindow win("Recording", 1280, 720, ob_smpl::ARRANGE_GRID);
 
-    std::atomic<bool> isPaused{false};
+    std::atomic<bool> isPaused{ false };
     win.setKeyPrompt("'S': Pause/Resume recording, 'Esc': Stop & save");
     win.setKeyPressedCallback([&](int key) {
         if(key == 's' || key == 'S') {
@@ -112,7 +112,7 @@ void doRecord() {
         if(now - startTime > 2000) {
             std::lock_guard<std::mutex> lock(frameMutex);
             std::string                 fps;
-            for(const auto &item : frameCountMap) {
+            for(const auto &item: frameCountMap) {
                 auto  name = ob::TypeHelper::convertOBFrameTypeToString(item.first);
                 float rate = item.second / ((now - startTime) / 1000.0f);
                 if(!fps.empty())
@@ -121,7 +121,7 @@ void doRecord() {
             }
             if(!fps.empty())
                 win.addLog("FPS: " + fps);
-            for(auto &item : frameCountMap)
+            for(auto &item: frameCountMap)
                 item.second = 0;
             startTime = now;
         }
@@ -155,7 +155,7 @@ void doPlayback() {
 
     std::cout << "Duration: " << playback->getDuration() << "ms" << std::endl;
 
-    auto config = std::make_shared<ob::Config>();
+    auto config     = std::make_shared<ob::Config>();
     auto sensorList = playback->getSensorList();
     for(uint32_t i = 0; i < sensorList->getCount(); i++) {
         config->enableStream(sensorList->getSensorType(i));

@@ -90,7 +90,7 @@ private:
 class G435LeMetadataParserBase : public IFrameMetadataParser {
 public:
     G435LeMetadataParserBase(IDevice *device, OBFrameMetadataType type, FrameMetadataModifier modifier,
-                           const std::multimap<OBPropertyID, std::vector<OBFrameMetadataType>> metadataTypeIdMap)
+                             const std::multimap<OBPropertyID, std::vector<OBFrameMetadataType>> metadataTypeIdMap)
         : device_(device), metadataType_(type), data_(0), modifier_(modifier), initPropertyValue_(true) {
         for(const auto &item: metadataTypeIdMap) {
             const std::vector<OBFrameMetadataType> &types = item.second;

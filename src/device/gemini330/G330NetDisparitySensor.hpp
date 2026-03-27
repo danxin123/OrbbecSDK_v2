@@ -16,6 +16,5 @@ public:
 
 private:
     uint32_t linkSpeed_;
-
 };
 }  // namespace libobsensor

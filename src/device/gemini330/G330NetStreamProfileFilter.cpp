@@ -7,11 +7,8 @@
 #include "exception/ObException.hpp"
 #include "property/InternalProperty.hpp"
 
-
 namespace libobsensor {
-G330NetStreamProfileFilter::G330NetStreamProfileFilter(IDevice *owner) : DeviceComponentBase(owner), perFormanceMode_(ADAPTIVE_PERFORMANCE_MODE) {
-
-}
+G330NetStreamProfileFilter::G330NetStreamProfileFilter(IDevice *owner) : DeviceComponentBase(owner), perFormanceMode_(ADAPTIVE_PERFORMANCE_MODE) {}
 
 StreamProfileList G330NetStreamProfileFilter::filter(const StreamProfileList &profiles) const {
     StreamProfileList filteredProfiles;

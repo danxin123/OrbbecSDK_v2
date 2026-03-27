@@ -177,7 +177,7 @@ void HidDevicePortGmsl::pollData() {
     imuOrigFrameMsg->imuHeader.reserved   = 0;
     imuOrigFrameMsg->reserved             = 0;
 
-    uint8_t imuFrameMaxSize = sizeof(OBImuOriginData) * (IMU_FRAME_MAX_NUM) + sizeof(i2c_msg_header_t) + sizeof(uint16_t);
+    uint8_t              imuFrameMaxSize = sizeof(OBImuOriginData) * (IMU_FRAME_MAX_NUM) + sizeof(i2c_msg_header_t) + sizeof(uint16_t);
     auto                 bufferSize      = std::max(sizeof(i2c_msg_t), static_cast<size_t>(imuFrameMaxSize));
     std::vector<uint8_t> databuf(bufferSize, 0);
     int                  size = getImuData(databuf.data());
@@ -299,4 +299,3 @@ int HidDevicePortGmsl::getImuData(uint8_t *data) {
 }
 
 }  // namespace libobsensor
-

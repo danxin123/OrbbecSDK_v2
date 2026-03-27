@@ -56,7 +56,8 @@ std::shared_ptr<Frame> FrameFactory::createFrameFromOtherFrame(std::shared_ptr<c
 }
 
 std::shared_ptr<Frame> FrameFactory::createVideoFrame(OBFrameType frameType, OBFormat frameFormat, uint32_t width, uint32_t height, uint32_t strideBytes) {
-    if(frameType == OB_FRAME_UNKNOWN || frameType == OB_FRAME_ACCEL || frameType == OB_FRAME_GYRO || frameType == OB_FRAME_SET || frameType == OB_FRAME_LIDAR_POINTS ) {
+    if(frameType == OB_FRAME_UNKNOWN || frameType == OB_FRAME_ACCEL || frameType == OB_FRAME_GYRO || frameType == OB_FRAME_SET
+       || frameType == OB_FRAME_LIDAR_POINTS) {
         throw libobsensor::invalid_value_exception("Invalid frame type for video frame.");
     }
 

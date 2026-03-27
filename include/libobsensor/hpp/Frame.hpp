@@ -894,7 +894,7 @@ public:
      *
      * @param[in] impl The pointer to the internal frame object.
      */
-    explicit LiDARPointsFrame(const ob_frame *impl) : Frame(impl){};
+    explicit LiDARPointsFrame(const ob_frame *impl) : Frame(impl) {};
     ~LiDARPointsFrame() noexcept override = default;
 };
 

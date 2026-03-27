@@ -30,11 +30,10 @@ protected:
     virtual void initSensorStreamProfile(std::shared_ptr<ISensor> sensor);
 
 protected:
-    const uint64_t deviceTimeFreq_ = 1000;     // in ms
-    const uint64_t frameTimeFreq_  = 1000000;  // in us
+    const uint64_t                                              deviceTimeFreq_ = 1000;     // in ms
+    const uint64_t                                              frameTimeFreq_  = 1000000;  // in us
     std::function<std::shared_ptr<IFrameTimestampCalculator>()> videoFrameTimestampCalculatorCreator_;
     std::shared_ptr<LazySuperPropertyAccessor>                  vendorPropertyAccessor_;
 };
 
 }  // namespace libobsensor
-

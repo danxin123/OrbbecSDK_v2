@@ -87,9 +87,9 @@ protected:
     Filter() = default;
 
     virtual void init(ob_filter *impl) {
-        impl_           = impl;
-        ob_error *error = nullptr;
-        const char *name = ob_filter_get_name(impl_, &error);
+        impl_             = impl;
+        ob_error   *error = nullptr;
+        const char *name  = ob_filter_get_name(impl_, &error);
         Error::handle(&error);
         name_ = name;
 

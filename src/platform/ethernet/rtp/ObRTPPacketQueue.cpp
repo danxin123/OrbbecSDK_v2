@@ -34,7 +34,7 @@ void ObRTPPacketQueue::destroy() {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         destroy_ = true;
-    }  
+    }
     cond_var_.notify_all();
 }
 

@@ -25,7 +25,6 @@
 
 namespace libobsensor {
 
-
 #define CHECK_HR(x) check(#x, x);
 #define LOG_HR(x) check(#x, x, false);
 
@@ -43,7 +42,6 @@ bool parse_usb_path_multiple_interface(uint16_t &vid, uint16_t &pid, uint16_t &m
 bool parse_usb_path_single_interface(uint16_t &vid, uint16_t &pid, std::string &serial, const std::string &path);
 bool getUsbDescriptors(uint16_t device_vid, uint16_t device_pid, const std::string &device_uid, std::string &location, UsbSpec &spec, std::string &serial,
                        std::string &url);
-
 
 /*
     Configuration Management (CM) tree node.
@@ -156,7 +154,6 @@ public:
 
 enum create_and_open_status { Mutex_Succeed, Mutex_TotalFailure, Mutex_AlreadyExist };
 
-
 class winapi_error : public std::runtime_error {
 public:
     explicit winapi_error(const char *message);
@@ -166,4 +163,3 @@ public:
 };
 
 }  // namespace libobsensor
-

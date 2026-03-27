@@ -4,8 +4,7 @@
 
 namespace libobsensor {
 
-class G330NetVideoSensor : public VideoSensor
-{
+class G330NetVideoSensor : public VideoSensor {
 public:
     G330NetVideoSensor(IDevice *owner, OBSensorType sensorType, const std::shared_ptr<ISourcePort> &backend, uint32_t linkSpeed);
     virtual ~G330NetVideoSensor() noexcept override;
@@ -20,7 +19,6 @@ private:
     OBInternalPropertyID streamSwitchPropertyId_;
     OBInternalPropertyID profilesSwitchPropertyId_;
     uint32_t             linkSpeed_;
-
 };
 
-}
+}  // namespace libobsensor

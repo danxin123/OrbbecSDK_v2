@@ -10,15 +10,15 @@
 
 namespace libobsensor {
 
-class PlaybackDeviceParamManager : public IAlgParamManager,public IDisparityAlgParamManager, public DeviceComponentBase {
+class PlaybackDeviceParamManager : public IAlgParamManager, public IDisparityAlgParamManager, public DeviceComponentBase {
 public:
     PlaybackDeviceParamManager(IDevice *owner, std::shared_ptr<PlaybackDevicePort> port);
     virtual ~PlaybackDeviceParamManager() noexcept override = default;
 
-    virtual void bindStreamProfileParams(std::vector<std::shared_ptr<const StreamProfile>> streamProfileList) override;
-    virtual const std::vector<OBD2CProfile> & getD2CProfileList() const override;
+    virtual void                              bindStreamProfileParams(std::vector<std::shared_ptr<const StreamProfile>> streamProfileList) override;
+    virtual const std::vector<OBD2CProfile>  &getD2CProfileList() const override;
     virtual const std::vector<OBCameraParam> &getCalibrationCameraParamList() const override;
-    virtual const OBIMUCalibrateParams &      getIMUCalibrationParam() const override;
+    virtual const OBIMUCalibrateParams       &getIMUCalibrationParam() const override;
 
     virtual const OBDisparityParam &getDisparityParam() const override;
 

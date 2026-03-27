@@ -13,7 +13,7 @@ std::shared_ptr<ob::Filter>        postLeftInfraredFilter  = nullptr;
 std::shared_ptr<ob::Filter>        postRightInfraredFilter = nullptr;
 std::shared_ptr<ob_smpl::CVWindow> win;
 
-int  main(void) try {
+int main(void) try {
     // Create a pipeline with default device
     ob::Pipeline pipe;
 
@@ -42,7 +42,7 @@ int  main(void) try {
     postDepthFilter         = ob::FilterFactory::createFilter("SequenceIdFilter");
     postLeftInfraredFilter  = ob::FilterFactory::createFilter("SequenceIdFilter");
     postRightInfraredFilter = ob::FilterFactory::createFilter("SequenceIdFilter");
-    
+
     // load frame interleave mode as 'Laser On-Off'
     device->loadFrameInterleave("Laser On-Off");
     // enable frame interleave
@@ -70,7 +70,7 @@ int  main(void) try {
     // Start the pipeline with config
     pipe.start(config);
 
-    postDepthFilter->setConfigValue("sequenceid", -1); // sequenceid can be -1,0,1
+    postDepthFilter->setConfigValue("sequenceid", -1);  // sequenceid can be -1,0,1
     postLeftInfraredFilter->setConfigValue("sequenceid", -1);
     postRightInfraredFilter->setConfigValue("sequenceid", -1);
 
@@ -98,7 +98,7 @@ int  main(void) try {
 
         try {
             // Using SequenceId filter to filter frames
-            
+
             // 1: depth
             auto depthFrame = postFilter(frameSet, postDepthFilter, OB_FRAME_DEPTH);
             if(depthFrame) {

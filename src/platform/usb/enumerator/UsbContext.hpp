@@ -16,11 +16,10 @@ public:
     virtual libusb_context *getContext() const override;
 
     virtual void startEventHandleThread() override;
-    virtual void stopEventHandleThread()  override;
-
+    virtual void stopEventHandleThread() override;
 
 private:
-    libusb_context* libusbCtx_;
+    libusb_context *libusbCtx_;
     std::thread     libusbEventHandlerThread_;
     int             libusbEventHandlerExit_;
 };

@@ -12,11 +12,10 @@
 #include <iostream>
 
 enum AlignMode { MODE_DISABLE = 0, MODE_SW, MODE_HW, MODE_COUNT };
-static const char *modeNames[] = {"DISABLED", "SOFTWARE (Align filter)", "HARDWARE (D2C HW)"};
+static const char *modeNames[] = { "DISABLED", "SOFTWARE (Align filter)", "HARDWARE (D2C HW)" };
 
 // Check if the current pipeline supports HW D2C for the given color+depth profiles.
-bool checkHWD2CSupport(std::shared_ptr<ob::Pipeline> pipe, std::shared_ptr<ob::StreamProfile> colorProfile,
-                       std::shared_ptr<ob::StreamProfile> depthProfile) {
+bool checkHWD2CSupport(std::shared_ptr<ob::Pipeline> pipe, std::shared_ptr<ob::StreamProfile> colorProfile, std::shared_ptr<ob::StreamProfile> depthProfile) {
     auto hwProfiles = pipe->getD2CDepthProfileList(colorProfile, ALIGN_D2C_HW_MODE);
     if(hwProfiles->count() == 0)
         return false;

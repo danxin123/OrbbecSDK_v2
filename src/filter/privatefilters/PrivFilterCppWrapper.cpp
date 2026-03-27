@@ -45,7 +45,7 @@ void PrivFilterCppWrapper::setConfigData(void *data, uint32_t size) {
         LOG_WARN("Private filter set config data is null or size is 0.");
         return;
     }
-    
+
     privFilterCtx_->set_config_data(privFilterCtx_->filter, data, size, &error);
     if(error) {
         LOG_WARN("Private filter {} set config data failed: {}", name_, error->message);

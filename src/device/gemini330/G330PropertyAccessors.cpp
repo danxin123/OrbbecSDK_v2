@@ -12,7 +12,8 @@
 
 namespace libobsensor {
 
-G330Disp2DepthPropertyAccessor::G330Disp2DepthPropertyAccessor(IDevice *owner) : owner_(owner), hwDisparityToDepthEnabled_(true), swDisparityToDepthEnabled_(false) {}
+G330Disp2DepthPropertyAccessor::G330Disp2DepthPropertyAccessor(IDevice *owner)
+    : owner_(owner), hwDisparityToDepthEnabled_(true), swDisparityToDepthEnabled_(false) {}
 
 void G330Disp2DepthPropertyAccessor::setPropertyValue(uint32_t propertyId, const OBPropertyValue &value) {
     switch(propertyId) {

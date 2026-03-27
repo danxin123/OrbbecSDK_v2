@@ -165,7 +165,7 @@ void StreamExtrinsicsManager::registerExtrinsics(const std::shared_ptr<const Str
     }
 }
 
-void StreamExtrinsicsManager::registerExtrinsics(const std::shared_ptr<const StreamProfile> &from, const OBStreamType &type, const OBExtrinsic &extrinsics){
+void StreamExtrinsicsManager::registerExtrinsics(const std::shared_ptr<const StreamProfile> &from, const OBStreamType &type, const OBExtrinsic &extrinsics) {
     if(!from) {
         throw invalid_value_exception("Invalid stream profile, from or to is null");
     }
@@ -173,30 +173,32 @@ void StreamExtrinsicsManager::registerExtrinsics(const std::shared_ptr<const Str
     if(fromId == 0) {
         throw invalid_value_exception("From Stream profile not registered!");
     }
-    
-    //find to ids
+
+    // find to ids
     std::vector<uint64_t> toIds;
-    while(toIds.empty()){
-        for(auto iter : extrinsicsGraph_){
+    while(toIds.empty()) {
+        for(auto iter: extrinsicsGraph_) {
             auto extrinsicList = iter.second;
-            if(iter.first == fromId){
-                for(const auto &extrinsicPair : extrinsicList){
+            if(iter.first == fromId) {
+                for(const auto &extrinsicPair: extrinsicList) {
                     toIds.push_back(extrinsicPair.first);
                 }
                 break;
-            }else{
-                auto foundIter = std::find_if(extrinsicList.begin(),extrinsicList.end(),[fromId](const std::pair<uint64_t,OBExtrinsic>& pair){return pair.first == fromId;});
-                if(foundIter == extrinsicList.end()){
+            }
+            else {
+                auto foundIter = std::find_if(extrinsicList.begin(), extrinsicList.end(),
+                                              [fromId](const std::pair<uint64_t, OBExtrinsic> &pair) { return pair.first == fromId; });
+                if(foundIter == extrinsicList.end()) {
                     continue;
                 }
-                if((memcmp(&foundIter->second, &IdentityExtrinsics, sizeof(OBExtrinsic)) == 0)){
+                if((memcmp(&foundIter->second, &IdentityExtrinsics, sizeof(OBExtrinsic)) == 0)) {
                     fromId = iter.first;
                 }
             }
         }
     }
 
-    //find to stream profile
+    // find to stream profile
     std::shared_ptr<const StreamProfile> to;
     for(auto spIter = streamProfileMap_.begin(); spIter != streamProfileMap_.end();) {
         for(auto weakSp: spIter->second) {
@@ -213,8 +215,8 @@ void StreamExtrinsicsManager::registerExtrinsics(const std::shared_ptr<const Str
                 }
             }
         }
-        
-        if(to){
+
+        if(to) {
             break;
         }
         ++spIter;

@@ -49,7 +49,7 @@ std::string SystemInfosManager::getCurrentTimeHMS() {
 #endif
 }
 
-#if(defined(_WIN32) || defined(_WIN64))
+#if (defined(_WIN32) || defined(_WIN64))
 uint64_t SystemInfosManager::convertTimeFormat(const FILETIME *ftime) {
     LARGE_INTEGER li;
 
@@ -194,7 +194,7 @@ float SystemInfosManager::getMemoryUsage() {
 #elif defined(__APPLE__)
 
 float SystemInfosManager::getCpuUsage() {
-    auto               pid = getpid();
+    auto               pid    = getpid();
     const std::string  header = "usage";
     std::ostringstream command;
 
@@ -211,26 +211,27 @@ float SystemInfosManager::getCpuUsage() {
         return -1.0f;
     }
 
-    std::string result;
+    std::string           result;
     std::array<char, 128> buffer;
     while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
     }
 
     std::istringstream outStream(result);
-    std::string line;
-    float usage = -1.0f;
+    std::string        line;
+    float              usage = -1.0f;
     while(std::getline(outStream, line)) {
         size_t pos = line.find(header);
-        
-        if ( pos != std::string::npos ) {
+
+        if(pos != std::string::npos) {
             // header
             continue;
         }
         try {
             usage = std::stof(line);
             return usage;
-        } catch ( const std::exception &e) {
+        }
+        catch(const std::exception &e) {
             std::cerr << "Error reading usage: " << e.what() << std::endl;
             break;
         }
@@ -241,7 +242,7 @@ float SystemInfosManager::getCpuUsage() {
 }
 
 float SystemInfosManager::getMemoryUsage() {
-    auto               pid = getpid();
+    auto               pid    = getpid();
     const std::string  header = "usage";
     std::ostringstream command;
 
@@ -258,26 +259,27 @@ float SystemInfosManager::getMemoryUsage() {
         return -1.0f;
     }
 
-    std::string result;
+    std::string           result;
     std::array<char, 128> buffer;
     while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
     }
 
     std::istringstream outStream(result);
-    std::string line;
-    float usage = -1.0f;
+    std::string        line;
+    float              usage = -1.0f;
     while(std::getline(outStream, line)) {
         size_t pos = line.find(header);
-        
-        if ( pos != std::string::npos ) {
+
+        if(pos != std::string::npos) {
             // header
             continue;
         }
         try {
             usage = std::stof(line);
-            return usage / 1024.0f; // to MB
-        } catch ( const std::exception &e) {
+            return usage / 1024.0f;  // to MB
+        }
+        catch(const std::exception &e) {
             std::cerr << "Error reading usage: " << e.what() << std::endl;
             break;
         }

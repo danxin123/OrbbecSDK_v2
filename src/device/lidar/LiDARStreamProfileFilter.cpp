@@ -10,14 +10,13 @@
 
 namespace libobsensor {
 
-LiDARStreamProfileFilter::LiDARStreamProfileFilter(IDevice *owner) : DeviceComponentBase(owner) {
-}
+LiDARStreamProfileFilter::LiDARStreamProfileFilter(IDevice *owner) : DeviceComponentBase(owner) {}
 
 StreamProfileList LiDARStreamProfileFilter::filter(const StreamProfileList &profiles) const {
     StreamProfileList filteredProfiles;
-    auto              owner      = getOwner();
-    auto              propServer = owner->getPropertyServer();
-    bool              isCalibrationMode = false; // default is normal mode
+    auto              owner             = getOwner();
+    auto              propServer        = owner->getPropertyServer();
+    bool              isCalibrationMode = false;  // default is normal mode
 
     if(propServer->isPropertySupported(OB_PROP_LIDAR_WORK_MODE_INT, PROP_OP_READ, PROP_ACCESS_INTERNAL)) {
         auto workMode     = propServer->getPropertyValueT<int32_t>(OB_PROP_LIDAR_WORK_MODE_INT, PROP_ACCESS_INTERNAL);
@@ -30,7 +29,7 @@ StreamProfileList LiDARStreamProfileFilter::filter(const StreamProfileList &prof
             continue;
         }
         auto format = profile->getFormat();
-        if(format == OB_FORMAT_LIDAR_CALIBRATION ) {
+        if(format == OB_FORMAT_LIDAR_CALIBRATION) {
             // for calibration mode
             if(!isCalibrationMode) {
                 continue;
@@ -38,7 +37,7 @@ StreamProfileList LiDARStreamProfileFilter::filter(const StreamProfileList &prof
         }
         else {
             // for normal mode
-            if ( isCalibrationMode ) {
+            if(isCalibrationMode) {
                 continue;
             }
         }

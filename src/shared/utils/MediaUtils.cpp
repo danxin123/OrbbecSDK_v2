@@ -4,7 +4,7 @@
 #include "environment/Version.hpp"
 #include "MediaUtils.hpp"
 
-#include <cmath> 
+#include <cmath>
 #include <map>
 #include <string>
 
@@ -36,7 +36,7 @@ bool validateBagFileVersion(double recordedVersion) {
     double currentVersion = getBagFileVersion();
 
     int currentMajor = static_cast<int>(std::floor(currentVersion));
-    int recordMajor = static_cast<int>(std::floor(recordedVersion));
+    int recordMajor  = static_cast<int>(std::floor(recordedVersion));
 
     return currentMajor == recordMajor;
 }
@@ -45,7 +45,7 @@ std::string createUnsupportedBagFileVersionMessage(double recordedVersion) {
     int recordMajor = static_cast<int>(std::floor(recordedVersion));
 
     std::string message = "Unsupported bag file version: ";
-    if (recordMajor < 2) {
+    if(recordMajor < 2) {
         message += "Please use lower version of the SDK, or re-record the bag file using a newer version of the SDK.";
     }
     else {

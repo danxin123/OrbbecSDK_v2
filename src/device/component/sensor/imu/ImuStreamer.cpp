@@ -146,8 +146,7 @@ void ImuStreamer::parseIMUData(std::shared_ptr<Frame> frame) {
     }
 
     int32_t discardCount = 0;
-    if(ignoreLeadingFrameCount_>0)
-    {
+    if(ignoreLeadingFrameCount_ > 0) {
         discardCount = ignoreLeadingFrameCount_;
         if(ignoreLeadingFrameCount_ > header->groupCount) {
             discardCount = header->groupCount;

@@ -24,9 +24,9 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
         return cv::Mat();
     }
 
-    int   width = videoFrame->getWidth();
+    int   width  = videoFrame->getWidth();
     int   height = videoFrame->getHeight();
-    float scale = videoFrame->as<ob::DepthFrame>()->getValueScale();
+    float scale  = videoFrame->as<ob::DepthFrame>()->getValueScale();
 
     cv::Mat rawMat(height, width, CV_16UC1, videoFrame->getData());
 
@@ -55,7 +55,7 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
 
     // Diffuse lighting from upper-left direction
     cv::Mat lighting = -0.707f * (gradX + gradY) / mag;
-    lighting = lighting * 0.15f + 0.85f;
+    lighting         = lighting * 0.15f + 0.85f;
     cv::min(cv::max(lighting, 0.7f), 1.0f, lighting);
 
     // Apply colormap
@@ -69,7 +69,7 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
     // Multiply color channels by lighting
     std::vector<cv::Mat> channels(3);
     cv::split(colored, channels);
-    for(auto &ch : channels) {
+    for(auto &ch: channels) {
         ch.convertTo(ch, CV_32F);
         ch = ch.mul(lighting);
         ch.convertTo(ch, CV_8UC1);
@@ -80,10 +80,10 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
     cv::merge(channels, result);
 
     // Overlay center-point distance text
-    int cx = width / 2;
-    int cy = height / 2;
-    uint16_t rawVal = rawMat.at<uint16_t>(cy, cx);
-    float distMm = rawVal * scale;
+    int         cx       = width / 2;
+    int         cy       = height / 2;
+    uint16_t    rawVal   = rawMat.at<uint16_t>(cy, cx);
+    float       distMm   = rawVal * scale;
     std::string distText = (rawVal == 0) ? "N/A" : (toString(distMm / 1000.0f, 2) + "m");
     cv::circle(result, cv::Point(cx, cy), 4, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
     cv::putText(result, distText, cv::Point(cx + 8, cy - 8), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 2, cv::LINE_AA);

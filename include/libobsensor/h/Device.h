@@ -406,7 +406,7 @@ OB_EXPORT const char *ob_device_info_get_uid(const ob_device_info *info, ob_erro
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return const char* return device serial number
  */
 OB_EXPORT const char *ob_device_info_get_serial_number(const ob_device_info *info, ob_error **error);
@@ -416,7 +416,7 @@ OB_EXPORT const char *ob_device_info_get_serial_number(const ob_device_info *inf
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return int return the firmware version number
  */
 OB_EXPORT const char *ob_device_info_get_firmware_version(const ob_device_info *info, ob_error **error);
@@ -438,7 +438,7 @@ OB_EXPORT const char *ob_device_info_get_connection_type(const ob_device_info *i
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return const char* The IP address, such as "192.168.1.10"
  */
 OB_EXPORT const char *ob_device_info_get_ip_address(const ob_device_info *info, ob_error **error);
@@ -500,7 +500,7 @@ OB_EXPORT const char *ob_device_get_extension_info(const ob_device *device, cons
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return const char* The minimum SDK version number supported by the device
  */
 OB_EXPORT const char *ob_device_info_get_supported_min_sdk_version(const ob_device_info *info, ob_error **error);
@@ -510,7 +510,7 @@ OB_EXPORT const char *ob_device_info_get_supported_min_sdk_version(const ob_devi
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return const char* The ASIC name
  */
 OB_EXPORT const char *ob_device_info_get_asicName(const ob_device_info *info, ob_error **error);
@@ -520,7 +520,7 @@ OB_EXPORT const char *ob_device_info_get_asicName(const ob_device_info *info, ob
  *
  * @param[in] info Device Information
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return ob_device_type The device type
  */
 OB_EXPORT ob_device_type ob_device_info_get_device_type(const ob_device_info *info, ob_error **error);
@@ -538,7 +538,7 @@ OB_EXPORT void ob_delete_device_list(ob_device_list *list, ob_error **error);
  *
  * @param[in] list Device list object
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return uint32_t return the number of devices
  */
 OB_EXPORT uint32_t ob_device_list_get_count(const ob_device_list *list, ob_error **error);
@@ -549,7 +549,7 @@ OB_EXPORT uint32_t ob_device_list_get_count(const ob_device_list *list, ob_error
  * @param[in] list Device list object
  * @param[in] index Device index
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return const char* return device name
  */
 OB_EXPORT const char *ob_device_list_get_device_name(const ob_device_list *list, uint32_t index, ob_error **error);
@@ -560,7 +560,7 @@ OB_EXPORT const char *ob_device_list_get_device_name(const ob_device_list *list,
  * @param[in] list Device list object
  * @param[in] index Device index
  * @param[out] error Pointer to an error object that will be set if an error occurs.
- * 
+ *
  * @return int return the device pid
  */
 OB_EXPORT int ob_device_list_get_device_pid(const ob_device_list *list, uint32_t index, ob_error **error);

@@ -14,11 +14,11 @@ int main() try {
     // Get the device from the pipeline.
     std::shared_ptr<ob::Device> device = pipe.getDevice();
 
-    while(true){
+    while(true) {
 
         // Get preset list from device.
         std::shared_ptr<ob::DevicePresetList> presetLists = device->getAvailablePresetList();
-        if (presetLists && presetLists->getCount() == 0) {
+        if(presetLists && presetLists->getCount() == 0) {
             std::cout << "The current device does not support preset mode" << std::endl;
             std::cout << "\nPress any key to exit.";
             ob_smpl::waitForKeyPressed();
@@ -38,7 +38,7 @@ int main() try {
 
         // Select preset to load.
         int  inputOption = ob_smpl::getInputOption();
-        auto presetName = presetLists->getName(inputOption);
+        auto presetName  = presetLists->getName(inputOption);
 
         // Load preset.
         device->loadPreset(presetName);
@@ -61,4 +61,3 @@ catch(ob::Error &e) {
     ob_smpl::waitForKeyPressed();
     exit(EXIT_FAILURE);
 }
-

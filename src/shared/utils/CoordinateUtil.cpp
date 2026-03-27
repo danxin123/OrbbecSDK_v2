@@ -317,8 +317,8 @@ bool CoordinateUtil::transformationColor2dToDepth2d(const OBCameraIntrinsic colo
                                                     OBD2CTransform transColorToDepth, OBPoint2f *depthPixel) {
 
     float     depthRangeMm[2] = { 60.f, 16000.f };
-    OBPoint2f nearPixelDepth{0, 0};
-    OBPoint2f farthestPixelDepth{0, 0};
+    OBPoint2f nearPixelDepth{ 0, 0 };
+    OBPoint2f farthestPixelDepth{ 0, 0 };
     bool      nearValid = 0, farthestValid = 0;
 
     // color pixel to depth pixel when z= depthRangeMm[0]
@@ -454,7 +454,7 @@ bool CoordinateUtil::transformationInitXYTables(const OBCameraIntrinsic intrinsi
     int width  = intrinsic.width;
     int height = intrinsic.height;
 
-    size_t tableSize = (size_t)(width) * height;
+    size_t tableSize = (size_t)(width)*height;
     if(data == NULL)  // If no external memory is requested, an error will be reported
     {
         (*dataSize) = 2 * (uint32_t)tableSize;
@@ -502,7 +502,7 @@ bool CoordinateUtil::transformationInitAddDistortionUVTables(const OBCameraIntri
     int width  = intrinsic.width;
     int height = intrinsic.height;
 
-    size_t tableSize = (size_t)(width) * height;
+    size_t tableSize = (size_t)(width)*height;
     if(data == NULL)  // If no external memory is requested, an error will be reported
     {
         (*dataSize) = 2 * (uint32_t)tableSize;
@@ -567,46 +567,46 @@ bool CoordinateUtil::transformationInitAddDistortionUVTables(const OBCameraIntri
     return true;
 }
 
-void CoordinateUtil::transformationDepthToPointCloud(OBXYTables *xyTables, const void *depthImageData, void *pointCloudData, 
-                                                    bool outputZeroPoint,uint32_t *validPointCount,float positionDataScale, OBCoordinateSystemType type, bool isDepthImageY12C4,
+void CoordinateUtil::transformationDepthToPointCloud(OBXYTables *xyTables, const void *depthImageData, void *pointCloudData, bool outputZeroPoint,
+                                                     uint32_t *validPointCount, float positionDataScale, OBCoordinateSystemType type, bool isDepthImageY12C4,
                                                      int step, uint32_t width) {
     const uint16_t *imageData = (const uint16_t *)depthImageData;
-    float *         xyzData   = (float *)pointCloudData;
+    float          *xyzData   = (float *)pointCloudData;
     float           x, y, z;
     int             coordinateSystemCoefficient = type == OB_LEFT_HAND_COORDINATE_SYSTEM ? -1 : 1;
 
     int validCount = 0;
-    //TODO: step decimation factor: 1, 2, ..., 8
-	for(int h = 0; h < xyTables->height; h+=step) {
-		for(int w = 0; w < xyTables->width; w+=step) {
-            int i = h * xyTables->width + w;
-			float x_tab = xyTables->xTable[i];
+    // TODO: step decimation factor: 1, 2, ..., 8
+    for(int h = 0; h < xyTables->height; h += step) {
+        for(int w = 0; w < xyTables->width; w += step) {
+            int   i     = h * xyTables->width + w;
+            float x_tab = xyTables->xTable[i];
 
-			uint16_t depthValue = imageData[i];
-			if(isDepthImageY12C4) {
-				depthValue = depthValue >> 4;
-				if(depthValue == 0x0FFF) {
-					depthValue = 0xFFFF;
-				}
-			}
-			if(!std::isnan(x_tab) && depthValue != 65535) {
-				z = (float)depthValue;
-				x = x_tab * (float)z;
-				y = xyTables->yTable[i] * (float)z * coordinateSystemCoefficient;
+            uint16_t depthValue = imageData[i];
+            if(isDepthImageY12C4) {
+                depthValue = depthValue >> 4;
+                if(depthValue == 0x0FFF) {
+                    depthValue = 0xFFFF;
+                }
+            }
+            if(!std::isnan(x_tab) && depthValue != 65535) {
+                z = (float)depthValue;
+                x = x_tab * (float)z;
+                y = xyTables->yTable[i] * (float)z * coordinateSystemCoefficient;
 
-				z *= positionDataScale;
-				x *= positionDataScale;
-				y *= positionDataScale;
-			}
-			else {
-				x = 0.0;
-				y = 0.0;
-				z = 0.0;
-			}
+                z *= positionDataScale;
+                x *= positionDataScale;
+                y *= positionDataScale;
+            }
+            else {
+                x = 0.0;
+                y = 0.0;
+                z = 0.0;
+            }
 
-			if(!outputZeroPoint && x == 0.0f && y == 0.0f && z == 0.0f) {
-				continue;
-			}
+            if(!outputZeroPoint && x == 0.0f && y == 0.0f && z == 0.0f) {
+                continue;
+            }
 
             if(!outputZeroPoint) {
                 xyzData[3 * validCount + 0] = x;
@@ -621,7 +621,7 @@ void CoordinateUtil::transformationDepthToPointCloud(OBXYTables *xyTables, const
                 xyzData[3 * pid + 2] = z;
                 validCount++;
             }
-		}
+        }
     }
 
     if(validPointCount != nullptr) {
@@ -630,19 +630,19 @@ void CoordinateUtil::transformationDepthToPointCloud(OBXYTables *xyTables, const
 }
 
 void CoordinateUtil::transformationDepthToRGBDPointCloud(OBXYTables *xyTables, const void *depthImageData, const void *colorImageData, void *pointCloudData,
-                                                         bool outputZeroPoint,uint32_t *validPointCount,float positionDataScale, OBCoordinateSystemType type,
+                                                         bool outputZeroPoint, uint32_t *validPointCount, float positionDataScale, OBCoordinateSystemType type,
                                                          bool colorDataNormalization, uint32_t colorWidth, uint32_t colorHeight, bool isDepthImageY12C4,
-                                                         int step,  uint32_t width) {
+                                                         int step, uint32_t width) {
     const uint16_t *dImageData = (const uint16_t *)depthImageData;
-    const uint8_t * cImageData = (const uint8_t *)colorImageData;
-    float *         xyzrgbData = (float *)pointCloudData;
+    const uint8_t  *cImageData = (const uint8_t *)colorImageData;
+    float          *xyzrgbData = (float *)pointCloudData;
     float           x, y, z;
     float           r, g, b;
     int             coordinateSystemCoefficient = type == OB_LEFT_HAND_COORDINATE_SYSTEM ? -1 : 1;
     float           colorDivCoeff               = colorDataNormalization ? 255.0f : 1.0f;
     float           colorScaleX                 = 1.f;
     float           colorScaleY                 = 1.f;
-    int validCount = 0;
+    int             validCount                  = 0;
     if((xyTables->width != (int)colorWidth) || (xyTables->height != (int)colorHeight)) {
         colorScaleX = 1.f * colorWidth / xyTables->width;
         colorScaleY = 1.f * colorHeight / xyTables->height;
@@ -652,11 +652,11 @@ void CoordinateUtil::transformationDepthToRGBDPointCloud(OBXYTables *xyTables, c
         colorScaleY = s;
     }
 
-    //TODO: step decimation factor: 1, 2, ..., 8
-    for(int i = 0; i < xyTables->height; i+=step) {
+    // TODO: step decimation factor: 1, 2, ..., 8
+    for(int i = 0; i < xyTables->height; i += step) {
         int id = i * xyTables->width;
         int ic = static_cast<int>(colorScaleX * i * colorWidth);
-        for(int j = 0; j < xyTables->width; j+=step) {
+        for(int j = 0; j < xyTables->width; j += step) {
             int   idc   = id + j;
             float x_tab = xyTables->xTable[idc];
 
@@ -693,7 +693,7 @@ void CoordinateUtil::transformationDepthToRGBDPointCloud(OBXYTables *xyTables, c
             if(!outputZeroPoint && x == 0.0f && y == 0.0f && z == 0.0f && r == 0.0f && g == 0.0f && b == 0.0f) {
                 continue;
             }
-            
+
             if(!outputZeroPoint) {
                 xyzrgbData[6 * validCount + 0] = x;
                 xyzrgbData[6 * validCount + 1] = y;
@@ -722,18 +722,18 @@ void CoordinateUtil::transformationDepthToRGBDPointCloud(OBXYTables *xyTables, c
 }
 
 void CoordinateUtil::transformationDepthToRGBDPointCloudByUVTables(const OBCameraIntrinsic rgbIntrinsic, OBXYTables *uvTables, const void *depthImageData,
-                                                                   const void *colorImageData, void *pointCloudData,bool outputZeroPoint,
-                                                                   uint32_t *validPointCount,float positionDataScale,OBCoordinateSystemType type,
+                                                                   const void *colorImageData, void *pointCloudData, bool outputZeroPoint,
+                                                                   uint32_t *validPointCount, float positionDataScale, OBCoordinateSystemType type,
                                                                    bool colorDataNormalization, bool isDepthImageY12C4, int step, uint32_t width) {
     const uint16_t *dImageData = (const uint16_t *)depthImageData;
-    const uint8_t * cImageData = (const uint8_t *)colorImageData;
-    float *         xyzrgbData = (float *)pointCloudData;
+    const uint8_t  *cImageData = (const uint8_t *)colorImageData;
+    float          *xyzrgbData = (float *)pointCloudData;
     float           x, y, z;
     float           r, g, b;
     int             coordinateSystemCoefficient = type == OB_LEFT_HAND_COORDINATE_SYSTEM ? -1 : 1;
     float           colorDivCoeff               = colorDataNormalization ? 255.0f : 1.0f;
-    int validCount = 0;
-    float colorScale = 1.f;
+    int             validCount                  = 0;
+    float           colorScale                  = 1.f;
     if((uvTables->width != (int)rgbIntrinsic.width) || (uvTables->height != (int)rgbIntrinsic.height)) {
         float colorScaleX = 1.f * rgbIntrinsic.width / uvTables->width, colorScaleY = 1.f * rgbIntrinsic.height / uvTables->height;
         colorScale = colorScaleX > colorScaleY ? colorScaleX : colorScaleY;
@@ -741,46 +741,46 @@ void CoordinateUtil::transformationDepthToRGBDPointCloudByUVTables(const OBCamer
     }
     int colorWidth = static_cast<int>(colorScale * uvTables->width);
     // TODO: step decimation factor: 1, 2, ..., 8
-    for(int yValue = 0; yValue < uvTables->height; yValue+=step) {
-        for(int xValue = 0; xValue < uvTables->width; xValue+=step) {
+    for(int yValue = 0; yValue < uvTables->height; yValue += step) {
+        for(int xValue = 0; xValue < uvTables->width; xValue += step) {
             int i = yValue * uvTables->width + xValue;
 
-			uint16_t depthValue = dImageData[i];
-			if(isDepthImageY12C4) {
-				depthValue = depthValue >> 4;
-				if(depthValue == 0x0FFF) {
-					depthValue = 0xFFFF;
-				}
-			}
-			if(!std::isnan(uvTables->xTable[i]) && depthValue != 65535) {
-				z = (float)depthValue;
-				x = ((xValue - rgbIntrinsic.cx) / rgbIntrinsic.fx) * (float)z;
-				y = ((yValue - rgbIntrinsic.cy) / rgbIntrinsic.fy) * (float)z * coordinateSystemCoefficient;
+            uint16_t depthValue = dImageData[i];
+            if(isDepthImageY12C4) {
+                depthValue = depthValue >> 4;
+                if(depthValue == 0x0FFF) {
+                    depthValue = 0xFFFF;
+                }
+            }
+            if(!std::isnan(uvTables->xTable[i]) && depthValue != 65535) {
+                z = (float)depthValue;
+                x = ((xValue - rgbIntrinsic.cx) / rgbIntrinsic.fx) * (float)z;
+                y = ((yValue - rgbIntrinsic.cy) / rgbIntrinsic.fy) * (float)z * coordinateSystemCoefficient;
 
-				z *= positionDataScale;
-				x *= positionDataScale;
-				y *= positionDataScale;
+                z *= positionDataScale;
+                x *= positionDataScale;
+                y *= positionDataScale;
 
-				int u_rgb   = (int)round(uvTables->xTable[i] * colorScale);
-				int v_rgb   = (int)round(uvTables->yTable[i] * colorScale);
-				int idx_rgb = v_rgb * colorWidth + u_rgb;
+                int u_rgb   = (int)round(uvTables->xTable[i] * colorScale);
+                int v_rgb   = (int)round(uvTables->yTable[i] * colorScale);
+                int idx_rgb = v_rgb * colorWidth + u_rgb;
 
-				r = cImageData[3 * idx_rgb + 0] / colorDivCoeff;
-				g = cImageData[3 * idx_rgb + 1] / colorDivCoeff;
-				b = cImageData[3 * idx_rgb + 2] / colorDivCoeff;
-			}
-			else {
-				x = 0.0;
-				y = 0.0;
-				z = 0.0;
-				r = 0.0;
-				g = 0.0;
-				b = 0.0;
-			}
+                r = cImageData[3 * idx_rgb + 0] / colorDivCoeff;
+                g = cImageData[3 * idx_rgb + 1] / colorDivCoeff;
+                b = cImageData[3 * idx_rgb + 2] / colorDivCoeff;
+            }
+            else {
+                x = 0.0;
+                y = 0.0;
+                z = 0.0;
+                r = 0.0;
+                g = 0.0;
+                b = 0.0;
+            }
 
-			if(!outputZeroPoint && x == 0.0f && y == 0.0f && z == 0.0f && r == 0.0f && g == 0.0f && b == 0.0f) {
-				continue;
-			}
+            if(!outputZeroPoint && x == 0.0f && y == 0.0f && z == 0.0f && r == 0.0f && g == 0.0f && b == 0.0f) {
+                continue;
+            }
 
             if(!outputZeroPoint) {
                 xyzrgbData[6 * validCount + 0] = x;
@@ -801,7 +801,7 @@ void CoordinateUtil::transformationDepthToRGBDPointCloudByUVTables(const OBCamer
                 xyzrgbData[6 * pid + 5] = b;
                 validCount++;
             }
-		}
+        }
     }
 
     if(validPointCount != nullptr) {

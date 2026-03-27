@@ -538,4 +538,3 @@ typedef bool(__cdecl *k4a_register_plugin_fn)(k4a_plugin_t *plugin);
 #endif
 
 #endif /* K4A_PLUGIN_H */
-

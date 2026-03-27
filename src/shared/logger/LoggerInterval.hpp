@@ -78,7 +78,8 @@ void log_intvl_invoke(std::shared_ptr<ObLogIntvlRecord> record, uint64_t minIntv
 }
 
 // Control log output at intervals; when log_intvl is called repeatedly within the interval time, only one log entry is output
-// When log_intvl is called frequently in succession, the log output frequency will decrease (intervals will lengthen) until the maximum interval, MAX_INTERVAL, is reached
+// When log_intvl is called frequently in succession, the log output frequency will decrease (intervals will lengthen) until the maximum interval, MAX_INTERVAL,
+// is reached
 template <typename... Args>
 void log_intvl(std::shared_ptr<ObLogIntvlRecord> record, uint64_t minIntvlMsec, spdlog::source_loc src_loc, spdlog::level::level_enum level, std::string fmt,
                Args &&...args) {
@@ -132,34 +133,35 @@ void log_intvl(std::shared_ptr<ObLogIntvlRecord> record, uint64_t minIntvlMsec, 
 }
 
 // Control the log output interval in milliseconds; 0 means no control
-#define LOG_INTVL(tag, minIntvlMsec, level, ...)                                                                                                            \
-    do {                                                                                                                                                    \
-        std::unique_lock<std::mutex> logIntvlRecordMapLock(logIntvlRecordMapMtx);                                                                           \
-        if(logIntvlRecordMapDestroyed) {                                                                                                                    \
-            break;                                                                                                                                          \
-        }                                                                                                                                                   \
-        if(logIntvlRecordMap.size() > LOG_RECORD_MAP_SIZE_LIMIT) {                                                                                          \
-            LOG_WARN("logIntvlRecordMap size {} > {}, clear it!", logIntvlRecordMap.size(), LOG_RECORD_MAP_SIZE_LIMIT);                                     \
-            auto nowTime = std::chrono::system_clock::now();                                                                                                \
-            for(auto logIntvlRecordMapIter = logIntvlRecordMap.begin(); logIntvlRecordMapIter != logIntvlRecordMap.end();) {                                \
-                uint64_t duration = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(nowTime - logIntvlRecordMapIter->second->lastInvokeTime).count()); \
-                if(logIntvlRecordMapIter->second->count == 0 && duration > logIntvlRecordMapIter->second->interval) {                                       \
-                    logIntvlRecordMapIter = logIntvlRecordMap.erase(logIntvlRecordMapIter);                                                                 \
-                }                                                                                                                                           \
-                else {                                                                                                                                      \
-                    logIntvlRecordMapIter++;                                                                                                                \
-                }                                                                                                                                           \
-            }                                                                                                                                               \
-        }                                                                                                                                                   \
-        auto logIntvlRecordMapIter = logIntvlRecordMap.find(tag);                                                                                           \
-        if(logIntvlRecordMapIter == logIntvlRecordMap.end()) {                                                                                              \
-            auto record      = std::make_shared<ObLogIntvlRecord>();                                                                                        \
-            record->count    = 0;                                                                                                                           \
-            record->interval = minIntvlMsec;                                                                                                                \
-            logIntvlRecordMap.insert(std::make_pair(tag, record));                                                                                          \
-            logIntvlRecordMapIter = logIntvlRecordMap.find(tag);                                                                                            \
-        }                                                                                                                                                   \
-        log_intvl(logIntvlRecordMapIter->second, minIntvlMsec, spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, __VA_ARGS__);              \
+#define LOG_INTVL(tag, minIntvlMsec, level, ...)                                                                                               \
+    do {                                                                                                                                       \
+        std::unique_lock<std::mutex> logIntvlRecordMapLock(logIntvlRecordMapMtx);                                                              \
+        if(logIntvlRecordMapDestroyed) {                                                                                                       \
+            break;                                                                                                                             \
+        }                                                                                                                                      \
+        if(logIntvlRecordMap.size() > LOG_RECORD_MAP_SIZE_LIMIT) {                                                                             \
+            LOG_WARN("logIntvlRecordMap size {} > {}, clear it!", logIntvlRecordMap.size(), LOG_RECORD_MAP_SIZE_LIMIT);                        \
+            auto nowTime = std::chrono::system_clock::now();                                                                                   \
+            for(auto logIntvlRecordMapIter = logIntvlRecordMap.begin(); logIntvlRecordMapIter != logIntvlRecordMap.end();) {                   \
+                uint64_t duration = static_cast<uint64_t>(                                                                                     \
+                    std::chrono::duration_cast<std::chrono::milliseconds>(nowTime - logIntvlRecordMapIter->second->lastInvokeTime).count());   \
+                if(logIntvlRecordMapIter->second->count == 0 && duration > logIntvlRecordMapIter->second->interval) {                          \
+                    logIntvlRecordMapIter = logIntvlRecordMap.erase(logIntvlRecordMapIter);                                                    \
+                }                                                                                                                              \
+                else {                                                                                                                         \
+                    logIntvlRecordMapIter++;                                                                                                   \
+                }                                                                                                                              \
+            }                                                                                                                                  \
+        }                                                                                                                                      \
+        auto logIntvlRecordMapIter = logIntvlRecordMap.find(tag);                                                                              \
+        if(logIntvlRecordMapIter == logIntvlRecordMap.end()) {                                                                                 \
+            auto record      = std::make_shared<ObLogIntvlRecord>();                                                                           \
+            record->count    = 0;                                                                                                              \
+            record->interval = minIntvlMsec;                                                                                                   \
+            logIntvlRecordMap.insert(std::make_pair(tag, record));                                                                             \
+            logIntvlRecordMapIter = logIntvlRecordMap.find(tag);                                                                               \
+        }                                                                                                                                      \
+        log_intvl(logIntvlRecordMapIter->second, minIntvlMsec, spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, __VA_ARGS__); \
     } while(0)
 
 #define LOG_INTVL_ON_THREAD(minIntvlMsec, level, ...)                                  \
@@ -170,9 +172,10 @@ void log_intvl(std::shared_ptr<ObLogIntvlRecord> record, uint64_t minIntvlMsec, 
         LOG_INTVL(tag, minIntvlMsec, level, __VA_ARGS__);                              \
     } while(0)
 
-// The LOG_XXX_INTVL macro can only be used within class member functions because it uses the `this` pointer as a tag (log output interval control is bound to a specific object)
-// The LOG_XXX_INTVL_THREAD macro uses the current thread ID as a tag and can be used in class member functions and regular functions (log output interval control is bound to a specific thread)
-// It is recommended to prioritize the use of the LOG_XXX_INTVL macro, since log outputs from the same place where the same object exists are called in different threads (e.g., VideoSensor's raw frame data callback)
+// The LOG_XXX_INTVL macro can only be used within class member functions because it uses the `this` pointer as a tag (log output interval control is bound to a
+// specific object) The LOG_XXX_INTVL_THREAD macro uses the current thread ID as a tag and can be used in class member functions and regular functions (log
+// output interval control is bound to a specific thread) It is recommended to prioritize the use of the LOG_XXX_INTVL macro, since log outputs from the same
+// place where the same object exists are called in different threads (e.g., VideoSensor's raw frame data callback)
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
 #define LOG_TRACE_INTVL(...) LOG_INTVL(LOG_INTVL_OBJECT_TAG, DEF_MIN_LOG_INTVL, spdlog::level::trace, __VA_ARGS__)
 #define LOG_TRACE_INTVL_THREAD(...) LOG_INTVL_ON_THREAD(DEF_MIN_LOG_INTVL, spdlog::level::trace, __VA_ARGS__)

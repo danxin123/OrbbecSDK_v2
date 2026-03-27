@@ -260,7 +260,8 @@ void Align::alignFrames(const std::shared_ptr<const Frame> from, std::shared_ptr
             return;
         }
         auto depth_other_extrin = alignProfile->getExtrinsicTo(fromProfile);
-        impl_->initialize(toIntrin, toDisto, fromIntrin, fromDisto, depth_other_extrin, depthUnitMm, addTargetDistortion_, gapFillCopy_, false, depth->getFormat());
+        impl_->initialize(toIntrin, toDisto, fromIntrin, fromDisto, depth_other_extrin, depthUnitMm, addTargetDistortion_, gapFillCopy_, false,
+                          depth->getFormat());
         auto dep = reinterpret_cast<const uint16_t *>(depth->getData());
         auto in  = const_cast<const void *>((const void *)from->getData());
         auto out = const_cast<void *>((void *)align->getData());

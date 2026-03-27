@@ -8,7 +8,7 @@
 #include <ntverp.h>
 #if VER_PRODUCTBUILD <= 9600  //(WinSDK 8.1)
 #ifdef ENFORCE_METADATA
-#error( "libobsensor Error!: Featuring UVC Metadata requires WinSDK 10.0.10586.0. \
+#error ( "libobsensor Error!: Featuring UVC Metadata requires WinSDK 10.0.10586.0. \
  Install the required toolset to proceed. Alternatively, uncheck ENFORCE_METADATA propertyId in CMake GUI tool")
 #else
 #pragma message("\nlibobsensor Notification: Featuring UVC Metadata requires WinSDK 10.0.10586.0 toolset. \

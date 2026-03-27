@@ -17,11 +17,11 @@
 
 // Measurement state shared between mouse callback and main loop.
 struct MeasureState {
-    std::mutex          mtx;
+    std::mutex             mtx;
     std::vector<cv::Point> clickedPoints;  // 0, 1, or 2 points
-    OBPoint3f           point3D[2];        // 3D coordinates of the two points (mm)
-    float               distance;          // Euclidean distance in mm
-    bool                valid;             // true if distance is valid
+    OBPoint3f              point3D[2];     // 3D coordinates of the two points (mm)
+    float                  distance;       // Euclidean distance in mm
+    bool                   valid;          // true if distance is valid
 };
 
 static MeasureState g_state;
@@ -59,11 +59,11 @@ static bool project2Dto3D(int px, int py, const std::shared_ptr<ob::DepthFrame> 
 
     // Identity extrinsic (same coordinate system after alignment)
     OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f;
-    identity.rot[4] = 1.0f;
-    identity.rot[8] = 1.0f;
+    identity.rot[0]      = 1.0f;
+    identity.rot[4]      = 1.0f;
+    identity.rot[8]      = 1.0f;
 
-    OBPoint2f src = {static_cast<float>(px), static_cast<float>(py)};
+    OBPoint2f src = { static_cast<float>(px), static_cast<float>(py) };
     return ob::CoordinateTransformHelper::transformation2dto3d(src, depthMm, intrinsic, identity, &out);
 }
 
@@ -133,7 +133,7 @@ int main(void) try {
             bgrFrame = converter->process(bgrFrame);
         }
 
-        auto videoFrame = bgrFrame->as<ob::VideoFrame>();
+        auto    videoFrame = bgrFrame->as<ob::VideoFrame>();
         cv::Mat displayMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
 
         // Process measurement under lock
@@ -145,11 +145,11 @@ int main(void) try {
                 bool ok1 = project2Dto3D(g_state.clickedPoints[0].x, g_state.clickedPoints[0].y, depthFrame, g_state.point3D[0]);
                 bool ok2 = project2Dto3D(g_state.clickedPoints[1].x, g_state.clickedPoints[1].y, depthFrame, g_state.point3D[1]);
                 if(ok1 && ok2) {
-                    float dx = g_state.point3D[1].x - g_state.point3D[0].x;
-                    float dy = g_state.point3D[1].y - g_state.point3D[0].y;
-                    float dz = g_state.point3D[1].z - g_state.point3D[0].z;
+                    float dx         = g_state.point3D[1].x - g_state.point3D[0].x;
+                    float dy         = g_state.point3D[1].y - g_state.point3D[0].y;
+                    float dz         = g_state.point3D[1].z - g_state.point3D[0].z;
                     g_state.distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-                    g_state.valid = true;
+                    g_state.valid    = true;
 
                     std::cout << "Point A: (" << g_state.point3D[0].x << ", " << g_state.point3D[0].y << ", " << g_state.point3D[0].z << ") mm" << std::endl;
                     std::cout << "Point B: (" << g_state.point3D[1].x << ", " << g_state.point3D[1].y << ", " << g_state.point3D[1].z << ") mm" << std::endl;

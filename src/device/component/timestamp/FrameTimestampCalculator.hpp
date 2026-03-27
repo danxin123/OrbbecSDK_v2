@@ -19,8 +19,8 @@ public:
     void clear() override;
 
 private:
-    uint64_t                               deviceTimeFreq_;
-    uint64_t                               frameTimeFreq_;
+    uint64_t                                deviceTimeFreq_;
+    uint64_t                                frameTimeFreq_;
     std::shared_ptr<IGlobalTimestampFitter> globalTimestampFitter_;
 };
 
@@ -84,7 +84,7 @@ private:
     uint64_t clockFreq_;
 };
 
-class G435LeFrameTimestampCalculatorDeviceTime : public IFrameTimestampCalculator, public DeviceComponentBase{
+class G435LeFrameTimestampCalculatorDeviceTime : public IFrameTimestampCalculator, public DeviceComponentBase {
 public:
     G435LeFrameTimestampCalculatorDeviceTime(IDevice *device, uint64_t deviceTimeFreq, uint64_t frameTimeFreq, uint64_t clockFreq);
 

@@ -64,9 +64,9 @@ private:
     }
 
 private:
-    mutable std::mutex                        mutex_;
-    std::unordered_map<std::string, int64_t>  deviceLastActive_;
-    std::unordered_map<std::string, int64_t>  deviceLastReboot_;
+    mutable std::mutex                       mutex_;
+    std::unordered_map<std::string, int64_t> deviceLastActive_;
+    std::unordered_map<std::string, int64_t> deviceLastReboot_;
 };
 
 }  // namespace libobsensor

@@ -285,4 +285,3 @@ bool     checkStatus(HpStatus stat, bool throwException = true);
 
 }  // namespace protocol
 }  // namespace libobsensor
-

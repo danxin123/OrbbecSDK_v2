@@ -28,7 +28,7 @@ OBMultiDeviceSyncConfig PlaybackDeviceSyncConfigurator::getSyncConfig() {
     else {
         currentMultiDevSyncConfig_ = {};
     }
-    isSyncConfigInit_          = true;
+    isSyncConfigInit_ = true;
     return currentMultiDevSyncConfig_;
 }
 

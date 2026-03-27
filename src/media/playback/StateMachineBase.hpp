@@ -224,14 +224,14 @@ protected:
 
 protected:
     void startIfNeed() {
-        if (!started_.exchange(true)) {
+        if(!started_.exchange(true)) {
             taskQueue_.start();
             LOG_DEBUG("TaskQueue started by async callback registration");
         }
     }
 
     void shutdown() {
-        if (!shutdown_.exchange(true)) {
+        if(!shutdown_.exchange(true)) {
             clearAllCallbacks();
             taskQueue_.stop();
         }

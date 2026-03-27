@@ -914,7 +914,7 @@ void                 DabaiADevice::initSensorListGMSL() {
     }
 
     auto imuPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
-                                                        [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_USB_HID; });
+                                        [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_USB_HID; });
 
     if(imuPortInfoIter != sourcePortInfoList.end()) {
         auto imuPortInfo = *imuPortInfoIter;

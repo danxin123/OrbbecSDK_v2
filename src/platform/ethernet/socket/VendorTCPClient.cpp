@@ -6,7 +6,7 @@
 #include "utils/Utils.hpp"
 #include "exception/ObException.hpp"
 
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
 #include <windows.h>
 #include <iphlpapi.h>
 #include <iostream>
@@ -31,7 +31,7 @@ VendorTCPClient::VendorTCPClient(std::string localAddress, std::string localMac,
       CONNECT_TIMEOUT_MS(connectTimeout),
       COMM_TIMEOUT_MS(commTimeout) {
     LOG_DEBUG("VendorTCPClient create localAddress:{}, localMac:{}", localAddress_, localMac_);
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     WSADATA wsaData;
     int     rst = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if(rst != 0) {
@@ -41,14 +41,14 @@ VendorTCPClient::VendorTCPClient(std::string localAddress, std::string localMac,
 #endif
 // Due to network configuration changes causing socket connection pipeline errors, macOS throws a SIGPIPE exception to the application, leading to a crash (this
 // does not occur on Linux). This exception needs to be filtered out.
-#if(defined(OS_IOS) || defined(OS_MACOS))
+#if (defined(OS_IOS) || defined(OS_MACOS))
     signal(SIGPIPE, SIG_IGN);
 #endif
     socketConnect();
 }
 
 void VendorTCPClient::checkLocalIP() {
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     unsigned int a, b, c, d;
     if(sscanf(localAddress_.c_str(), "%u.%u.%u.%u", &a, &b, &c, &d) == 4) {
         if((a == 10) ||                         // 10.0.0.0 - 10.255.255.255
@@ -102,9 +102,9 @@ void VendorTCPClient::checkLocalIP() {
 #endif
 }
 
-VendorTCPClient::~VendorTCPClient() noexcept{
+VendorTCPClient::~VendorTCPClient() noexcept {
     socketClose();
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     WSACleanup();
 #endif
 }
@@ -116,12 +116,12 @@ void VendorTCPClient::socketConnect() {
         throw libobsensor::io_exception(utils::string::to_string() << "create socket failed! err_code=" << GET_LAST_ERROR());
     }
 
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     uint32_t commTimeout = COMM_TIMEOUT_MS;
 #else
     TIMEVAL commTimeout;
-    //commTimeout.tv_sec  = COMM_TIMEOUT_MS / 1000;
-    //commTimeout.tv_usec = COMM_TIMEOUT_MS % 1000 * 1000;
+    // commTimeout.tv_sec  = COMM_TIMEOUT_MS / 1000;
+    // commTimeout.tv_usec = COMM_TIMEOUT_MS % 1000 * 1000;
     commTimeout.tv_sec  = 2;
     commTimeout.tv_usec = 0;
 #endif
@@ -131,8 +131,8 @@ void VendorTCPClient::socketConnect() {
 
     // Add SO_LINGER configuration here
     struct linger linger_opt;
-    linger_opt.l_onoff  = 1;   // Enable SO_LINGER
-    linger_opt.l_linger = 0;   // Set linger timeout to 0 seconds
+    linger_opt.l_onoff  = 1;  // Enable SO_LINGER
+    linger_opt.l_linger = 0;  // Set linger timeout to 0 seconds
     if(setsockopt(socketFd_, SOL_SOCKET, SO_LINGER, (char *)&linger_opt, sizeof(linger_opt)) < 0) {
         LOG_WARN("Failed to set SO_LINGER option");
     }
@@ -155,7 +155,7 @@ void VendorTCPClient::socketConnect() {
                                                                               << ", port=" << port_ << ", err_code=" << rst);
     }
 
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     if(isValidIP_) {
         LOG_DEBUG("bind local address {}", localAddress_);
         struct sockaddr_in localAddr;
@@ -190,7 +190,7 @@ void VendorTCPClient::socketConnect() {
     rst = connect(socketFd_, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if(rst < 0) {
         rst = GET_LAST_ERROR();
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
         if(rst != WSAEWOULDBLOCK) {
 #else
         if(rst != EINPROGRESS) {  // EINPROGRESS due to non-blocking mode
@@ -202,7 +202,7 @@ void VendorTCPClient::socketConnect() {
     }
 
     TIMEVAL connTimeout;
-#if(defined(OS_IOS) || defined(OS_MACOS) || defined(__ANDROID__))
+#if (defined(OS_IOS) || defined(OS_MACOS) || defined(__ANDROID__))
     connTimeout.tv_sec  = 0;
     connTimeout.tv_usec = 100000;  // 100ms
 #else
@@ -216,8 +216,9 @@ void VendorTCPClient::socketConnect() {
     FD_SET(socketFd_, &write);
     FD_SET(socketFd_, &err);
 
-#if(defined(OS_IOS) || defined(OS_MACOS) || defined(__ANDROID__))
-    // Since the traditional `fcntl` cannot be used on iOS to set socketFd as non-blocking, leading to select blocking, reduce connTimeout and use polling to avoid the issue.
+#if (defined(OS_IOS) || defined(OS_MACOS) || defined(__ANDROID__))
+    // Since the traditional `fcntl` cannot be used on iOS to set socketFd as non-blocking, leading to select blocking, reduce connTimeout and use polling to
+    // avoid the issue.
     bool status = false;
     int  retry  = 5;
     do {
@@ -283,7 +284,7 @@ int VendorTCPClient::read(uint8_t *data, const uint32_t dataLen) {
 
             if(rst < 0) {
                 rst = GET_LAST_ERROR();
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
                 if((rst == WSAECONNRESET || rst == WSAENOTCONN || rst == WSAETIMEDOUT) && retry >= 1) {
 #else
                 if((rst == EAGAIN || rst == EWOULDBLOCK) && retry >= 1) {
@@ -322,7 +323,7 @@ void VendorTCPClient::write(const uint8_t *data, const uint32_t dataLen) {
 
             if(rst < 0) {
                 rst = GET_LAST_ERROR();
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
                 if((rst == WSAECONNRESET || rst == WSAENOTCONN || rst == WSAETIMEDOUT) && retry >= 1) {
 #else
                 if((rst == EAGAIN || rst == EWOULDBLOCK) && retry >= 1) {
@@ -357,6 +358,4 @@ void VendorTCPClient::flush() {
     }
 }
 
-
 }  // namespace libobsensor
-

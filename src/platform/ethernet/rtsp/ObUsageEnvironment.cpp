@@ -83,6 +83,4 @@ UsageEnvironment &ObUsageEnvironment::operator<<(void *p) {
     return dynamic_cast<UsageEnvironment &>(*this);
 }
 
-
 }  // namespace libobsensor
-

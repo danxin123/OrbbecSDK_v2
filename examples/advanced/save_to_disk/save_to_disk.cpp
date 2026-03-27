@@ -43,7 +43,7 @@ int main() try {
             continue;
         }
 
-        if (++frameIndex >= 5) {
+        if(++frameIndex >= 5) {
             std::cout << "The demo is over, please press ESC to exit manually!" << std::endl;
             break;
         }
@@ -100,7 +100,7 @@ void saveDepthFrame(const std::shared_ptr<ob::DepthFrame> depthFrame, const uint
     params.push_back(cv::IMWRITE_PNG_STRATEGY_DEFAULT);
     std::string depthName = "Depth_" + std::to_string(depthFrame->width()) + "x" + std::to_string(depthFrame->height()) + "_" + std::to_string(frameIndex) + "_"
                             + std::to_string(depthFrame->timeStamp()) + "ms.png";
-    cv::Mat depthMat(depthFrame->height(), depthFrame->width(), CV_16UC1, depthFrame->data());
+    cv::Mat     depthMat(depthFrame->height(), depthFrame->width(), CV_16UC1, depthFrame->data());
     cv::imwrite(depthName, depthMat, params);
     std::cout << "Depth saved:" << depthName << std::endl;
 }
@@ -113,7 +113,7 @@ void saveColorFrame(const std::shared_ptr<ob::ColorFrame> colorFrame, const uint
     params.push_back(cv::IMWRITE_PNG_STRATEGY_DEFAULT);
     std::string colorName = "Color_" + std::to_string(colorFrame->width()) + "x" + std::to_string(colorFrame->height()) + "_" + std::to_string(frameIndex) + "_"
                             + std::to_string(colorFrame->timeStamp()) + "ms.png";
-    cv::Mat depthMat(colorFrame->height(), colorFrame->width(), CV_8UC3, colorFrame->data());
+    cv::Mat     depthMat(colorFrame->height(), colorFrame->width(), CV_8UC3, colorFrame->data());
     cv::imwrite(colorName, depthMat, params);
     std::cout << "Color saved:" << colorName << std::endl;
 }

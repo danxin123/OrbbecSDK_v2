@@ -19,7 +19,6 @@ public:
 
 private:
     std::shared_ptr<ObRTPUDPClient> udpClient_;
-
 };
 
 }  // namespace libobsensor

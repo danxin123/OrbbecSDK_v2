@@ -103,7 +103,7 @@ static OBNetIpConfig getIPConfig() {
     uint8_t       mask[4];
     uint8_t       gateway[4];
 
-    std::cout << "Please enter the network configuration information:" << std::endl;    
+    std::cout << "Please enter the network configuration information:" << std::endl;
     std::cout << "Enter IP address:" << std::endl;
     while(std::cin >> val) {
         if(parseIpString(val, address)) {

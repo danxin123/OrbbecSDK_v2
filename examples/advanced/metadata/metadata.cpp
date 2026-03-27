@@ -11,11 +11,11 @@
 #include <iomanip>
 #include <atomic>
 
-std::thread inputWatchThread;
+std::thread       inputWatchThread;
 std::atomic<bool> isRunning(true);
-void        inputWatcher();
-const char *metadataTypeToString(OBFrameMetadataType type);
-const char *frameTypeToString(OBFrameType type);
+void              inputWatcher();
+const char       *metadataTypeToString(OBFrameMetadataType type);
+const char       *frameTypeToString(OBFrameType type);
 
 int main() try {
     // Create a pipeline.

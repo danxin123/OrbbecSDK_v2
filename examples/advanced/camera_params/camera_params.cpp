@@ -42,7 +42,7 @@ void printExtrinsic(const char *label, const OBExtrinsic &ext) {
 
 void demo2Dto3D(const OBCameraIntrinsic &depthIntrinsic, const OBExtrinsic &extrinsicD2C, float depthMm) {
     // Use center pixel
-    OBPoint2f pixel  = {depthIntrinsic.cx, depthIntrinsic.cy};
+    OBPoint2f pixel  = { depthIntrinsic.cx, depthIntrinsic.cy };
     OBPoint3f point  = {};
     bool      result = ob::CoordinateTransformHelper::transformation2dto3d(pixel, depthMm, depthIntrinsic, extrinsicD2C, &point);
     std::cout << "\n  [2D→3D Transform Demo]" << std::endl;
@@ -57,8 +57,8 @@ void demo2Dto3D(const OBCameraIntrinsic &depthIntrinsic, const OBExtrinsic &extr
 
 void demo3Dto2D(const OBCameraIntrinsic &depthIntrinsic, const OBCameraDistortion &depthDistortion, const OBExtrinsic &extrinsicC2D) {
     // A point 1 meter in front of the camera
-    OBPoint3f point = {0.0f, 0.0f, 1000.0f};
-    OBPoint2f pixel = {};
+    OBPoint3f point  = { 0.0f, 0.0f, 1000.0f };
+    OBPoint2f pixel  = {};
     bool      result = ob::CoordinateTransformHelper::transformation3dto2d(point, depthIntrinsic, depthDistortion, extrinsicC2D, &pixel);
     std::cout << "\n  [3D→2D Transform Demo]" << std::endl;
     std::cout << "    Input: 3D(" << point.x << ", " << point.y << ", " << point.z << ") mm" << std::endl;

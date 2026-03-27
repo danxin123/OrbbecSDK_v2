@@ -82,10 +82,10 @@ const __m128i AlignImpl::AlignImplSSEData::ZERO       = _mm_setzero_si128();
 const __m128  AlignImpl::AlignImplSSEData::ZERO_F     = _mm_set_ps1(0.0);
 
 AlignImpl::AlignImpl() : initialized_(false) {
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
-    sseData_ = static_cast<AlignImplSSEData *>( _aligned_malloc(sizeof(AlignImplSSEData), 16));
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
+    sseData_ = static_cast<AlignImplSSEData *>(_aligned_malloc(sizeof(AlignImplSSEData), 16));
 #else
-    sseData_ = static_cast<AlignImplSSEData *>( malloc(sizeof(AlignImplSSEData)));
+    sseData_ = static_cast<AlignImplSSEData *>(malloc(sizeof(AlignImplSSEData)));
 #endif
 
     depth_unit_mm_   = 1.0;
@@ -99,7 +99,7 @@ AlignImpl::AlignImpl() : initialized_(false) {
 }
 
 AlignImpl::~AlignImpl() {
-#if(defined(WIN32) || defined(_WIN32) || defined(WINCE))
+#if (defined(WIN32) || defined(_WIN32) || defined(WINCE))
     _aligned_free(sseData_);
 #else
     free(sseData_);
@@ -154,7 +154,7 @@ void AlignImpl::initialize(OBCameraIntrinsic depth_intrin, OBCameraDistortion de
 
     prepareDepthResolution();
     setLimitROI();
-    initialized_ = true;
+    initialized_  = true;
     depth_format_ = depth_format;
     return;
 }
@@ -195,8 +195,8 @@ float estimateInflectionPoint(ob_camera_intrinsic depth_intr, ob_camera_intrinsi
             for(int i = 0; i < 2; i++) {
                 ob_camera_intrinsic intr = intrs[i];
                 float               u    = (intr.cx > (intr.width - intr.cx)) ? intr.cx : (intr.width - intr.cx),
-                      v                  = (intr.cy > (intr.height - intr.cy)) ? intr.cy : (intr.height - intr.cy);
-                float x = u / intr.fx, y = v / intr.fy;
+                                    v    = (intr.cy > (intr.height - intr.cy)) ? intr.cy : (intr.height - intr.cy);
+                float               x = u / intr.fx, y = v / intr.fy;
                 r2[i] = x * x + y * y;
             }
             if(r2[0] > r2[1]) {
@@ -228,7 +228,7 @@ void AlignImpl::prepareDepthResolution() {
 
     // There may be outliers due to possible inflection points of the calibrated K6 distortion curve;
     if(add_target_distortion_) {
-        r2_max_loc_     = estimateInflectionPoint(depth_intric_, rgb_intric_, rgb_disto_);
+        r2_max_loc_               = estimateInflectionPoint(depth_intric_, rgb_intric_, rgb_disto_);
         sseData_->r2_max_loc_sse_ = _mm_set_ps1(r2_max_loc_);
     }
 
@@ -351,13 +351,16 @@ void AlignImpl::distortedWithSSE(__m128 &tx, __m128 &ty, const __m128 x2, const 
     __m128 r6 = _mm_mul_ps(r4, r2);
 
     // float k_jx = 1 + k1 * r2 + k2 * r4 + k3 * r6;
-    __m128 k_jx = _mm_add_ps(_mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k1_, r2), _mm_mul_ps(sseData_->color_k2_, r4)), _mm_mul_ps(sseData_->color_k3_, r6)));
+    __m128 k_jx = _mm_add_ps(
+        _mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k1_, r2), _mm_mul_ps(sseData_->color_k2_, r4)), _mm_mul_ps(sseData_->color_k3_, r6)));
 
     // float x_qx = p2 * (2 * x2 + r2) + 2 * p1 * xy;
-    __m128 x_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p2_, _mm_add_ps(_mm_mul_ps(x2, sseData_->TWO), r2)), _mm_mul_ps(_mm_mul_ps(sseData_->color_p1_, xy), sseData_->TWO));
+    __m128 x_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p2_, _mm_add_ps(_mm_mul_ps(x2, sseData_->TWO), r2)),
+                             _mm_mul_ps(_mm_mul_ps(sseData_->color_p1_, xy), sseData_->TWO));
 
     // float y_qx = p1 * (2 * y2 + r2) + 2 * p2 * xy;
-    __m128 y_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p1_, _mm_add_ps(_mm_mul_ps(y2, sseData_->TWO), r2)), _mm_mul_ps(_mm_mul_ps(sseData_->color_p2_, xy), sseData_->TWO));
+    __m128 y_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p1_, _mm_add_ps(_mm_mul_ps(y2, sseData_->TWO), r2)),
+                             _mm_mul_ps(_mm_mul_ps(sseData_->color_p2_, xy), sseData_->TWO));
 
     // float distx = tx * k_jx + x_qx;
     tx = _mm_add_ps(_mm_mul_ps(tx, k_jx), x_qx);
@@ -372,15 +375,18 @@ void AlignImpl::BMDistortedWithSSE(__m128 &tx, __m128 &ty, const __m128 x2, cons
     __m128 r6 = _mm_mul_ps(r4, r2);
 
     // float k_jx = k_diff = (1 + k1 * r2 + k2 * r4 + k3 * r6) / (1 + k4 * r2 + k5 * r4 + k6 * r6);
-    __m128 k_jx =
-        _mm_div_ps(_mm_add_ps(_mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k1_, r2), _mm_mul_ps(sseData_->color_k2_, r4)), _mm_mul_ps(sseData_->color_k3_, r6))),
-                   _mm_add_ps(_mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k4_, r2), _mm_mul_ps(sseData_->color_k5_, r4)), _mm_mul_ps(sseData_->color_k6_, r6))));
+    __m128 k_jx = _mm_div_ps(_mm_add_ps(_mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k1_, r2), _mm_mul_ps(sseData_->color_k2_, r4)),
+                                                                   _mm_mul_ps(sseData_->color_k3_, r6))),
+                             _mm_add_ps(_mm_set_ps1(1), _mm_add_ps(_mm_add_ps(_mm_mul_ps(sseData_->color_k4_, r2), _mm_mul_ps(sseData_->color_k5_, r4)),
+                                                                   _mm_mul_ps(sseData_->color_k6_, r6))));
 
     // float x_qx = p2 * (2 * x2 + r2) + 2 * p1 * xy;
-    __m128 x_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p2_, _mm_add_ps(_mm_mul_ps(x2, sseData_->TWO), r2)), _mm_mul_ps(_mm_mul_ps(sseData_->color_p1_, xy), sseData_->TWO));
+    __m128 x_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p2_, _mm_add_ps(_mm_mul_ps(x2, sseData_->TWO), r2)),
+                             _mm_mul_ps(_mm_mul_ps(sseData_->color_p1_, xy), sseData_->TWO));
 
     // float y_qx = p1 * (2 * y2 + r2) + 2 * p2 * xy;
-    __m128 y_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p1_, _mm_add_ps(_mm_mul_ps(y2, sseData_->TWO), r2)), _mm_mul_ps(_mm_mul_ps(sseData_->color_p2_, xy), sseData_->TWO));
+    __m128 y_qx = _mm_add_ps(_mm_mul_ps(sseData_->color_p1_, _mm_add_ps(_mm_mul_ps(y2, sseData_->TWO), r2)),
+                             _mm_mul_ps(_mm_mul_ps(sseData_->color_p2_, xy), sseData_->TWO));
 
     // float distx = tx * k_jx + x_qx;
     tx = _mm_add_ps(_mm_mul_ps(tx, k_jx), x_qx);
@@ -410,9 +416,9 @@ void AlignImpl::KBDistortedWithSSE(__m128 &tx, __m128 &ty, const __m128 r2) {
     __m128 theta9 = _mm_mul_ps(theta2, theta7);
 
     // float theta_jx=theta+k1*theta2+k2*theta4+k3*theta6+k4*theta8
-    __m128 theta_jx =
-        _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_add_ps(theta, _mm_mul_ps(sseData_->color_k1_, theta3)), _mm_mul_ps(sseData_->color_k2_, theta5)), _mm_mul_ps(sseData_->color_k3_, theta7)),
-                   _mm_mul_ps(sseData_->color_k4_, theta9));
+    __m128 theta_jx = _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_add_ps(theta, _mm_mul_ps(sseData_->color_k1_, theta3)), _mm_mul_ps(sseData_->color_k2_, theta5)),
+                                            _mm_mul_ps(sseData_->color_k3_, theta7)),
+                                 _mm_mul_ps(sseData_->color_k4_, theta9));
 
     // float tx=(theta_jx/r)*tx
     tx = _mm_mul_ps(_mm_div_ps(theta_jx, r), tx);
@@ -901,7 +907,7 @@ void AlignImpl::FillMultiChannelWithoutSSE(const float *pixelx_f, const float *p
     if(out_depth) {
         int u_rgb1 = static_cast<int>(pixelx_f[1] + 0.5f);
         int v_rgb1 = static_cast<int>(pixely_f[1] + 0.5f);
-        int u0  = std::max(0, std::min(u_rgb0, u_rgb1));
+        int u0     = std::max(0, std::min(u_rgb0, u_rgb1));
         int v0     = std::max(0, std::min(v_rgb0, v_rgb1));
         int u1     = std::min(std::max(u_rgb0, u_rgb1), width - 1);
         int v1     = std::min(std::max(v_rgb0, v_rgb1), height - 1);
@@ -1013,7 +1019,6 @@ void AlignImpl::K6DistortedD2CWithSSE(const uint16_t *depth_buffer, uint16_t *ou
         }
     }
     // center
-
 }
 
 void AlignImpl::KBDistortedD2CWithSSE(const uint16_t *depth_buffer, uint16_t *out_depth, const float *coeff_mat_x[2], const float *coeff_mat_y[2],
@@ -1389,7 +1394,7 @@ inline void AlignImpl::LinearProcessWithSSEOnY12C4(const uint16_t *depth_buffer,
         __m128i result             = _mm_or_si128(depth_o_lo_shifted, low_bits);
         depth_o_lo                 = _mm_cvtepi32_ps(result);
 
-           __m128i depth_o_hi_shifted = _mm_slli_epi32(_mm_cvttps_epi32(depth_o_hi), 4);
+        __m128i depth_o_hi_shifted = _mm_slli_epi32(_mm_cvttps_epi32(depth_o_hi), 4);
         __m128i low_bits_hi        = _mm_and_si128(depth_i_hi, mask_low_4bits);
         __m128i result_hi          = _mm_or_si128(depth_o_hi_shifted, low_bits_hi);
         depth_o_hi                 = _mm_cvtepi32_ps(result_hi);
@@ -1559,23 +1564,23 @@ int AlignImpl::D2C(const uint16_t *depth_buffer, int depth_width, int depth_heig
     uint16_t rgb_temp_width  = 0;
     uint16_t rgb_temp_height = 0;
     if(use_scale_) {
-        scale              = rgb_intric_.fx / depth_intric_.fx;
-        rgb_temp_fx        = rgb_intric_.fx;
-        rgb_temp_fy        = rgb_intric_.fy;
-        rgb_temp_cx        = rgb_intric_.cx;
-        rgb_temp_cy        = rgb_intric_.cy;
-        rgb_temp_width     = rgb_intric_.width;
-        rgb_temp_height    = rgb_intric_.height;
-        rgb_intric_.fx     = rgb_intric_.fx / scale;
-        rgb_intric_.fy     = rgb_intric_.fy / scale;
-        rgb_intric_.cx     = rgb_intric_.cx / scale;
-        rgb_intric_.cy     = rgb_intric_.cy / scale;
-        rgb_intric_.width  = static_cast<int16_t>(rgb_intric_.width / scale);
-        rgb_intric_.height = static_cast<int16_t>(rgb_intric_.height / scale);
-        sseData_->color_fx_          = _mm_set_ps1(rgb_intric_.fx);
-        sseData_->color_cx_          = _mm_set_ps1(rgb_intric_.cx);
-        sseData_->color_fy_          = _mm_set_ps1(rgb_intric_.fy);
-        sseData_->color_cy_          = _mm_set_ps1(rgb_intric_.cy);
+        scale               = rgb_intric_.fx / depth_intric_.fx;
+        rgb_temp_fx         = rgb_intric_.fx;
+        rgb_temp_fy         = rgb_intric_.fy;
+        rgb_temp_cx         = rgb_intric_.cx;
+        rgb_temp_cy         = rgb_intric_.cy;
+        rgb_temp_width      = rgb_intric_.width;
+        rgb_temp_height     = rgb_intric_.height;
+        rgb_intric_.fx      = rgb_intric_.fx / scale;
+        rgb_intric_.fy      = rgb_intric_.fy / scale;
+        rgb_intric_.cx      = rgb_intric_.cx / scale;
+        rgb_intric_.cy      = rgb_intric_.cy / scale;
+        rgb_intric_.width   = static_cast<int16_t>(rgb_intric_.width / scale);
+        rgb_intric_.height  = static_cast<int16_t>(rgb_intric_.height / scale);
+        sseData_->color_fx_ = _mm_set_ps1(rgb_intric_.fx);
+        sseData_->color_cx_ = _mm_set_ps1(rgb_intric_.cx);
+        sseData_->color_fy_ = _mm_set_ps1(rgb_intric_.fy);
+        sseData_->color_cy_ = _mm_set_ps1(rgb_intric_.cy);
     }
 
     int pixnum = rgb_intric_.width * rgb_intric_.height;
@@ -1649,16 +1654,16 @@ int AlignImpl::D2C(const uint16_t *depth_buffer, int depth_width, int depth_heig
             free(out_depth_dst);
         }
 
-        rgb_intric_.fx     = rgb_temp_fx;
-        rgb_intric_.fy     = rgb_temp_fy;
-        rgb_intric_.cx     = rgb_temp_cx;
-        rgb_intric_.cy     = rgb_temp_cy;
-        rgb_intric_.width  = rgb_temp_width;
-        rgb_intric_.height = rgb_temp_height;
-        sseData_->color_fx_          = _mm_set_ps1(rgb_intric_.fx);
-        sseData_->color_cx_          = _mm_set_ps1(rgb_intric_.cx);
-        sseData_->color_fy_          = _mm_set_ps1(rgb_intric_.fy);
-        sseData_->color_cy_          = _mm_set_ps1(rgb_intric_.cy);
+        rgb_intric_.fx      = rgb_temp_fx;
+        rgb_intric_.fy      = rgb_temp_fy;
+        rgb_intric_.cx      = rgb_temp_cx;
+        rgb_intric_.cy      = rgb_temp_cy;
+        rgb_intric_.width   = rgb_temp_width;
+        rgb_intric_.height  = rgb_temp_height;
+        sseData_->color_fx_ = _mm_set_ps1(rgb_intric_.fx);
+        sseData_->color_cx_ = _mm_set_ps1(rgb_intric_.cx);
+        sseData_->color_fy_ = _mm_set_ps1(rgb_intric_.fy);
+        sseData_->color_cy_ = _mm_set_ps1(rgb_intric_.cy);
     }
     pixnum = rgb_intric_.width * rgb_intric_.height;
     if(out_depth) {
@@ -1681,7 +1686,7 @@ int AlignImpl::C2D(const uint16_t *depth_buffer, int depth_width, int depth_heig
 
     // rgb x-y coordinates for each depth pixel
     unsigned long long size     = static_cast<unsigned long long>(depth_width) * depth_height * 2;
-    int *              depth_xy = new int[static_cast<unsigned int>(size)];
+    int               *depth_xy = new int[static_cast<unsigned int>(size)];
     memset(depth_xy, -1, static_cast<unsigned int>(size) * sizeof(int));
 
     int ret = -1;

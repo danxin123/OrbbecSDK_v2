@@ -184,4 +184,3 @@ std::map<std::string, std::shared_ptr<IFilterCreator>> getCreators() {
 
 }  // namespace PrivFilterCreatorLoader
 }  // namespace libobsensor
-

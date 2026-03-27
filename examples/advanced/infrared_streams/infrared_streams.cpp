@@ -38,13 +38,13 @@ int main() try {
     // Print detected IR sensors
     std::cout << "=== Infrared Streams ===" << std::endl;
     std::cout << "Detected IR sensors:" << std::endl;
-    for(auto &st : irSensors) {
+    for(auto &st: irSensors) {
         auto name = ob::TypeHelper::convertOBSensorTypeToString(st);
         std::cout << "  - " << name << std::endl;
     }
 
     bool hasDual = false;
-    for(auto &st : irSensors) {
+    for(auto &st: irSensors) {
         if(st == OB_SENSOR_IR_LEFT || st == OB_SENSOR_IR_RIGHT)
             hasDual = true;
     }
@@ -52,7 +52,7 @@ int main() try {
 
     // Enable all IR streams
     auto config = std::make_shared<ob::Config>();
-    for(auto &st : irSensors) {
+    for(auto &st: irSensors) {
         config->enableVideoStream(st, OB_WIDTH_ANY, OB_HEIGHT_ANY, OB_FPS_ANY, OB_FORMAT_ANY);
     }
 
@@ -66,8 +66,8 @@ int main() try {
         if(sp->is<ob::VideoStreamProfile>()) {
             auto profile = sp->as<ob::VideoStreamProfile>();
             auto name    = ob::TypeHelper::convertOBStreamTypeToString(profile->getType());
-            std::cout << "  " << name << ": " << profile->getWidth() << "x" << profile->getHeight() << " @ " << profile->getFps() << "fps, format="
-                      << ob::TypeHelper::convertOBFormatTypeToString(profile->getFormat()) << std::endl;
+            std::cout << "  " << name << ": " << profile->getWidth() << "x" << profile->getHeight() << " @ " << profile->getFps()
+                      << "fps, format=" << ob::TypeHelper::convertOBFormatTypeToString(profile->getFormat()) << std::endl;
         }
     }
 
@@ -88,7 +88,7 @@ int main() try {
         }
     }
 
-    auto arrangeMode = hasDual ? ob_smpl::ARRANGE_ONE_ROW : ob_smpl::ARRANGE_SINGLE;
+    auto              arrangeMode = hasDual ? ob_smpl::ARRANGE_ONE_ROW : ob_smpl::ARRANGE_SINGLE;
     ob_smpl::CVWindow win("Infrared Streams", 1280, 720, arrangeMode);
 
     std::string prompt = "'S': Save frame";
@@ -97,8 +97,8 @@ int main() try {
     prompt += ", 'Esc': Exit";
     win.setKeyPrompt(prompt);
 
-    uint64_t frameIdx   = 0;
-    bool     saveNext   = false;
+    uint64_t frameIdx = 0;
+    bool     saveNext = false;
 
     win.setKeyPressedCallback([&](int key) {
         if(key == 's' || key == 'S') {
@@ -125,7 +125,7 @@ int main() try {
         frameIdx++;
 
         if(saveNext) {
-            saveNext = false;
+            saveNext   = false;
             auto count = frameSet->getCount();
             for(uint32_t i = 0; i < count; i++) {
                 auto frame = frameSet->getFrameByIndex(i);

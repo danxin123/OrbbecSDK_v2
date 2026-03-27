@@ -27,9 +27,7 @@
 namespace {
 
 std::string toLowerCopy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -60,7 +58,6 @@ std::shared_ptr<ob::Sensor> tryGetSensor(const std::shared_ptr<ob::Device> &devi
     }
 }
 
-
 }  // namespace
 
 // ============================================================
@@ -77,7 +74,11 @@ protected:
 
     void TearDown() override {
         if(pipeline_) {
-            try { pipeline_->stop(); } catch(...) {}
+            try {
+                pipeline_->stop();
+            }
+            catch(...) {
+            }
         }
         pipeline_.reset();
         DeviceTest::TearDown();
@@ -129,7 +130,7 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_02_net_device_enum_toggle) {
 
         const std::string expectedSerial = ENV().deviceSerial();
         for(uint32_t i = 0; i < devList->getCount(); ++i) {
-            const char *name = devList->getName(i);
+            const char *name   = devList->getName(i);
             const char *serial = devList->getSerialNumber(i);
             if(name == nullptr || serial == nullptr) {
                 continue;
@@ -154,8 +155,7 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_02_net_device_enum_toggle) {
     auto devList = ctx_->queryDeviceList();
     ASSERT_NE(devList, nullptr);
     ASSERT_GT(devList->getCount(), 0u) << "No devices enumerated after enabling network discovery";
-    EXPECT_TRUE(hasExpectedDevice(devList))
-        << "Expected Gemini 335Le/435Le device was not found after enabling network discovery";
+    EXPECT_TRUE(hasExpectedDevice(devList)) << "Expected Gemini 335Le/435Le device was not found after enabling network discovery";
 
     ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(false));
     ASSERT_NO_THROW(ctx_->enableNetDeviceEnumeration(true));
@@ -164,8 +164,7 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_02_net_device_enum_toggle) {
     devList = ctx_->queryDeviceList();
     ASSERT_NE(devList, nullptr);
     ASSERT_GT(devList->getCount(), 0u) << "No devices enumerated after re-enabling network discovery";
-    EXPECT_TRUE(hasExpectedDevice(devList))
-        << "Expected Gemini 335Le/435Le device was not found after re-enabling network discovery";
+    EXPECT_TRUE(hasExpectedDevice(devList)) << "Expected Gemini 335Le/435Le device was not found after re-enabling network discovery";
 }
 
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_03_net_device_direct) {
@@ -189,8 +188,8 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
     // ORBBEC_NET_IP   — desired static IPv4, e.g. "192.168.1.100"
     // ORBBEC_NET_MASK — subnet mask (optional, defaults to 255.255.255.0)
     // ORBBEC_NET_GW   — gateway (optional, defaults to x.x.x.1 of the target subnet)
-    const char *mac  = std::getenv("ORBBEC_NET_MAC");
-    const char *ip   = std::getenv("ORBBEC_NET_IP");
+    const char *mac = std::getenv("ORBBEC_NET_MAC");
+    const char *ip  = std::getenv("ORBBEC_NET_IP");
     if(!mac || std::strlen(mac) == 0 || !ip || std::strlen(ip) == 0) {
         GTEST_SKIP() << "ORBBEC_NET_MAC and ORBBEC_NET_IP must be set for this test";
     }
@@ -198,8 +197,10 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
     // Parse a dotted-decimal IPv4 string into a 4-byte big-endian array.
     auto parseIPv4 = [](const char *str, uint8_t out[4]) -> bool {
         unsigned a, b, c, d;
-        if(std::sscanf(str, "%u.%u.%u.%u", &a, &b, &c, &d) != 4) return false;
-        if(a > 255 || b > 255 || c > 255 || d > 255) return false;
+        if(std::sscanf(str, "%u.%u.%u.%u", &a, &b, &c, &d) != 4)
+            return false;
+        if(a > 255 || b > 255 || c > 255 || d > 255)
+            return false;
         out[0] = static_cast<uint8_t>(a);
         out[1] = static_cast<uint8_t>(b);
         out[2] = static_cast<uint8_t>(c);
@@ -216,7 +217,10 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
         ASSERT_TRUE(parseIPv4(mask, config.mask)) << "ORBBEC_NET_MASK is not a valid IPv4 address: " << mask;
     }
     else {
-        config.mask[0] = 255; config.mask[1] = 255; config.mask[2] = 255; config.mask[3] = 0;
+        config.mask[0] = 255;
+        config.mask[1] = 255;
+        config.mask[2] = 255;
+        config.mask[3] = 0;
     }
 
     const char *gw = std::getenv("ORBBEC_NET_GW");
@@ -253,14 +257,15 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_04_force_ip) {
 
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_05_hotplug_reboot) {
     /// Test case: hotplug reboot.
-    std::atomic<bool> removedCalled{false};
-    std::atomic<bool> addedCalled{false};
+    std::atomic<bool> removedCalled{ false };
+    std::atomic<bool> addedCalled{ false };
 
-    auto cbId = ctx_->registerDeviceChangedCallback(
-        [&](std::shared_ptr<ob::DeviceList> removed, std::shared_ptr<ob::DeviceList> added) {
-            if(removed && removed->getCount() > 0) removedCalled = true;
-            if(added && added->getCount() > 0) addedCalled = true;
-        });
+    auto cbId = ctx_->registerDeviceChangedCallback([&](std::shared_ptr<ob::DeviceList> removed, std::shared_ptr<ob::DeviceList> added) {
+        if(removed && removed->getCount() > 0)
+            removedCalled = true;
+        if(added && added->getCount() > 0)
+            addedCalled = true;
+    });
 
     auto sn = std::string(devInfo_->getSerialNumber());
     device_->reboot();
@@ -283,7 +288,7 @@ class TC_CPP_03_DeviceList : public DeviceTest {};
 TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_01_count_and_index) {
     /// Test case: count and index.
     auto devList = ctx_->queryDeviceList();
-    auto count = devList->getCount();
+    auto count   = devList->getCount();
     ASSERT_GT(count, 0u);
 
     for(uint32_t i = 0; i < count; i++) {
@@ -316,7 +321,7 @@ TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_02_access_mode) {
 
 TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_03_get_by_sn_uid) {
     /// Test case: get by sn uid.
-    auto sn = std::string(devInfo_->getSerialNumber());
+    auto sn  = std::string(devInfo_->getSerialNumber());
     auto uid = std::string(devInfo_->getUid());
     devInfo_.reset();
     device_.reset();
@@ -357,7 +362,7 @@ TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_05_net_device_info) {
 TEST_F(TC_CPP_03_DeviceList, TC_CPP_03_06_out_of_bounds) {
     /// Test case: out of bounds.
     auto devList = ctx_->queryDeviceList();
-    auto count = devList->getCount();
+    auto count   = devList->getCount();
     EXPECT_THROW(devList->getDevice(count + 100), ob::Error);
 }
 
@@ -395,8 +400,7 @@ TEST_F(TC_CPP_04_DeviceInfo, TC_CPP_04_03_net_ip_info) {
 
     const char *connType = devInfo_->getConnectionType();
     if(connType == nullptr || std::string(connType) != "Ethernet") {
-        GTEST_SKIP() << "Test requires Ethernet connection, current connection type: "
-                     << (connType ? connType : "null");
+        GTEST_SKIP() << "Test requires Ethernet connection, current connection type: " << (connType ? connType : "null");
     }
 
     auto ip = devInfo_->getIpAddress();
@@ -453,7 +457,7 @@ TEST_F(TC_CPP_05_AccessMode, TC_CPP_05_02_exclusive_access) {
     device_.reset();
 
     auto devList = ctx_->queryDeviceList();
-    auto dev1 = devList->getDevice(0, OB_DEVICE_EXCLUSIVE_ACCESS);
+    auto dev1    = devList->getDevice(0, OB_DEVICE_EXCLUSIVE_ACCESS);
     ASSERT_NE(dev1, nullptr);
 
     // Prepare local state for the next check.
@@ -473,7 +477,7 @@ TEST_F(TC_CPP_05_AccessMode, TC_CPP_05_03_shared_access) {
     device_.reset();
 
     auto devList = ctx_->queryDeviceList();
-    auto devA = devList->getDevice(0, OB_DEVICE_MONITOR_ACCESS);
+    auto devA    = devList->getDevice(0, OB_DEVICE_MONITOR_ACCESS);
     ASSERT_NE(devA, nullptr);
 
     // Prepare local state for the next check.
@@ -496,7 +500,7 @@ TEST_F(TC_CPP_05_AccessMode, TC_CPP_05_04_control_only_access) {
     device_.reset();
 
     auto devList = ctx_->queryDeviceList();
-    auto dev = devList->getDevice(0, OB_DEVICE_CONTROL_ACCESS);
+    auto dev     = devList->getDevice(0, OB_DEVICE_CONTROL_ACCESS);
     ASSERT_NE(dev, nullptr);
 
     // Prepare local state for the next check.
@@ -546,7 +550,7 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_03_imu_sensors) {
 
 TEST_F(TC_CPP_06_Sensor, TC_CPP_06_04_stereo_ir) {
     /// Test case: stereo ir.
-    auto irLeft = device_->getSensor(OB_SENSOR_IR_LEFT);
+    auto irLeft  = device_->getSensor(OB_SENSOR_IR_LEFT);
     auto irRight = device_->getSensor(OB_SENSOR_IR_RIGHT);
     // Prepare local state for the next check.
     if(irLeft) {
@@ -591,10 +595,8 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_07_sensor_callback_stream) {
 
     auto profile = profileList->getProfile(0);
 
-    std::atomic<int> frameCount{0};
-    depthSensor->start(profile, [&frameCount](std::shared_ptr<ob::Frame>) {
-        frameCount++;
-    });
+    std::atomic<int> frameCount{ 0 };
+    depthSensor->start(profile, [&frameCount](std::shared_ptr<ob::Frame>) { frameCount++; });
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     depthSensor->stop();
@@ -607,7 +609,7 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_08_sensor_repeated_start_stop) {
     auto depthSensor = device_->getSensor(OB_SENSOR_DEPTH);
     ASSERT_NE(depthSensor, nullptr);
     auto profileList = depthSensor->getStreamProfileList();
-    auto profile = profileList->getProfile(0);
+    auto profile     = profileList->getProfile(0);
 
     for(int i = 0; i < 5; i++) {
         depthSensor->start(profile, [](std::shared_ptr<ob::Frame>) {});
@@ -625,13 +627,12 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_09_sensor_after_reboot) {
     auto sn = std::string(devInfo_->getSerialNumber());
 
     // Register a callback to detect when the device reconnects.
-    std::atomic<bool> reconnected{false};
-    auto cbId = ctx_->registerDeviceChangedCallback(
-        [&](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
-            if(added && added->getCount() > 0) {
-                reconnected = true;
-            }
-        });
+    std::atomic<bool> reconnected{ false };
+    auto              cbId = ctx_->registerDeviceChangedCallback([&](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
+        if(added && added->getCount() > 0) {
+            reconnected = true;
+        }
+    });
 
     // Trigger the reboot and immediately release the stale device handle.
     device_->reboot();
@@ -666,10 +667,8 @@ TEST_F(TC_CPP_06_Sensor, TC_CPP_06_09_sensor_after_reboot) {
     ASSERT_NE(profiles, nullptr);
     ASSERT_GT(profiles->getCount(), 0u);
 
-    std::atomic<int> frameCount{0};
-    depthSensor->start(profiles->getProfile(0), [&frameCount](std::shared_ptr<ob::Frame>) {
-        frameCount++;
-    });
+    std::atomic<int> frameCount{ 0 };
+    depthSensor->start(profiles->getProfile(0), [&frameCount](std::shared_ptr<ob::Frame>) { frameCount++; });
     std::this_thread::sleep_for(std::chrono::seconds(3));
     depthSensor->stop();
 
@@ -683,7 +682,7 @@ class TC_CPP_07_StreamProfile : public SensorTest {};
 
 TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_01_depth_color_profiles) {
     /// Test case: depth color profiles.
-    for(auto sensorType : {OB_SENSOR_DEPTH, OB_SENSOR_COLOR}) {
+    for(auto sensorType: { OB_SENSOR_DEPTH, OB_SENSOR_COLOR }) {
         auto sensor = device_->getSensor(sensorType);
         ASSERT_NE(sensor, nullptr) << "Sensor null for type " << sensorType;
         auto profiles = sensor->getStreamProfileList();
@@ -700,14 +699,14 @@ TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_01_depth_color_profiles) {
 
 TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_02_video_profile_filter) {
     /// Test case: video profile filter.
-    auto pipeline = std::make_shared<ob::Pipeline>(device_);
+    auto pipeline      = std::make_shared<ob::Pipeline>(device_);
     auto depthProfiles = pipeline->getStreamProfileList(OB_SENSOR_DEPTH);
     ASSERT_GT(depthProfiles->getCount(), 0u);
 
     auto first = depthProfiles->getProfile(0)->as<ob::VideoStreamProfile>();
-    auto w = first->getWidth();
-    auto h = first->getHeight();
-    auto fps = first->getFps();
+    auto w     = first->getWidth();
+    auto h     = first->getHeight();
+    auto fps   = first->getFps();
 
     // Prepare local state for the next check.
     auto matched = depthProfiles->getVideoStreamProfile(w, h, first->getFormat(), fps);
@@ -719,7 +718,8 @@ TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_02_video_profile_filter) {
 TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_03_accel_profile) {
     /// Test case: accel profile.
     auto accel = device_->getSensor(OB_SENSOR_ACCEL);
-    if(!accel) GTEST_SKIP() << "No accel sensor";
+    if(!accel)
+        GTEST_SKIP() << "No accel sensor";
 
     auto profiles = accel->getStreamProfileList();
     ASSERT_GT(profiles->getCount(), 0u);
@@ -732,7 +732,8 @@ TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_03_accel_profile) {
 TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_04_gyro_profile) {
     /// Test case: gyro profile.
     auto gyro = device_->getSensor(OB_SENSOR_GYRO);
-    if(!gyro) GTEST_SKIP() << "No gyro sensor";
+    if(!gyro)
+        GTEST_SKIP() << "No gyro sensor";
 
     auto profiles = gyro->getStreamProfileList();
     ASSERT_GT(profiles->getCount(), 0u);
@@ -745,8 +746,8 @@ TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_04_gyro_profile) {
 TEST_F(TC_CPP_07_StreamProfile, TC_CPP_07_05_profile_type_check) {
     /// Test case: profile type check.
     auto depthSensor = device_->getSensor(OB_SENSOR_DEPTH);
-    auto profiles = depthSensor->getStreamProfileList();
-    auto p = profiles->getProfile(0);
+    auto profiles    = depthSensor->getStreamProfileList();
+    auto p           = profiles->getProfile(0);
 
     EXPECT_TRUE(p->is<ob::VideoStreamProfile>());
     auto vp = p->as<ob::VideoStreamProfile>();
@@ -786,7 +787,8 @@ TEST_F(TC_CPP_08_Pipeline, TC_CPP_08_03_config_start_poll) {
     int validFrames = 0;
     for(int i = 0; i < 10; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(fs) validFrames++;
+        if(fs)
+            validFrames++;
     }
     pipeline_->stop();
     EXPECT_GE(validFrames, 8) << "Expected >=8 valid framesets out of 10";
@@ -797,10 +799,8 @@ TEST_F(TC_CPP_08_Pipeline, TC_CPP_08_04_config_start_callback) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
 
-    std::atomic<int> cbCount{0};
-    pipeline_->start(config, [&cbCount](std::shared_ptr<ob::FrameSet>) {
-        cbCount++;
-    });
+    std::atomic<int> cbCount{ 0 };
+    pipeline_->start(config, [&cbCount](std::shared_ptr<ob::FrameSet>) { cbCount++; });
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     pipeline_->stop();
@@ -854,7 +854,8 @@ TEST_F(TC_CPP_08_Pipeline, TC_CPP_08_08_frame_sync) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     for(int i = 0; i < 5; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(!fs) continue;
+        if(!fs)
+            continue;
         auto depth = fs->getDepthFrame();
         auto color = fs->getColorFrame();
         if(depth && color) {
@@ -1042,7 +1043,8 @@ protected:
         config->enableStream(OB_STREAM_COLOR);
         pipeline_->start(config);
         // Wait for frames to validate runtime behavior.
-        for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+        for(int i = 0; i < 3; i++)
+            pipeline_->waitForFrameset(2000);
         auto fs = pipeline_->waitForFrameset(3000);
         return fs;
     }
@@ -1070,16 +1072,17 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_02_timestamp_monotonicity) {
     std::vector<uint64_t> timestamps;
     for(int i = 0; i < 35; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(!fs) continue;
+        if(!fs)
+            continue;
         auto df = fs->getDepthFrame();
-        if(df) timestamps.push_back(df->getTimeStampUs());
+        if(df)
+            timestamps.push_back(df->getTimeStampUs());
     }
     pipeline_->stop();
 
     ASSERT_GE(timestamps.size(), 10u);
     for(size_t i = 1; i < timestamps.size(); i++) {
-        EXPECT_GT(timestamps[i], timestamps[i - 1])
-            << "Timestamp not monotonic at index " << i;
+        EXPECT_GT(timestamps[i], timestamps[i - 1]) << "Timestamp not monotonic at index " << i;
     }
 }
 
@@ -1117,11 +1120,12 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_06_depth_frame_scale) {
     float scale = depth->getValueScale();
     EXPECT_GT(scale, 0.0f);
 
-    auto *data = reinterpret_cast<const uint16_t *>(depth->getData());
-    uint32_t pixCount = depth->getWidth() * depth->getHeight();
+    auto    *data       = reinterpret_cast<const uint16_t *>(depth->getData());
+    uint32_t pixCount   = depth->getWidth() * depth->getHeight();
     uint32_t validCount = 0;
     for(uint32_t i = 0; i < pixCount; i++) {
-        if(data[i] > 0) validCount++;
+        if(data[i] > 0)
+            validCount++;
     }
     float validRatio = static_cast<float>(validCount) / pixCount;
     EXPECT_GE(validRatio, 0.1f) << "Less than 10% valid depth pixels";
@@ -1134,16 +1138,20 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_07_color_ir_data_valid) {
     config->enableStream(OB_STREAM_COLOR);
     config->enableStream(OB_STREAM_IR);
     pipeline_->start(config);
-    for(int i = 0; i < 5; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 5; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
 
     auto color = fs->getColorFrame();
     if(color) {
-        auto *d = color->getData();
-        bool allZero = true;
+        auto *d       = color->getData();
+        bool  allZero = true;
         for(uint32_t i = 0; i < std::min(color->getDataSize(), 1000u); i++) {
-            if(d[i] != 0) { allZero = false; break; }
+            if(d[i] != 0) {
+                allZero = false;
+                break;
+            }
         }
         EXPECT_FALSE(allZero) << "Color frame is all zeros";
     }
@@ -1155,7 +1163,8 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_08_points_frame) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto depth = fs->getDepthFrame();
@@ -1163,8 +1172,8 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_08_points_frame) {
     pipeline_->stop();
 
     // Prepare local state for the next check.
-    ob_error *error = nullptr;
-    auto pcFilter = ob_create_filter("PointCloudFilter", &error);
+    ob_error *error    = nullptr;
+    auto      pcFilter = ob_create_filter("PointCloudFilter", &error);
     if(!pcFilter) {
         GTEST_SKIP() << "PointCloudFilter not available";
     }
@@ -1193,11 +1202,11 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_09_accel_frame) {
     pipeline_->stop();
 
     auto profiles = accelSensor->getStreamProfileList();
-    auto profile = profiles->getProfile(0);
+    auto profile  = profiles->getProfile(0);
 
     std::shared_ptr<ob::AccelFrame> accelFrame;
-    std::mutex mtx;
-    std::condition_variable cv;
+    std::mutex                      mtx;
+    std::condition_variable         cv;
 
     accelSensor->start(profile, [&](std::shared_ptr<ob::Frame> frame) {
         if(frame->is<ob::AccelFrame>()) {
@@ -1209,7 +1218,7 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_09_accel_frame) {
 
     {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait_for(lock, std::chrono::seconds(3), [&]{ return accelFrame != nullptr; });
+        cv.wait_for(lock, std::chrono::seconds(3), [&] { return accelFrame != nullptr; });
     }
     accelSensor->stop();
 
@@ -1227,14 +1236,15 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_09_accel_frame) {
 TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_10_gyro_frame) {
     /// Test case: gyro frame.
     auto gyroSensor = device_->getSensor(OB_SENSOR_GYRO);
-    if(!gyroSensor) GTEST_SKIP() << "No gyro sensor";
+    if(!gyroSensor)
+        GTEST_SKIP() << "No gyro sensor";
 
     auto profiles = gyroSensor->getStreamProfileList();
-    auto profile = profiles->getProfile(0);
+    auto profile  = profiles->getProfile(0);
 
     std::shared_ptr<ob::GyroFrame> gyroFrame;
-    std::mutex mtx;
-    std::condition_variable cv;
+    std::mutex                     mtx;
+    std::condition_variable        cv;
 
     gyroSensor->start(profile, [&](std::shared_ptr<ob::Frame> frame) {
         if(frame->is<ob::GyroFrame>()) {
@@ -1246,7 +1256,7 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_10_gyro_frame) {
 
     {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait_for(lock, std::chrono::seconds(3), [&]{ return gyroFrame != nullptr; });
+        cv.wait_for(lock, std::chrono::seconds(3), [&] { return gyroFrame != nullptr; });
     }
     gyroSensor->stop();
 
@@ -1312,14 +1322,16 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_14_frameset_sync) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Warm-up: consume unpaired frames that arrive during startup.
-    for(int i = 0; i < 10; i++) pipeline_->waitForFrameset(3000);
+    for(int i = 0; i < 10; i++)
+        pipeline_->waitForFrameset(3000);
 
     // Collect up to 20 framesets and count depth+color pairs and synchronized pairs.
     int synced = 0;
     int paired = 0;
     for(int i = 0; i < 20; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(!fs) continue;
+        if(!fs)
+            continue;
         auto d = fs->getDepthFrame();
         auto c = fs->getColorFrame();
         if(d && c) {
@@ -1327,7 +1339,8 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_14_frameset_sync) {
             // Frames are considered synchronized when their hardware timestamps are
             // within one 30-fps frame period (~33 ms).
             auto diff = std::abs((int64_t)d->getTimeStampUs() - (int64_t)c->getTimeStampUs());
-            if(diff < 33000) synced++;
+            if(diff < 33000)
+                synced++;
         }
     }
     pipeline_->stop();
@@ -1337,8 +1350,7 @@ TEST_F(TC_CPP_10_Frame_HW, TC_CPP_10_14_frameset_sync) {
     ASSERT_GT(paired, 0) << "No depth+color frame pairs were produced in 20 attempts — "
                             "check that both streams are delivering frames";
     // Require at least 3 out of paired frames to be timestamp-synchronized.
-    EXPECT_GE(synced, 3) << "Insufficient synchronized frame pairs (got " << synced
-                          << " out of " << paired << " paired)";
+    EXPECT_GE(synced, 3) << "Insufficient synchronized frame pairs (got " << synced << " out of " << paired << " paired)";
 }
 
 // ============================================================
@@ -1351,7 +1363,8 @@ TEST_F(TC_CPP_11_Metadata_HW, TC_CPP_11_01_metadata_basic_read) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto depth = fs->getDepthFrame();
@@ -1369,12 +1382,14 @@ TEST_F(TC_CPP_11_Metadata_HW, TC_CPP_11_02_frame_number_fps) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 5; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 5; i++)
+        pipeline_->waitForFrameset(2000);
 
     std::vector<int64_t> frameNums;
     for(int i = 0; i < 10; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(!fs) continue;
+        if(!fs)
+            continue;
         auto d = fs->getDepthFrame();
         if(d && d->hasMetadata(OB_FRAME_METADATA_TYPE_FRAME_NUMBER)) {
             frameNums.push_back(d->getMetadataValue(OB_FRAME_METADATA_TYPE_FRAME_NUMBER));
@@ -1394,7 +1409,8 @@ TEST_F(TC_CPP_11_Metadata_HW, TC_CPP_11_03_exposure_gain_laser) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 5; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 5; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto d = fs->getDepthFrame();
@@ -1417,13 +1433,14 @@ TEST_F(TC_CPP_11_Metadata_HW, TC_CPP_11_04_raw_metadata_buffer) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto d = fs->getDepthFrame();
     ASSERT_NE(d, nullptr);
 
-    auto md = d->getMetadata();
+    auto md     = d->getMetadata();
     auto mdSize = d->getMetadataSize();
     if(mdSize > 0) {
         EXPECT_NE(md, nullptr);
@@ -1436,7 +1453,8 @@ TEST_F(TC_CPP_11_Metadata_HW, TC_CPP_11_05_unsupported_field_safe) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto d = fs->getDepthFrame();
@@ -1458,7 +1476,8 @@ TEST_F(TC_CPP_12_FrameFactory_HW, TC_CPP_12_02_clone_frame) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto depth = fs->getDepthFrame();
@@ -1466,7 +1485,7 @@ TEST_F(TC_CPP_12_FrameFactory_HW, TC_CPP_12_02_clone_frame) {
     pipeline_->stop();
 
     ob_error *error = nullptr;
-    auto clone = ob_create_frame_from_other_frame(depth->getImpl(), true, &error);
+    auto      clone = ob_create_frame_from_other_frame(depth->getImpl(), true, &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(clone, nullptr);
 
@@ -1485,7 +1504,8 @@ protected:
         auto config = std::make_shared<ob::Config>();
         config->enableStream(OB_STREAM_DEPTH);
         pipeline_->start(config);
-        for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+        for(int i = 0; i < 3; i++)
+            pipeline_->waitForFrameset(2000);
         auto fs = pipeline_->waitForFrameset(3000);
         pipeline_->stop();
         return fs ? fs->getDepthFrame() : nullptr;
@@ -1508,11 +1528,9 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_04_filter_async_callback) {
     auto depth = getDepthFrame();
     ASSERT_NE(depth, nullptr);
 
-    auto filter = std::make_shared<ob::Filter>(ob_create_filter("DecimationFilter", nullptr));
-    std::atomic<bool> cbCalled{false};
-    filter->setCallBack([&cbCalled](std::shared_ptr<ob::Frame>) {
-        cbCalled = true;
-    });
+    auto              filter = std::make_shared<ob::Filter>(ob_create_filter("DecimationFilter", nullptr));
+    std::atomic<bool> cbCalled{ false };
+    filter->setCallBack([&cbCalled](std::shared_ptr<ob::Frame>) { cbCalled = true; });
     filter->pushFrame(depth);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     EXPECT_TRUE(cbCalled.load());
@@ -1538,7 +1556,8 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_09_align_filter) {
     config->enableStream(OB_STREAM_COLOR);
     config->setAlignMode(ALIGN_D2C_SW_MODE);
     pipeline_->start(config);
-    for(int i = 0; i < 3; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 3; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     // Stop execution and clean runtime state.
@@ -1558,20 +1577,24 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_10_format_converter) {
 
     // Allow the color sensor time to stabilize before sampling.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    for(int i = 0; i < 5; i++) pipeline_->waitForFrameset(3000);
+    for(int i = 0; i < 5; i++)
+        pipeline_->waitForFrameset(3000);
 
     std::shared_ptr<ob::ColorFrame> color;
     for(int i = 0; i < 10 && !color; i++) {
         auto fs = pipeline_->waitForFrameset(3000);
-        if(fs) color = fs->getColorFrame();
+        if(fs)
+            color = fs->getColorFrame();
     }
     pipeline_->stop();
 
-    if(!color) GTEST_SKIP() << "No color frame produced by this device";
+    if(!color)
+        GTEST_SKIP() << "No color frame produced by this device";
 
-    ob_error *error = nullptr;
-    auto filter = ob_create_filter("FormatConverterFilter", &error);
-    if(!filter) GTEST_SKIP() << "FormatConverterFilter not available on this build";
+    ob_error *error  = nullptr;
+    auto      filter = ob_create_filter("FormatConverterFilter", &error);
+    if(!filter)
+        GTEST_SKIP() << "FormatConverterFilter not available on this build";
 
     auto result = ob_filter_process(filter, color->getImpl(), &error);
     if(result) {
@@ -1584,12 +1607,14 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_10_format_converter) {
 TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_11_hdr_merge) {
     /// Test case: hdr merge.
     // Prepare local state for the next check.
-    ob_error *error = nullptr;
-    auto hdrFilter = ob_create_filter("HDRMergeFilter", &error);
-    auto seqFilter = ob_create_filter("SequenceIdFilter", &error);
+    ob_error *error     = nullptr;
+    auto      hdrFilter = ob_create_filter("HDRMergeFilter", &error);
+    auto      seqFilter = ob_create_filter("SequenceIdFilter", &error);
 
-    if(hdrFilter) ob_delete_filter(hdrFilter, &error);
-    if(seqFilter) ob_delete_filter(seqFilter, &error);
+    if(hdrFilter)
+        ob_delete_filter(hdrFilter, &error);
+    if(seqFilter)
+        ob_delete_filter(seqFilter, &error);
     SUCCEED();
 }
 
@@ -1623,10 +1648,11 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_14_spatial_filters) {
     auto depth = getDepthFrame();
     ASSERT_NE(depth, nullptr);
 
-    for(const auto &name : {"SpatialAdvancedFilter", "SpatialFastFilter", "SpatialModerateFilter"}) {
+    for(const auto &name: { "SpatialAdvancedFilter", "SpatialFastFilter", "SpatialModerateFilter" }) {
         ob_error *error = nullptr;
-        auto f = ob_create_filter(name, &error);
-        if(!f) continue;
+        auto      f     = ob_create_filter(name, &error);
+        if(!f)
+            continue;
         auto result = ob_filter_process(f, depth->getImpl(), &error);
         if(result) {
             EXPECT_GT(ob_frame_get_data_size(result, &error), 0u);
@@ -1641,12 +1667,14 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_15_temporal_holefilling_noise) {
     auto depth = getDepthFrame();
     ASSERT_NE(depth, nullptr);
 
-    for(const auto &name : {"TemporalFilter", "HoleFillingFilter", "NoiseRemovalFilter"}) {
+    for(const auto &name: { "TemporalFilter", "HoleFillingFilter", "NoiseRemovalFilter" }) {
         ob_error *error = nullptr;
-        auto f = ob_create_filter(name, &error);
-        if(!f) continue;
+        auto      f     = ob_create_filter(name, &error);
+        if(!f)
+            continue;
         auto result = ob_filter_process(f, depth->getImpl(), &error);
-        if(result) ob_delete_frame(result, &error);
+        if(result)
+            ob_delete_frame(result, &error);
         ob_delete_filter(f, &error);
     }
     SUCCEED();
@@ -1657,12 +1685,14 @@ TEST_F(TC_CPP_13_Filter_HW, TC_CPP_13_16_false_positive_disparity) {
     auto depth = getDepthFrame();
     ASSERT_NE(depth, nullptr);
 
-    for(const auto &name : {"FalsePositiveFilter", "DisparityTransformFilter"}) {
+    for(const auto &name: { "FalsePositiveFilter", "DisparityTransformFilter" }) {
         ob_error *error = nullptr;
-        auto f = ob_create_filter(name, &error);
-        if(!f) continue;
+        auto      f     = ob_create_filter(name, &error);
+        if(!f)
+            continue;
         auto result = ob_filter_process(f, depth->getImpl(), &error);
-        if(result) ob_delete_frame(result, &error);
+        if(result)
+            ob_delete_frame(result, &error);
         ob_delete_filter(f, &error);
     }
     SUCCEED();
@@ -1709,7 +1739,7 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_04_float_property_range) {
     /// Test case: float property range.
     if(device_->isPropertySupported(OB_PROP_COLOR_GAIN_INT, OB_PERMISSION_READ)) {
         auto range = device_->getIntPropertyRange(OB_PROP_COLOR_GAIN_INT);
-        int cur = device_->getIntProperty(OB_PROP_COLOR_GAIN_INT);
+        int  cur   = device_->getIntProperty(OB_PROP_COLOR_GAIN_INT);
         (void)cur;
         (void)range;
     }
@@ -1751,8 +1781,7 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_07_customer_data) {
         const std::string msg = e.getMessage() ? e.getMessage() : "";
         // Some devices (e.g. Gemini 335) do not expose the FirmwareUpdater
         // component required for customer-data storage.  Skip rather than fail.
-        if(msg.find("Unsupported") != std::string::npos ||
-           msg.find("FirmwareUpdater") != std::string::npos) {
+        if(msg.find("Unsupported") != std::string::npos || msg.find("FirmwareUpdater") != std::string::npos) {
             GTEST_SKIP() << "writeCustomerData not supported on this device: " << msg;
         }
         FAIL() << "writeCustomerData() threw unexpected exception: " << msg;
@@ -1761,13 +1790,11 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_07_customer_data) {
     // Read it back.
     uint8_t  readBuf[65536]{};
     uint32_t readSize = 0;
-    ASSERT_NO_THROW(device_->readCustomerData(readBuf, &readSize))
-        << "readCustomerData() threw an exception";
+    ASSERT_NO_THROW(device_->readCustomerData(readBuf, &readSize)) << "readCustomerData() threw an exception";
 
     // Verify size and byte-for-byte content match.
     EXPECT_EQ(readSize, kWriteSize) << "Read-back data size does not match written size";
-    EXPECT_EQ(std::memcmp(readBuf, kWritePayload, kWriteSize), 0)
-        << "Read-back customer data does not match written payload";
+    EXPECT_EQ(std::memcmp(readBuf, kWritePayload, kWriteSize), 0) << "Read-back customer data does not match written payload";
 }
 
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_08_laser_control) {
@@ -1867,30 +1894,25 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_16_sdk_level_property) {
 
     int readablePropertyCount = 0;
 
-    for(const auto &property : boolProperties) {
+    for(const auto &property: boolProperties) {
         if(!device_->isPropertySupported(property.id, OB_PERMISSION_READ)) {
             continue;
         }
 
-        EXPECT_NO_THROW({
-            (void)device_->getBoolProperty(property.id);
-        }) << "Failed to read " << property.name;
+        EXPECT_NO_THROW({ (void)device_->getBoolProperty(property.id); }) << "Failed to read " << property.name;
         ++readablePropertyCount;
     }
 
-    for(const auto &property : intProperties) {
+    for(const auto &property: intProperties) {
         if(!device_->isPropertySupported(property.id, OB_PERMISSION_READ)) {
             continue;
         }
 
-        EXPECT_NO_THROW({
-            (void)device_->getIntProperty(property.id);
-        }) << "Failed to read " << property.name;
+        EXPECT_NO_THROW({ (void)device_->getIntProperty(property.id); }) << "Failed to read " << property.name;
         ++readablePropertyCount;
     }
 
-    EXPECT_GT(readablePropertyCount, 0)
-        << "Current device does not expose any readable SDK-level property from the validation set";
+    EXPECT_GT(readablePropertyCount, 0) << "Current device does not expose any readable SDK-level property from the validation set";
 }
 
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_17_unsupported_property_safe) {
@@ -1906,7 +1928,7 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_17_unsupported_property_safe) {
 TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_18_out_of_range_safe) {
     /// Test case: out of range safe.
     if(device_->isPropertySupported(OB_PROP_DEPTH_EXPOSURE_INT, OB_PERMISSION_WRITE)) {
-        auto range = device_->getIntPropertyRange(OB_PROP_DEPTH_EXPOSURE_INT);
+        auto range    = device_->getIntPropertyRange(OB_PROP_DEPTH_EXPOSURE_INT);
         auto original = device_->getIntProperty(OB_PROP_DEPTH_EXPOSURE_INT);
 
         try {
@@ -1975,11 +1997,12 @@ TEST_F(TC_CPP_15_DepthMode, TC_CPP_15_04_switch_by_struct) {
 TEST_F(TC_CPP_15_DepthMode, TC_CPP_15_05_profile_change_after_switch) {
     /// Test case: profile change after switch.
     auto list = device_->getDepthWorkModeList();
-    if(list->getCount() < 2) GTEST_SKIP() << "Only 1 depth mode available";
+    if(list->getCount() < 2)
+        GTEST_SKIP() << "Only 1 depth mode available";
 
-    auto depthSensor = device_->getSensor(OB_SENSOR_DEPTH);
+    auto depthSensor    = device_->getSensor(OB_SENSOR_DEPTH);
     auto profilesBefore = depthSensor->getStreamProfileList();
-    auto countBefore = profilesBefore->getCount();
+    auto countBefore    = profilesBefore->getCount();
 
     auto mode1 = list->getOBDepthWorkMode(1);
     device_->switchDepthWorkMode(mode1);
@@ -2016,8 +2039,8 @@ TEST_F(TC_CPP_16_Preset, TC_CPP_16_02_load_builtin) {
 
 TEST_F(TC_CPP_16_Preset, TC_CPP_16_03_export_json) {
     /// Test case: export json.
-    const uint8_t *data = nullptr;
-    uint32_t dataSize = 0;
+    const uint8_t *data     = nullptr;
+    uint32_t       dataSize = 0;
     ASSERT_NO_THROW(device_->exportSettingsAsPresetJsonData("test_export", &data, &dataSize));
     EXPECT_NE(data, nullptr);
     EXPECT_GT(dataSize, 0u);
@@ -2026,8 +2049,8 @@ TEST_F(TC_CPP_16_Preset, TC_CPP_16_03_export_json) {
 TEST_F(TC_CPP_16_Preset, TC_CPP_16_04_load_from_json) {
     /// Test case: load from json.
     // Prepare local state for the next check.
-    const uint8_t *data = nullptr;
-    uint32_t dataSize = 0;
+    const uint8_t *data     = nullptr;
+    uint32_t       dataSize = 0;
     device_->exportSettingsAsPresetJsonData("roundtrip_test", &data, &dataSize);
     if(data && dataSize > 0) {
         ASSERT_NO_THROW(device_->loadPresetFromJsonData("roundtrip_test", data, dataSize));
@@ -2037,7 +2060,8 @@ TEST_F(TC_CPP_16_Preset, TC_CPP_16_04_load_from_json) {
 TEST_F(TC_CPP_16_Preset, TC_CPP_16_05_preset_changes_properties) {
     /// Test case: preset changes properties.
     auto list = device_->getAvailablePresetList();
-    if(list->getCount() < 2) GTEST_SKIP() << "Need >=2 presets";
+    if(list->getCount() < 2)
+        GTEST_SKIP() << "Need >=2 presets";
 
     device_->loadPreset(list->getName(0));
     device_->loadPreset(list->getName(1));
@@ -2053,7 +2077,8 @@ class TC_CPP_17_Interleave : public DeviceTest {};
 TEST_F(TC_CPP_17_Interleave, TC_CPP_17_01_support_query) {
     /// Test case: support query.
     bool supported = device_->isFrameInterleaveSupported();
-    if(!supported) GTEST_SKIP() << "Frame interleave not supported";
+    if(!supported)
+        GTEST_SKIP() << "Frame interleave not supported";
 
     auto list = device_->getAvailableFrameInterleaveList();
     ASSERT_NE(list, nullptr);
@@ -2062,7 +2087,8 @@ TEST_F(TC_CPP_17_Interleave, TC_CPP_17_01_support_query) {
 
 TEST_F(TC_CPP_17_Interleave, TC_CPP_17_02_load_interleave) {
     /// Test case: load interleave.
-    if(!device_->isFrameInterleaveSupported()) GTEST_SKIP();
+    if(!device_->isFrameInterleaveSupported())
+        GTEST_SKIP();
     auto list = device_->getAvailableFrameInterleaveList();
     if(list && list->getCount() > 0) {
         ASSERT_NO_THROW(device_->loadFrameInterleave(list->getName(0)));
@@ -2071,17 +2097,20 @@ TEST_F(TC_CPP_17_Interleave, TC_CPP_17_02_load_interleave) {
 
 TEST_F(TC_CPP_17_Interleave, TC_CPP_17_03_interleave_stream) {
     /// Test case: interleave stream.
-    if(!device_->isFrameInterleaveSupported()) GTEST_SKIP();
+    if(!device_->isFrameInterleaveSupported())
+        GTEST_SKIP();
     auto list = device_->getAvailableFrameInterleaveList();
-    if(!list || list->getCount() == 0) GTEST_SKIP();
+    if(!list || list->getCount() == 0)
+        GTEST_SKIP();
 
     device_->loadFrameInterleave(list->getName(0));
     auto pipeline = std::make_shared<ob::Pipeline>(device_);
-    auto config = std::make_shared<ob::Config>();
+    auto config   = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline->start(config);
 
-    for(int i = 0; i < 10; i++) pipeline->waitForFrameset(2000);
+    for(int i = 0; i < 10; i++)
+        pipeline->waitForFrameset(2000);
     pipeline->stop();
     SUCCEED();
 }
@@ -2102,11 +2131,12 @@ TEST_F(TC_CPP_18_Record_HW, TC_CPP_18_01_record_device) {
 
     auto recorder = std::make_shared<ob::RecordDevice>(device_, recFile);
     auto pipeline = std::make_shared<ob::Pipeline>(device_);
-    auto config = std::make_shared<ob::Config>();
+    auto config   = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline->start(config);
 
-    for(int i = 0; i < 30; i++) pipeline->waitForFrameset(2000);
+    for(int i = 0; i < 30; i++)
+        pipeline->waitForFrameset(2000);
     pipeline->stop();
     recorder.reset();
 
@@ -2129,15 +2159,17 @@ TEST_F(TC_CPP_18_Record_HW, TC_CPP_18_02_record_pause_resume) {
 
     auto recorder = std::make_shared<ob::RecordDevice>(device_, recFile);
     auto pipeline = std::make_shared<ob::Pipeline>(device_);
-    auto config = std::make_shared<ob::Config>();
+    auto config   = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline->start(config);
 
-    for(int i = 0; i < 10; i++) pipeline->waitForFrameset(2000);
+    for(int i = 0; i < 10; i++)
+        pipeline->waitForFrameset(2000);
     recorder->pause();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     recorder->resume();
-    for(int i = 0; i < 10; i++) pipeline->waitForFrameset(2000);
+    for(int i = 0; i < 10; i++)
+        pipeline->waitForFrameset(2000);
 
     pipeline->stop();
     recorder.reset();
@@ -2150,10 +2182,10 @@ TEST_F(TC_CPP_18_Record_HW, TC_CPP_18_02_record_pause_resume) {
 TEST_F(TC_CPP_18_Record_HW, TC_CPP_18_08_record_playback_roundtrip) {
     /// Test case: record playback roundtrip.
 #ifdef _WIN32
-    std::string recFile = "ob_test_roundtrip.bag";
+    std::string recFile   = "ob_test_roundtrip.bag";
     const char *helperExe = ".\\ob_playback_smoke_test.exe";
 #else
-    std::string recFile = "/tmp/ob_test_roundtrip.bag";
+    std::string recFile   = "/tmp/ob_test_roundtrip.bag";
     const char *helperExe = "./ob_playback_smoke_test";
 #endif
     std::remove(recFile.c_str());
@@ -2162,10 +2194,11 @@ TEST_F(TC_CPP_18_Record_HW, TC_CPP_18_08_record_playback_roundtrip) {
     {
         auto recorder = std::make_shared<ob::RecordDevice>(device_, recFile);
         auto pipeline = std::make_shared<ob::Pipeline>(device_);
-        auto config = std::make_shared<ob::Config>();
+        auto config   = std::make_shared<ob::Config>();
         config->enableStream(OB_STREAM_DEPTH);
         pipeline->start(config);
-        for(int i = 0; i < 30; i++) pipeline->waitForFrameset(2000);
+        for(int i = 0; i < 30; i++)
+            pipeline->waitForFrameset(2000);
         pipeline->stop();
         recorder.reset();
     }
@@ -2212,7 +2245,7 @@ TEST_F(TC_CPP_19_MultiSync, TC_CPP_19_01_sync_mode_support) {
 TEST_F(TC_CPP_19_MultiSync, TC_CPP_19_02_freerun_standalone) {
     /// Test case: freerun standalone.
     OBMultiDeviceSyncConfig config = {};
-    config.syncMode = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
+    config.syncMode                = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
     ASSERT_NO_THROW(device_->setMultiDeviceSyncConfig(config));
 
     auto readBack = device_->getMultiDeviceSyncConfig();
@@ -2238,12 +2271,12 @@ TEST_F(TC_CPP_19_MultiSync, TC_CPP_19_04_software_trigger) {
     }
 
     OBMultiDeviceSyncConfig config = {};
-    config.syncMode = OB_MULTI_DEVICE_SYNC_MODE_SOFTWARE_TRIGGERING;
-    config.framesPerTrigger = 1;
+    config.syncMode                = OB_MULTI_DEVICE_SYNC_MODE_SOFTWARE_TRIGGERING;
+    config.framesPerTrigger        = 1;
     device_->setMultiDeviceSyncConfig(config);
 
     auto pipeline = std::make_shared<ob::Pipeline>(device_);
-    auto cfg = std::make_shared<ob::Config>();
+    auto cfg      = std::make_shared<ob::Config>();
     cfg->enableStream(OB_STREAM_DEPTH);
     pipeline->start(cfg);
 
@@ -2280,13 +2313,13 @@ TEST_F(TC_CPP_19_MultiSync, TC_CPP_19_06_timer_sync_host) {
 TEST_F(TC_CPP_19_MultiSync, TC_CPP_19_07_sync_config_fields) {
     /// Test case: sync config fields.
     OBMultiDeviceSyncConfig config = {};
-    config.syncMode = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
-    config.depthDelayUs = 100;
-    config.colorDelayUs = 200;
-    config.trigger2ImageDelayUs = 0;
-    config.triggerOutEnable = false;
-    config.triggerOutDelayUs = 0;
-    config.framesPerTrigger = 1;
+    config.syncMode                = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
+    config.depthDelayUs            = 100;
+    config.colorDelayUs            = 200;
+    config.trigger2ImageDelayUs    = 0;
+    config.triggerOutEnable        = false;
+    config.triggerOutDelayUs       = 0;
+    config.framesPerTrigger        = 1;
 
     ASSERT_NO_THROW(device_->setMultiDeviceSyncConfig(config));
     auto readBack = device_->getMultiDeviceSyncConfig();
@@ -2304,7 +2337,8 @@ TEST_F(TC_CPP_20_Coord_HW, TC_CPP_20_05_save_ply) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
     pipeline_->start(config);
-    for(int i = 0; i < 5; i++) pipeline_->waitForFrameset(2000);
+    for(int i = 0; i < 5; i++)
+        pipeline_->waitForFrameset(2000);
     auto fs = pipeline_->waitForFrameset(3000);
     ASSERT_NE(fs, nullptr);
     auto depth = fs->getDepthFrame();
@@ -2318,9 +2352,10 @@ TEST_F(TC_CPP_20_Coord_HW, TC_CPP_20_05_save_ply) {
 #endif
     std::remove(plyFile.c_str());
 
-    ob_error *error = nullptr;
-    auto pcFilter = ob_create_filter("PointCloudFilter", &error);
-    if(!pcFilter) GTEST_SKIP() << "No PointCloudFilter";
+    ob_error *error    = nullptr;
+    auto      pcFilter = ob_create_filter("PointCloudFilter", &error);
+    if(!pcFilter)
+        GTEST_SKIP() << "No PointCloudFilter";
 
     auto result = ob_filter_process(pcFilter, depth->getImpl(), &error);
     if(result) {
@@ -2357,8 +2392,7 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_02_device_state) {
 
 TEST_F(TC_CPP_21_Firmware, TC_CPP_21_03_state_change_callback) {
     /// Test case: state change callback.
-    ASSERT_NO_THROW(device_->setDeviceStateChangedCallback(
-        [](OBDeviceState, const char *) {}));
+    ASSERT_NO_THROW(device_->setDeviceStateChangedCallback([](OBDeviceState, const char *) {}));
 }
 
 TEST_F(TC_CPP_21_Firmware, TC_CPP_21_04_heartbeat) {
@@ -2389,11 +2423,11 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_07_reboot) {
     auto sn = std::string(devInfo_->getSerialNumber());
 
     // Register a callback to detect reconnection.
-    std::atomic<bool> reconnected{false};
-    auto cbId = ctx_->registerDeviceChangedCallback(
-        [&](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
-            if(added && added->getCount() > 0) reconnected = true;
-        });
+    std::atomic<bool> reconnected{ false };
+    auto              cbId = ctx_->registerDeviceChangedCallback([&](std::shared_ptr<ob::DeviceList> /*removed*/, std::shared_ptr<ob::DeviceList> added) {
+        if(added && added->getCount() > 0)
+            reconnected = true;
+    });
 
     device_->reboot();
     device_.reset();
@@ -2428,8 +2462,8 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_08_firmware_update) {
     ENV().skipIfNoFirmware();
     const std::string &fwPath = ENV().firmwarePath();
 
-    std::atomic<OBFwUpdateState> lastState{STAT_START};
-    std::atomic<uint8_t>         lastPercent{0};
+    std::atomic<OBFwUpdateState> lastState{ STAT_START };
+    std::atomic<uint8_t>         lastPercent{ 0 };
     std::mutex                   mtx;
     std::condition_variable      cv;
     bool                         done = false;
@@ -2450,12 +2484,11 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_08_firmware_update) {
     // Wait up to 3 minutes for the update to complete.
     {
         std::unique_lock<std::mutex> lk(mtx);
-        cv.wait_for(lk, std::chrono::minutes(3), [&]{ return done; });
+        cv.wait_for(lk, std::chrono::minutes(3), [&] { return done; });
     }
 
     EXPECT_TRUE(done) << "Firmware update did not complete within 3 minutes";
-    EXPECT_EQ(lastState.load(), STAT_DONE)
-        << "Firmware update ended with state " << static_cast<int>(lastState.load());
+    EXPECT_EQ(lastState.load(), STAT_DONE) << "Firmware update ended with state " << static_cast<int>(lastState.load());
     EXPECT_EQ(lastPercent.load(), 100u);
 }
 
@@ -2473,7 +2506,7 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_09_update_depth_presets) {
     char pathList[1][OB_PATH_MAX]{};
     std::strncpy(pathList[0], presetPathStr.c_str(), OB_PATH_MAX - 1);
 
-    std::atomic<OBFwUpdateState> lastState{STAT_START};
+    std::atomic<OBFwUpdateState> lastState{ STAT_START };
     std::mutex                   mtx;
     std::condition_variable      cv;
     bool                         done = false;
@@ -2492,16 +2525,14 @@ TEST_F(TC_CPP_21_Firmware, TC_CPP_21_09_update_depth_presets) {
     // Wait up to 2 minutes for the update to complete.
     {
         std::unique_lock<std::mutex> lk(mtx);
-        cv.wait_for(lk, std::chrono::minutes(2), [&]{ return done; });
+        cv.wait_for(lk, std::chrono::minutes(2), [&] { return done; });
     }
 
     EXPECT_TRUE(done) << "Depth preset update did not complete within 2 minutes";
     if(done && (lastState.load() == ERR_MISMATCH || lastState.load() == ERR_UNSUPPORT_DEV)) {
-        GTEST_SKIP() << "Depth preset resource is not compatible with the connected device; state="
-                     << static_cast<int>(lastState.load());
+        GTEST_SKIP() << "Depth preset resource is not compatible with the connected device; state=" << static_cast<int>(lastState.load());
     }
-    EXPECT_EQ(lastState.load(), STAT_DONE)
-        << "Depth preset update ended with state " << static_cast<int>(lastState.load());
+    EXPECT_EQ(lastState.load(), STAT_DONE) << "Depth preset update ended with state " << static_cast<int>(lastState.load());
 }
 
 // ============================================================
@@ -2518,7 +2549,11 @@ TEST_F(TC_CPP_24_Error_HW, TC_CPP_24_04_pipeline_exception_safety) {
     pipeline_->stop();
 
     // Stop execution and clean runtime state.
-    try { pipeline_->stop(); } catch(...) {}
+    try {
+        pipeline_->stop();
+    }
+    catch(...) {
+    }
 
     // Start execution for this scenario.
     pipeline_->start(config);
@@ -2568,18 +2603,19 @@ TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_02_camera_calib_param) {
 TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_03_imu_intrinsic) {
     /// Test case: imu intrinsic.
     auto accel = device_->getSensor(OB_SENSOR_ACCEL);
-    if(!accel) GTEST_SKIP() << "No accel sensor";
+    if(!accel)
+        GTEST_SKIP() << "No accel sensor";
 
-    auto profiles = accel->getStreamProfileList();
-    auto ap = profiles->getProfile(0)->as<ob::AccelStreamProfile>();
+    auto profiles  = accel->getStreamProfileList();
+    auto ap        = profiles->getProfile(0)->as<ob::AccelStreamProfile>();
     auto intrinsic = ap->getIntrinsic();
     // Prepare local state for the next check.
     (void)intrinsic;
 
     auto gyro = device_->getSensor(OB_SENSOR_GYRO);
     if(gyro) {
-        auto gProfiles = gyro->getStreamProfileList();
-        auto gp = gProfiles->getProfile(0)->as<ob::GyroStreamProfile>();
+        auto gProfiles  = gyro->getStreamProfileList();
+        auto gp         = gProfiles->getProfile(0)->as<ob::GyroStreamProfile>();
         auto gIntrinsic = gp->getIntrinsic();
         (void)gIntrinsic;
     }
@@ -2590,12 +2626,11 @@ TEST_F(TC_CPP_25_DataStruct_HW, TC_CPP_25_04_device_temperature) {
     /// Test case: device temperature.
     // Prepare local state for the next check.
     if(device_->isPropertySupported(OB_STRUCT_DEVICE_TEMPERATURE, OB_PERMISSION_READ)) {
-        OBDeviceTemperature temp = {};
-        uint32_t dataSize = static_cast<uint32_t>(sizeof(temp));
+        OBDeviceTemperature temp     = {};
+        uint32_t            dataSize = static_cast<uint32_t>(sizeof(temp));
         device_->getStructuredData(OB_STRUCT_DEVICE_TEMPERATURE, reinterpret_cast<uint8_t *>(&temp), &dataSize);
         EXPECT_GE(temp.chipTopTemp, -40.0f);
         EXPECT_LE(temp.chipTopTemp, 120.0f);
     }
     SUCCEED();
 }
-

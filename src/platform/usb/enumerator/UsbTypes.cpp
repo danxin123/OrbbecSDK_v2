@@ -36,4 +36,3 @@ SourcePortType cvtUsbClassToPortType(uint8_t cls) {
 }
 
 }  // namespace libobsensor
-

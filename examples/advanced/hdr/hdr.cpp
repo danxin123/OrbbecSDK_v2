@@ -33,7 +33,7 @@ int main(void) try {
     // Create HDRMerge post processor to merge depth frames betweens different hdr sequence ids.
     // The HDRMerge also supports processing of infrared frames.
     auto hdrMerge = ob::FilterFactory::createFilter("HDRMerge");
-    if( device->isFrameInterleaveSupported() ) {
+    if(device->isFrameInterleaveSupported()) {
         // load frame interleave mode as 'Depth from HDR'
         device->loadFrameInterleave("Depth from HDR");
         // enable frame interleave mode
@@ -41,7 +41,7 @@ int main(void) try {
 
         // The default parameters were loaded when loadFrameInterleave is called
         // You can also modify these parameters yourself
-        // 
+        //
         // 1. frame interleave parameters for index 0(index starts from 0):
         // device->setIntProperty(OB_PROP_FRAME_INTERLEAVE_CONFIG_INDEX_INT, 0);
         // device->setIntProperty(OB_PROP_LASER_CONTROL_INT, 1);  // laser control must be 1
@@ -49,7 +49,7 @@ int main(void) try {
         // device->setIntProperty(OB_PROP_DEPTH_GAIN_INT, 16);
         // device->setIntProperty(OB_PROP_IR_BRIGHTNESS_INT, 60);
         // device->setIntProperty(OB_PROP_IR_AE_MAX_EXPOSURE_INT, 10000);
-        
+
         // 2. frame interleave parameters for index 1(index starts from 0):
         // device->setIntProperty(OB_PROP_FRAME_INTERLEAVE_CONFIG_INDEX_INT, 1);
         // device->setIntProperty(OB_PROP_LASER_CONTROL_INT, 1); // laser control must be 1
@@ -57,7 +57,8 @@ int main(void) try {
         // device->setIntProperty(OB_PROP_DEPTH_GAIN_INT, 16);
         // device->setIntProperty(OB_PROP_IR_BRIGHTNESS_INT, 20);
         // device->setIntProperty(OB_PROP_IR_AE_MAX_EXPOSURE_INT, 2000);
-    }else {
+    }
+    else {
         // configure and enable Hdr stream
         OBHdrConfig obHdrConfig;
         obHdrConfig.enable     = true;  // enable HDR merge
@@ -116,7 +117,7 @@ int main(void) try {
     }
     else {
         OBHdrConfig obHdrConfig = { 0 };
-        obHdrConfig.enable = false;
+        obHdrConfig.enable      = false;
         device->setStructuredData(OB_STRUCT_DEPTH_HDR_CONFIG, reinterpret_cast<uint8_t *>(&obHdrConfig), sizeof(OBHdrConfig));
     }
     return 0;
@@ -127,4 +128,3 @@ catch(ob::Error &e) {
     ob_smpl::waitForKeyPressed();
     exit(EXIT_FAILURE);
 }
-

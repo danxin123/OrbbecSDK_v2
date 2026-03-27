@@ -17,10 +17,10 @@ public:
 
     uint16_t getStreamPort();
 
-    virtual StreamProfileList                     getStreamProfileList() override;
-    virtual void                                  startStream(std::shared_ptr<const StreamProfile> profile, MutableFrameCallback callback) override;
-    virtual void                                  stopStream(std::shared_ptr<const StreamProfile> profile) override;
-    virtual void                                  stopAllStream() override;
+    virtual StreamProfileList getStreamProfileList() override;
+    virtual void              startStream(std::shared_ptr<const StreamProfile> profile, MutableFrameCallback callback) override;
+    virtual void              stopStream(std::shared_ptr<const StreamProfile> profile) override;
+    virtual void              stopAllStream() override;
 
     virtual void startStream(MutableFrameCallback callback) override;
     virtual void stopStream() override;
@@ -37,4 +37,4 @@ private:
     std::shared_ptr<ObRTPClient>             rtpClient_;
     StreamProfileList                        streamProfileList_;
 };
-}
+}  // namespace libobsensor

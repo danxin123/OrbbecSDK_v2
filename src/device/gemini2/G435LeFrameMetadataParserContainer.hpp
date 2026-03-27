@@ -79,5 +79,4 @@ public:
     virtual ~G435LeDepthFrameMetadataParserContainer() override = default;
 };
 
-
 }  // namespace libobsensor

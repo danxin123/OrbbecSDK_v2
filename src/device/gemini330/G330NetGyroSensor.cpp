@@ -10,12 +10,9 @@
 namespace libobsensor {
 
 G330NetGyroSensor::G330NetGyroSensor(IDevice *owner, const std::shared_ptr<ISourcePort> &backend, const std::shared_ptr<ImuStreamer> &streamer)
-    : GyroSensor(owner, backend, streamer){
-    
-}
+    : GyroSensor(owner, backend, streamer) {}
 
-G330NetGyroSensor::~G330NetGyroSensor() noexcept {
-}
+G330NetGyroSensor::~G330NetGyroSensor() noexcept {}
 
 void G330NetGyroSensor::start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) {
     auto     rtpStreamPort = std::dynamic_pointer_cast<RTPStreamPort>(backend_);

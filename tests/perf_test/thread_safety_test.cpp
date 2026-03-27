@@ -29,7 +29,8 @@ static int tsGetEnvInt(const char *name, int defaultVal) {
     const char *val = std::getenv(name);
     if(val) {
         int v = std::atoi(val);
-        if(v > 0) return v;
+        if(v > 0)
+            return v;
     }
     return defaultVal;
 }
@@ -47,13 +48,13 @@ static int threadSafetyThreadCount() {
 // ===================================================================
 class ThreadSafetyTest : public DeviceTest {
 protected:
-    int durationSec_  = 10;
-    int threadCount_  = 4;
+    int durationSec_ = 10;
+    int threadCount_ = 4;
 
     void SetUp() override {
         DeviceTest::SetUp();
         durationSec_ = threadSafetyDurationSec();
-        threadCount_  = threadSafetyThreadCount();
+        threadCount_ = threadSafetyThreadCount();
         std::cout << "[ThreadSafety] duration=" << durationSec_ << "s, threads=" << threadCount_ << std::endl;
     }
 };
@@ -71,8 +72,8 @@ TEST_F(ThreadSafetyTest, TC_TS_01_concurrent_pipeline_start_stop) {
     auto config = std::make_shared<ob::Config>();
     config->enableStream(OB_STREAM_DEPTH);
 
-    std::atomic<bool> running{true};
-    std::atomic<int>  errors{0};
+    std::atomic<bool> running{ true };
+    std::atomic<int>  errors{ 0 };
 
     auto worker = [&](int /*id*/) {
         while(running.load()) {
@@ -103,7 +104,7 @@ TEST_F(ThreadSafetyTest, TC_TS_01_concurrent_pipeline_start_stop) {
     std::this_thread::sleep_for(std::chrono::seconds(durationSec_));
     running.store(false);
 
-    for(auto &t : threads) {
+    for(auto &t: threads) {
         t.join();
     }
 
@@ -144,7 +145,7 @@ TEST_F(ThreadSafetyTest, TC_TS_02_stream_while_property_access) {
         if(item.permission == OB_PERMISSION_READ_WRITE && item.type == OB_INT_PROPERTY) {
             try {
                 auto range = device_->getIntPropertyRange(item.id);
-                rwProps.push_back({item.id, range.min, range.max});
+                rwProps.push_back({ item.id, range.min, range.max });
             }
             catch(...) {
                 // Skip properties whose range can't be queried.
@@ -153,10 +154,10 @@ TEST_F(ThreadSafetyTest, TC_TS_02_stream_while_property_access) {
     }
 
     // Start streaming.
-    std::atomic<bool>     running{true};
-    std::atomic<uint64_t> frameCount{0};
-    std::atomic<int>      streamErrors{0};
-    std::atomic<int>      propErrors{0};
+    std::atomic<bool>     running{ true };
+    std::atomic<uint64_t> frameCount{ 0 };
+    std::atomic<int>      streamErrors{ 0 };
+    std::atomic<int>      propErrors{ 0 };
 
     pipeline->start(config);
 
@@ -182,8 +183,9 @@ TEST_F(ThreadSafetyTest, TC_TS_02_stream_while_property_access) {
     // Thread B: repeatedly get/set device properties.
     std::thread propThread([&]() {
         while(running.load()) {
-            for(const auto &p : rwProps) {
-                if(!running.load()) break;
+            for(const auto &p: rwProps) {
+                if(!running.load())
+                    break;
                 try {
                     int32_t cur = device_->getIntProperty(p.id);
                     // Write back the same value to avoid changing device state.
@@ -211,12 +213,11 @@ TEST_F(ThreadSafetyTest, TC_TS_02_stream_while_property_access) {
 
     pipeline->stop();
 
-    std::cout << "[TC_TS_02] frames=" << frameCount.load()
-              << ", rw_properties=" << rwProps.size() << std::endl;
+    std::cout << "[TC_TS_02] frames=" << frameCount.load() << ", rw_properties=" << rwProps.size() << std::endl;
 
     EXPECT_EQ(streamErrors.load(), 0) << "Unexpected std::exception in stream thread";
-    EXPECT_EQ(propErrors.load(), 0)   << "Unexpected std::exception in property thread";
-    EXPECT_GT(frameCount.load(), 0u)  << "No frames received during the test";
+    EXPECT_EQ(propErrors.load(), 0) << "Unexpected std::exception in property thread";
+    EXPECT_GT(frameCount.load(), 0u) << "No frames received during the test";
     std::cout << "[TC_TS_02] Completed without crash or deadlock." << std::endl;
 }
 
@@ -226,9 +227,9 @@ TEST_F(ThreadSafetyTest, TC_TS_02_stream_while_property_access) {
 //           the shared device / USB bus).
 // -------------------------------------------------------------------
 TEST_F(ThreadSafetyTest, TC_TS_03_concurrent_pipeline_create_destroy) {
-    std::atomic<bool> running{true};
-    std::atomic<int>  errors{0};
-    std::atomic<int>  iterations{0};
+    std::atomic<bool> running{ true };
+    std::atomic<int>  errors{ 0 };
+    std::atomic<int>  iterations{ 0 };
 
     auto worker = [&](int /*id*/) {
         while(running.load()) {
@@ -270,7 +271,7 @@ TEST_F(ThreadSafetyTest, TC_TS_03_concurrent_pipeline_create_destroy) {
     std::this_thread::sleep_for(std::chrono::seconds(durationSec_));
     running.store(false);
 
-    for(auto &t : threads) {
+    for(auto &t: threads) {
         t.join();
     }
 

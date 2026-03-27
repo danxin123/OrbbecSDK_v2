@@ -42,14 +42,14 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_02_context_config_path) {
     // Prepare local state for the next check.
     {
         ob::Context ctxDefault("");
-        auto devList = ctxDefault.queryDeviceList();
+        auto        devList = ctxDefault.queryDeviceList();
         ASSERT_NE(devList, nullptr);
     }
     // Prepare local state for the next check.
     {
         try {
             ob::Context ctxBad("/non_existent_path/config.json");
-            auto devList = ctxBad.queryDeviceList();
+            auto        devList = ctxBad.queryDeviceList();
             // Either succeeds with default config fallback, or throws — both are acceptable
         }
         catch(const ob::Error &) {
@@ -100,8 +100,7 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_05_uvc_backend) {
         }
         catch(const ob::Error &e) {
             errMsg = e.what() ? e.what() : "";
-            if(errMsg.find("Usb pal is not exist") != std::string::npos
-               || errMsg.find("BUILD_USB_PAL") != std::string::npos) {
+            if(errMsg.find("Usb pal is not exist") != std::string::npos || errMsg.find("BUILD_USB_PAL") != std::string::npos) {
                 usbPalMissing = true;
                 return;
             }
@@ -172,7 +171,6 @@ TEST_F(TC_CPP_01_Context, TC_CPP_01_06_extension_plugin_directory) {
 // ============================================================
 class TC_CPP_02_Discovery : public ContextTest {};
 
-
 TEST_F(TC_CPP_02_Discovery, TC_CPP_02_06_clock_sync) {
     /// Test case: clock sync.
     ASSERT_NO_THROW(ctx_->enableDeviceClockSync(0));
@@ -186,7 +184,7 @@ class TC_CPP_10_Frame : public SDKTestBase {};
 TEST_F(TC_CPP_10_Frame, TC_CPP_10_04_frame_ref_count) {
     /// Test case: frame ref count.
     ob_error *error = nullptr;
-    auto frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
+    auto      frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frame, nullptr);
 
@@ -235,14 +233,14 @@ class TC_CPP_11_Metadata : public SDKTestBase {};
 TEST_F(TC_CPP_11_Metadata, TC_CPP_11_06_update_metadata_c_api) {
     /// Test case: update metadata c api.
     ob_error *error = nullptr;
-    auto frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
+    auto      frame = ob_create_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 640 * 480 * 2, &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(frame, nullptr);
 
     // Prepare local state for the next check.
     uint8_t metadata[64] = {};
-    metadata[0] = 0xAB;
-    metadata[1] = 0xCD;
+    metadata[0]          = 0xAB;
+    metadata[1]          = 0xCD;
     ob_frame_update_metadata(frame, metadata, sizeof(metadata), &error);
     EXPECT_EQ(error, nullptr);
 
@@ -287,15 +285,15 @@ TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_01_create_frame_and_video_frame) {
 
 TEST_F(TC_CPP_12_FrameFactory, TC_CPP_12_03_create_frame_from_buffer) {
     /// Test case: create frame from buffer.
-    static std::atomic<bool> destroyCalled{false};
+    static std::atomic<bool> destroyCalled{ false };
     destroyCalled = false;
 
     const uint32_t bufSize = 100;
-    auto *buffer = new uint8_t[bufSize];
+    auto          *buffer  = new uint8_t[bufSize];
     std::memset(buffer, 0x42, bufSize);
 
     ob_error *error = nullptr;
-    auto frame = ob_create_frame_from_buffer(
+    auto      frame = ob_create_frame_from_buffer(
         OB_FRAME_DEPTH, OB_FORMAT_Y16, buffer, bufSize,
         [](uint8_t *buf, void *) {
             delete[] buf;
@@ -348,29 +346,17 @@ class TC_CPP_13_Filter : public SDKTestBase {};
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
     /// Test case: create all builtin filters.
     const std::vector<std::string> requiredFilterNames = {
-        "DecimationFilter",
-        "ThresholdFilter",
-        "Align",
-        "FormatConverter",
-        "HDRMerge",
-        "PointCloudFilter",
-        "SequenceIdFilter",
+        "DecimationFilter", "ThresholdFilter", "Align", "FormatConverter", "HDRMerge", "PointCloudFilter", "SequenceIdFilter",
     };
 
     const std::vector<std::string> optionalPrivateFilterNames = {
-        "SpatialAdvancedFilter",
-        "SpatialFastFilter",
-        "SpatialModerateFilter",
-        "TemporalFilter",
-        "HoleFillingFilter",
-        "NoiseRemovalFilter",
-        "DisparityTransform",
-        "FalsePositiveFilter",
+        "SpatialAdvancedFilter", "SpatialFastFilter",  "SpatialModerateFilter", "TemporalFilter",
+        "HoleFillingFilter",     "NoiseRemovalFilter", "DisparityTransform",    "FalsePositiveFilter",
     };
 
     auto createFilterAndCheck = [](const std::string &name, bool required) {
-        ob_error *error = nullptr;
-        auto filter = ob_create_filter(name.c_str(), &error);
+        ob_error *error  = nullptr;
+        auto      filter = ob_create_filter(name.c_str(), &error);
         if(error) {
             std::string errMsg = ob_error_get_message(error);
             ob_delete_error(error);
@@ -380,8 +366,7 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
                 return;
             }
 
-            if(errMsg.find("Private filter library not activated") != std::string::npos
-               || errMsg.find("Invalid filter name") != std::string::npos) {
+            if(errMsg.find("Private filter library not activated") != std::string::npos || errMsg.find("Invalid filter name") != std::string::npos) {
                 GTEST_LOG_(INFO) << "Skip optional filter in current environment: " << name << " error: " << errMsg;
                 return;
             }
@@ -393,19 +378,19 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_01_create_all_builtin_filters) {
         ob_delete_filter(filter, &error);
     };
 
-    for(const auto &name : requiredFilterNames) {
+    for(const auto &name: requiredFilterNames) {
         createFilterAndCheck(name, true);
     }
 
-    for(const auto &name : optionalPrivateFilterNames) {
+    for(const auto &name: optionalPrivateFilterNames) {
         createFilterAndCheck(name, false);
     }
 }
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_02_create_invalid_filter) {
     /// Test case: create invalid filter.
-    ob_error *error = nullptr;
-    auto filter = ob_create_filter("TotallyBogusFilter", &error);
+    ob_error *error  = nullptr;
+    auto      filter = ob_create_filter("TotallyBogusFilter", &error);
     EXPECT_NE(error, nullptr) << "Expected error for invalid filter name";
     EXPECT_EQ(filter, nullptr);
     if(error) {
@@ -415,8 +400,8 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_02_create_invalid_filter) {
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_05_filter_enable_disable) {
     /// Test case: filter enable disable.
-    ob_error *error = nullptr;
-    auto filter = ob_create_filter("DecimationFilter", &error);
+    ob_error *error  = nullptr;
+    auto      filter = ob_create_filter("DecimationFilter", &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(filter, nullptr);
 
@@ -437,8 +422,8 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_05_filter_enable_disable) {
 
 TEST_F(TC_CPP_13_Filter, TC_CPP_13_06_filter_reset_and_config) {
     /// Test case: filter reset and config.
-    ob_error *error = nullptr;
-    auto filter = ob_create_filter("DecimationFilter", &error);
+    ob_error *error  = nullptr;
+    auto      filter = ob_create_filter("DecimationFilter", &error);
     ASSERT_EQ(error, nullptr);
     ASSERT_NE(filter, nullptr);
 
@@ -505,7 +490,6 @@ TEST_F(TC_CPP_13_Filter, TC_CPP_13_17_private_filter) {
     }
 }
 
-
 // ============================================================
 // Test group: Playback.
 // ============================================================
@@ -549,8 +533,7 @@ static std::shared_ptr<ob::VideoStreamProfile> getFirstVideoProfile(const std::s
     return nullptr;
 }
 
-template <typename T>
-static void expectRangeValid(const T &range) {
+template <typename T> static void expectRangeValid(const T &range) {
     EXPECT_LE(range.min, range.max);
 }
 
@@ -568,7 +551,7 @@ protected:
 
 TEST_F(TC_CPP_18_Playback, TC_CPP_18_03_playback_device_create_and_play) {
     /// Test case: playback device create and play.
-    auto bagPath = env_.playbackBagPath();
+    auto bagPath  = env_.playbackBagPath();
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(bagPath);
     ASSERT_NE(pbDevice, nullptr);
 
@@ -577,8 +560,8 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_03_playback_device_create_and_play) {
     EXPECT_NE(devInfo->getName(), nullptr);
 
     // Prepare local state for the next check.
-    auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
-    auto config   = std::make_shared<ob::Config>();
+    auto pipeline   = std::make_shared<ob::Pipeline>(pbDevice);
+    auto config     = std::make_shared<ob::Config>();
     auto sensorList = pbDevice->getSensorList();
     ASSERT_NE(sensorList, nullptr);
     ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
@@ -626,8 +609,8 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_06_playback_pause_resume_status) {
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
-    auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
-    auto config   = std::make_shared<ob::Config>();
+    auto pipeline   = std::make_shared<ob::Pipeline>(pbDevice);
+    auto config     = std::make_shared<ob::Config>();
     auto sensorList = pbDevice->getSensorList();
     ASSERT_NE(sensorList, nullptr);
     ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
@@ -658,13 +641,11 @@ TEST_F(TC_CPP_18_Playback, TC_CPP_18_07_playback_status_callback) {
     auto pbDevice = std::make_shared<ob::PlaybackDevice>(env_.playbackBagPath());
     ASSERT_NE(pbDevice, nullptr);
 
-    std::atomic<int> cbCount{0};
-    pbDevice->setPlaybackStatusChangeCallback([&cbCount](OBPlaybackStatus) {
-        cbCount++;
-    });
+    std::atomic<int> cbCount{ 0 };
+    pbDevice->setPlaybackStatusChangeCallback([&cbCount](OBPlaybackStatus) { cbCount++; });
 
-    auto pipeline = std::make_shared<ob::Pipeline>(pbDevice);
-    auto config   = std::make_shared<ob::Config>();
+    auto pipeline   = std::make_shared<ob::Pipeline>(pbDevice);
+    auto config     = std::make_shared<ob::Config>();
     auto sensorList = pbDevice->getSensorList();
     ASSERT_NE(sensorList, nullptr);
     ASSERT_GT(sensorList->getCount(), 0u) << "No sensors found in playback file";
@@ -730,8 +711,7 @@ protected:
         return frames->getDepthFrame();
     }
 
-    template <typename TFilter, typename Fn>
-    void runPrivateFilterCase(const Fn &fn) {
+    template <typename TFilter, typename Fn> void runPrivateFilterCase(const Fn &fn) {
         try {
             auto filter = std::make_shared<TFilter>("");
             ASSERT_NE(filter, nullptr);
@@ -761,8 +741,8 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_10_playback_device_info) {
 }
 
 TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_11_playback_sensor_list) {
-    auto pbDevice    = createPlaybackDevice();
-    auto sensorList  = pbDevice->getSensorList();
+    auto pbDevice   = createPlaybackDevice();
+    auto sensorList = pbDevice->getSensorList();
     ASSERT_NE(sensorList, nullptr);
     ASSERT_GT(sensorList->getCount(), 0u);
 
@@ -841,9 +821,8 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_21_playback_color_frame) {
     EXPECT_GT(color->getDataSize(), 0u);
 
     const std::set<OBFormat> knownColorFormats = {
-        OB_FORMAT_RGB, OB_FORMAT_BGR, OB_FORMAT_RGBA, OB_FORMAT_BGRA,
-        OB_FORMAT_YUYV, OB_FORMAT_UYVY, OB_FORMAT_MJPG,
-        OB_FORMAT_NV12, OB_FORMAT_NV21, OB_FORMAT_I420,
+        OB_FORMAT_RGB,  OB_FORMAT_BGR,  OB_FORMAT_RGBA, OB_FORMAT_BGRA, OB_FORMAT_YUYV,
+        OB_FORMAT_UYVY, OB_FORMAT_MJPG, OB_FORMAT_NV12, OB_FORMAT_NV21, OB_FORMAT_I420,
     };
     EXPECT_TRUE(knownColorFormats.count(color->getFormat()) > 0 || color->getFormat() != OB_FORMAT_UNKNOWN);
 }
@@ -1027,10 +1006,10 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_32_playback_depth_distortion) {
 }
 
 TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_33_playback_depth_to_color_extrinsic) {
-    auto pbDevice    = createPlaybackDevice();
-    auto sensorList  = pbDevice->getSensorList();
-    auto depthPrf    = getFirstVideoProfile(sensorList, OB_SENSOR_DEPTH);
-    auto colorPrf    = getFirstVideoProfile(sensorList, OB_SENSOR_COLOR);
+    auto pbDevice   = createPlaybackDevice();
+    auto sensorList = pbDevice->getSensorList();
+    auto depthPrf   = getFirstVideoProfile(sensorList, OB_SENSOR_DEPTH);
+    auto colorPrf   = getFirstVideoProfile(sensorList, OB_SENSOR_COLOR);
     if(!depthPrf || !colorPrf) {
         GTEST_SKIP() << "Depth or color profile missing for extrinsic test";
     }
@@ -1041,9 +1020,7 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_33_playback_depth_to_color_extrinsic) 
     }
 
     auto dot = [&](int r1, int r2) {
-        return ex.rot[r1 * 3 + 0] * ex.rot[r2 * 3 + 0]
-             + ex.rot[r1 * 3 + 1] * ex.rot[r2 * 3 + 1]
-             + ex.rot[r1 * 3 + 2] * ex.rot[r2 * 3 + 2];
+        return ex.rot[r1 * 3 + 0] * ex.rot[r2 * 3 + 0] + ex.rot[r1 * 3 + 1] * ex.rot[r2 * 3 + 1] + ex.rot[r1 * 3 + 2] * ex.rot[r2 * 3 + 2];
     };
     EXPECT_NEAR(dot(0, 0), 1.0f, 0.1f);
     EXPECT_NEAR(dot(1, 1), 1.0f, 0.1f);
@@ -1224,12 +1201,12 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_45_playback_recommended_filters) {
     }
 
     bool sawDecimation = false;
-    for(const auto &f : filters) {
+    for(const auto &f: filters) {
         ASSERT_NE(f, nullptr);
         EXPECT_FALSE(f->getName().empty());
 
         auto schema = f->getConfigSchemaVec();
-        for(const auto &item : schema) {
+        for(const auto &item: schema) {
             double v = f->getConfigValue(item.name);
             EXPECT_GE(v, item.min);
             EXPECT_LE(v, item.max);
@@ -1301,8 +1278,8 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_46_playback_filter_chain) {
 }
 
 TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_47_playback_hdr_merge) {
-    auto pbDevice    = createPlaybackDevice();
-    auto depthFrame  = getDepthFrameFromPlayback(pbDevice);
+    auto pbDevice   = createPlaybackDevice();
+    auto depthFrame = getDepthFrameFromPlayback(pbDevice);
     if(!depthFrame) {
         GTEST_SKIP() << "No depth frame in playback bag";
     }
@@ -1394,7 +1371,7 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_50_playback_spatial_fast_filter) {
         auto radiusRange = filter->getRadiusRange();
         expectRangeValid(radiusRange);
 
-        auto params = filter->getFilterParams();
+        auto params   = filter->getFilterParams();
         params.radius = static_cast<uint8_t>(radiusRange.def);
         filter->setFilterParams(params);
         auto got = filter->getFilterParams();
@@ -1523,7 +1500,7 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_54_playback_temporal_filter) {
         EXPECT_NEAR(filter->getConfigValue("diff_scale"), static_cast<double>(diffRange.def), 1e-6);
         EXPECT_NEAR(filter->getConfigValue("weight"), static_cast<double>(wRange.def), 1e-6);
 
-        for(const auto &depth : depthFrames) {
+        for(const auto &depth: depthFrames) {
             EXPECT_NO_THROW(filter->process(depth));
         }
     });
@@ -1586,7 +1563,7 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_60_playback_coord_transform_2d_to_3d) 
         GTEST_SKIP() << "No depth frame in playback bag";
     }
 
-    auto sensorList = pbDevice->getSensorList();
+    auto sensorList        = pbDevice->getSensorList();
     auto depthVideoProfile = getFirstVideoProfile(sensorList, OB_SENSOR_DEPTH);
     if(!depthVideoProfile) {
         GTEST_SKIP() << "No depth video stream profile in playback bag";
@@ -1601,9 +1578,9 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_60_playback_coord_transform_2d_to_3d) 
     auto *data = reinterpret_cast<const uint16_t *>(depthFrame->getData());
     ASSERT_NE(data, nullptr);
 
-    uint32_t cx = width / 2;
-    uint32_t cy = height / 2;
-    uint32_t idx = cy * width + cx;
+    uint32_t cx       = width / 2;
+    uint32_t cy       = height / 2;
+    uint32_t idx      = cy * width + cx;
     uint16_t rawDepth = data[idx];
     if(rawDepth == 0) {
         for(uint32_t i = 0; i < width * height; ++i) {
@@ -1623,46 +1600,43 @@ TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_60_playback_coord_transform_2d_to_3d) 
     float depthMm = rawDepth * depthFrame->getValueScale();
     ASSERT_GT(depthMm, 0.0f);
 
-    auto intrinsic = depthVideoProfile->getIntrinsic();
-    OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f;
-    identity.rot[4] = 1.0f;
-    identity.rot[8] = 1.0f;
+    auto        intrinsic = depthVideoProfile->getIntrinsic();
+    OBExtrinsic identity  = {};
+    identity.rot[0]       = 1.0f;
+    identity.rot[4]       = 1.0f;
+    identity.rot[8]       = 1.0f;
 
-    OBPoint2f pixel = { static_cast<float>(cx), static_cast<float>(cy) };
+    OBPoint2f pixel   = { static_cast<float>(cx), static_cast<float>(cy) };
     OBPoint3f point3d = {};
-    bool ok = ob::CoordinateTransformHelper::transformation2dto3d(pixel, depthMm, intrinsic, identity, &point3d);
+    bool      ok      = ob::CoordinateTransformHelper::transformation2dto3d(pixel, depthMm, intrinsic, identity, &point3d);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(point3d.z, depthMm, depthMm * 0.05f + 1.0f);
 }
 
 TEST_P(TC_CPP_18_PlaybackParam, TC_CPP_18_61_playback_coord_transform_3d_to_2d) {
-    auto pbDevice   = createPlaybackDevice();
-    auto sensorList = pbDevice->getSensorList();
+    auto pbDevice          = createPlaybackDevice();
+    auto sensorList        = pbDevice->getSensorList();
     auto depthVideoProfile = getFirstVideoProfile(sensorList, OB_SENSOR_DEPTH);
     if(!depthVideoProfile) {
         GTEST_SKIP() << "No depth video stream profile in playback bag";
     }
 
-    auto intrinsic = depthVideoProfile->getIntrinsic();
-    auto distortion = depthVideoProfile->getDistortion();
-    OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f;
-    identity.rot[4] = 1.0f;
-    identity.rot[8] = 1.0f;
+    auto        intrinsic  = depthVideoProfile->getIntrinsic();
+    auto        distortion = depthVideoProfile->getDistortion();
+    OBExtrinsic identity   = {};
+    identity.rot[0]        = 1.0f;
+    identity.rot[4]        = 1.0f;
+    identity.rot[8]        = 1.0f;
 
-    OBPoint3f src = { 0.0f, 0.0f, 1000.0f };
+    OBPoint3f src   = { 0.0f, 0.0f, 1000.0f };
     OBPoint2f pixel = {};
-    bool ok = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
+    bool      ok    = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(pixel.x, intrinsic.cx, 2.0f);
     EXPECT_NEAR(pixel.y, intrinsic.cy, 2.0f);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    AllPlaybackBags,
-    TC_CPP_18_PlaybackParam,
-    ::testing::ValuesIn(TestEnvironment::instance().allPlaybackBagPaths()));
+INSTANTIATE_TEST_SUITE_P(AllPlaybackBags, TC_CPP_18_PlaybackParam, ::testing::ValuesIn(TestEnvironment::instance().allPlaybackBagPaths()));
 
 // ============================================================
 // Test group: CoordTransform.
@@ -1671,14 +1645,18 @@ class TC_CPP_20_CoordTransform : public SDKTestBase {};
 
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
     /// Test case: 3d to 3d.
-    OBPoint3f src = {100.0f, 200.0f, 300.0f};
+    OBPoint3f   src      = { 100.0f, 200.0f, 300.0f };
     OBExtrinsic identity = {};
     // Prepare local state for the next check.
-    identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
-    identity.trans[0] = 0.0f; identity.trans[1] = 0.0f; identity.trans[2] = 0.0f;
+    identity.rot[0]   = 1.0f;
+    identity.rot[4]   = 1.0f;
+    identity.rot[8]   = 1.0f;
+    identity.trans[0] = 0.0f;
+    identity.trans[1] = 0.0f;
+    identity.trans[2] = 0.0f;
 
     OBPoint3f dst = {};
-    bool ok = ob::CoordinateTransformHelper::transformation3dto3d(src, identity, &dst);
+    bool      ok  = ob::CoordinateTransformHelper::transformation3dto3d(src, identity, &dst);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(dst.x, src.x, 1e-3f);
     EXPECT_NEAR(dst.y, src.y, 1e-3f);
@@ -1686,10 +1664,10 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
 
     // Prepare local state for the next check.
     OBExtrinsic withTrans = identity;
-    withTrans.trans[0] = 10.0f;
-    withTrans.trans[1] = 20.0f;
-    withTrans.trans[2] = 30.0f;
-    ok = ob::CoordinateTransformHelper::transformation3dto3d(src, withTrans, &dst);
+    withTrans.trans[0]    = 10.0f;
+    withTrans.trans[1]    = 20.0f;
+    withTrans.trans[2]    = 30.0f;
+    ok                    = ob::CoordinateTransformHelper::transformation3dto3d(src, withTrans, &dst);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(dst.x, src.x + 10.0f, 1e-3f);
     EXPECT_NEAR(dst.y, src.y + 20.0f, 1e-3f);
@@ -1699,20 +1677,22 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
     /// Test case: 2d depth to 3d.
     OBCameraIntrinsic intrinsic = {};
-    intrinsic.fx = 500.0f;
-    intrinsic.fy = 500.0f;
-    intrinsic.cx = 320.0f;
-    intrinsic.cy = 240.0f;
-    intrinsic.width  = 640;
-    intrinsic.height = 480;
+    intrinsic.fx                = 500.0f;
+    intrinsic.fy                = 500.0f;
+    intrinsic.cx                = 320.0f;
+    intrinsic.cy                = 240.0f;
+    intrinsic.width             = 640;
+    intrinsic.height            = 480;
 
     OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
+    identity.rot[0]      = 1.0f;
+    identity.rot[4]      = 1.0f;
+    identity.rot[8]      = 1.0f;
 
     // TODO
-    OBPoint2f pixel = {320.0f, 240.0f};
+    OBPoint2f pixel   = { 320.0f, 240.0f };
     OBPoint3f point3d = {};
-    bool ok = ob::CoordinateTransformHelper::transformation2dto3d(pixel, 1000.0f, intrinsic, identity, &point3d);
+    bool      ok      = ob::CoordinateTransformHelper::transformation2dto3d(pixel, 1000.0f, intrinsic, identity, &point3d);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(point3d.x, 0.0f, 1.0f);
     EXPECT_NEAR(point3d.y, 0.0f, 1.0f);
@@ -1722,22 +1702,24 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
     /// Test case: 3d to 2d.
     OBCameraIntrinsic intrinsic = {};
-    intrinsic.fx = 500.0f;
-    intrinsic.fy = 500.0f;
-    intrinsic.cx = 320.0f;
-    intrinsic.cy = 240.0f;
-    intrinsic.width  = 640;
-    intrinsic.height = 480;
+    intrinsic.fx                = 500.0f;
+    intrinsic.fy                = 500.0f;
+    intrinsic.cx                = 320.0f;
+    intrinsic.cy                = 240.0f;
+    intrinsic.width             = 640;
+    intrinsic.height            = 480;
 
     OBCameraDistortion distortion = {};  // No distortion.
 
     OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
+    identity.rot[0]      = 1.0f;
+    identity.rot[4]      = 1.0f;
+    identity.rot[8]      = 1.0f;
 
     // TODO - add more cases with different intrinsics, distortion, and extrinsics
-    OBPoint3f src = {0.0f, 0.0f, 1000.0f};
+    OBPoint3f src   = { 0.0f, 0.0f, 1000.0f };
     OBPoint2f pixel = {};
-    bool ok = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
+    bool      ok    = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(pixel.x, 320.0f, 1.0f);
     EXPECT_NEAR(pixel.y, 240.0f, 1.0f);
@@ -1746,22 +1728,26 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
 TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_04_2d_to_2d) {
     /// Test case: 2d to 2d.
     OBCameraIntrinsic srcIntrinsic = {};
-    srcIntrinsic.fx = 500.0f; srcIntrinsic.fy = 500.0f;
-    srcIntrinsic.cx = 320.0f; srcIntrinsic.cy = 240.0f;
-    srcIntrinsic.width = 640; srcIntrinsic.height = 480;
+    srcIntrinsic.fx                = 500.0f;
+    srcIntrinsic.fy                = 500.0f;
+    srcIntrinsic.cx                = 320.0f;
+    srcIntrinsic.cy                = 240.0f;
+    srcIntrinsic.width             = 640;
+    srcIntrinsic.height            = 480;
 
-    OBCameraDistortion srcDist = {};
+    OBCameraDistortion srcDist      = {};
     OBCameraIntrinsic  tgtIntrinsic = srcIntrinsic;  // Same intrinsic parameters.
-    OBCameraDistortion tgtDist = {};
+    OBCameraDistortion tgtDist      = {};
 
     OBExtrinsic identity = {};
-    identity.rot[0] = 1.0f; identity.rot[4] = 1.0f; identity.rot[8] = 1.0f;
+    identity.rot[0]      = 1.0f;
+    identity.rot[4]      = 1.0f;
+    identity.rot[8]      = 1.0f;
 
     // Same intrinsics + identity extrinsic → same pixel
-    OBPoint2f srcPx = {400.0f, 300.0f};
+    OBPoint2f srcPx = { 400.0f, 300.0f };
     OBPoint2f dstPx = {};
-    bool ok = ob::CoordinateTransformHelper::transformation2dto2d(
-        srcPx, 1000.0f, srcIntrinsic, srcDist, tgtIntrinsic, tgtDist, identity, &dstPx);
+    bool      ok    = ob::CoordinateTransformHelper::transformation2dto2d(srcPx, 1000.0f, srcIntrinsic, srcDist, tgtIntrinsic, tgtDist, identity, &dstPx);
     ASSERT_TRUE(ok);
     EXPECT_NEAR(dstPx.x, srcPx.x, 2.0f);
     EXPECT_NEAR(dstPx.y, srcPx.y, 2.0f);
@@ -1789,8 +1775,7 @@ TEST_F(TC_CPP_22_Version, TC_CPP_22_02_major_minor_patch) {
     EXPECT_GE(patch, 0);
 
     int expected = major * 10000 + minor * 100 + patch;
-    EXPECT_EQ(ob::Version::getVersion(), expected)
-        << "Version mismatch: " << major << "." << minor << "." << patch;
+    EXPECT_EQ(ob::Version::getVersion(), expected) << "Version mismatch: " << major << "." << minor << "." << patch;
 }
 
 TEST_F(TC_CPP_22_Version, TC_CPP_22_03_stage_version) {
@@ -1800,10 +1785,8 @@ TEST_F(TC_CPP_22_Version, TC_CPP_22_03_stage_version) {
     if(stage && std::strlen(stage) > 0) {
         std::string s(stage);
         // Prepare local state for the next check.
-        bool known = (s == "alpha" || s == "beta" || s == "rc" || s == "release" ||
-                      s.find("alpha") != std::string::npos ||
-                      s.find("beta") != std::string::npos ||
-                      s.find("rc") != std::string::npos);
+        bool known = (s == "alpha" || s == "beta" || s == "rc" || s == "release" || s.find("alpha") != std::string::npos || s.find("beta") != std::string::npos
+                      || s.find("rc") != std::string::npos);
         EXPECT_TRUE(known) << "Unexpected stage version: " << s;
     }
 }
@@ -1816,10 +1799,9 @@ class TC_CPP_23_Logger : public SDKTestBase {};
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_01_log_severity_set) {
     /// Test case: log severity set.
     const OBLogSeverity levels[] = {
-        OB_LOG_SEVERITY_DEBUG, OB_LOG_SEVERITY_INFO, OB_LOG_SEVERITY_WARN,
-        OB_LOG_SEVERITY_ERROR, OB_LOG_SEVERITY_FATAL, OB_LOG_SEVERITY_OFF,
+        OB_LOG_SEVERITY_DEBUG, OB_LOG_SEVERITY_INFO, OB_LOG_SEVERITY_WARN, OB_LOG_SEVERITY_ERROR, OB_LOG_SEVERITY_FATAL, OB_LOG_SEVERITY_OFF,
     };
-    for(auto level : levels) {
+    for(auto level: levels) {
         ob_error *error = nullptr;
         ob_set_logger_severity(level, &error);
         EXPECT_EQ(error, nullptr) << "Failed to set log level: " << (int)level;
@@ -1832,10 +1814,10 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_01_log_severity_set) {
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
     /// Test case: log to file.
 #ifdef _WIN32
-    std::string logDir = ".";
+    std::string logDir  = ".";
     std::string logFile = ".\\OrbbecSDK.log.txt";
 #else
-    std::string logDir = "/tmp";
+    std::string logDir  = "/tmp";
     std::string logFile = "/tmp/OrbbecSDK.log.txt";
 #endif
 
@@ -1858,8 +1840,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_02_log_to_file) {
     std::ifstream ifs(logFile);
     EXPECT_TRUE(ifs.good()) << "Log file not created: " << logFile;
     if(ifs.good()) {
-        std::string content((std::istreambuf_iterator<char>(ifs)),
-                            std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
         EXPECT_FALSE(content.empty()) << "Log file is empty";
     }
 
@@ -1881,8 +1862,8 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_03_log_to_console) {
 
 TEST_F(TC_CPP_23_Logger, TC_CPP_23_04_log_callback) {
     /// Test case: log callback.
-    std::atomic<int> logCount{0};
-    ob_error *error = nullptr;
+    std::atomic<int> logCount{ 0 };
+    ob_error        *error = nullptr;
     ob_set_logger_to_callback(
         OB_LOG_SEVERITY_DEBUG,
         [](OBLogSeverity, const char *, void *userData) {
@@ -1909,7 +1890,7 @@ TEST_F(TC_CPP_23_Logger, TC_CPP_23_05_external_message) {
     ob_error *error = nullptr;
 
     // Prepare local state for the next check.
-    std::atomic<bool> found{false};
+    std::atomic<bool> found{ false };
     ob_set_logger_to_callback(
         OB_LOG_SEVERITY_INFO,
         [](OBLogSeverity, const char *msg, void *userData) {
@@ -1958,7 +1939,7 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_02_invalid_value_exception) {
     /// Test case: invalid value exception.
     // Prepare local state for the next check.
     ob_error *error = nullptr;
-    auto frame = ob_create_video_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 0, 0, 0, &error);
+    auto      frame = ob_create_video_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 0, 0, 0, &error);
     // Prepare local state for the next check.
     if(error) {
         auto exType = ob_error_get_exception_type(error);
@@ -2039,18 +2020,18 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_05_config_mode_structs) {
     }
     {
         OBMultiDeviceSyncConfig config = {};
-        config.syncMode = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
-        config.depthDelayUs = 0;
-        config.colorDelayUs = 0;
-        config.trigger2ImageDelayUs = 0;
-        config.triggerOutEnable = false;
-        config.triggerOutDelayUs = 0;
-        config.framesPerTrigger = 1;
+        config.syncMode                = OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN;
+        config.depthDelayUs            = 0;
+        config.colorDelayUs            = 0;
+        config.trigger2ImageDelayUs    = 0;
+        config.triggerOutEnable        = false;
+        config.triggerOutDelayUs       = 0;
+        config.framesPerTrigger        = 1;
         EXPECT_EQ(config.syncMode, OB_MULTI_DEVICE_SYNC_MODE_FREE_RUN);
     }
     {
         OBNetIpConfig ipConfig = {};
-        ipConfig.dhcp = 0;
+        ipConfig.dhcp          = 0;
         EXPECT_EQ(ipConfig.dhcp, 0);
     }
 }
@@ -2058,27 +2039,29 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_05_config_mode_structs) {
 TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_06_hdr_roi_point_imu_structs) {
     /// Test case: hdr roi point imu structs.
     {
-        OBHdrConfig hdr = {};
-        hdr.enable = true;
+        OBHdrConfig hdr   = {};
+        hdr.enable        = true;
         hdr.sequence_name = 0;
-        hdr.exposure_1 = 3000;
-        hdr.gain_1 = 16;
-        hdr.exposure_2 = 100;
-        hdr.gain_2 = 16;
+        hdr.exposure_1    = 3000;
+        hdr.gain_1        = 16;
+        hdr.exposure_2    = 100;
+        hdr.gain_2        = 16;
         EXPECT_TRUE(hdr.enable);
     }
     {
         OBRegionOfInterest roi = {};
-        roi.x0_left = 0; roi.y0_top = 0;
-        roi.x1_right = 640; roi.y1_bottom = 480;
+        roi.x0_left            = 0;
+        roi.y0_top             = 0;
+        roi.x1_right           = 640;
+        roi.y1_bottom          = 480;
         EXPECT_EQ(roi.x1_right, 640);
     }
     {
-        OBPoint3f p = {1.0f, 2.0f, 3.0f};
+        OBPoint3f p = { 1.0f, 2.0f, 3.0f };
         EXPECT_FLOAT_EQ(p.z, 3.0f);
     }
     {
-        OBAccelValue accel = {0.0f, 0.0f, 9.8f};
+        OBAccelValue accel = { 0.0f, 0.0f, 9.8f };
         EXPECT_NEAR(accel.z, 9.8f, 0.01f);
     }
 }
@@ -2087,31 +2070,31 @@ TEST_F(TC_CPP_25_DataStruct, TC_CPP_25_07_property_range_structs) {
     /// Test case: property range structs.
     {
         OBIntPropertyRange range = {};
-        range.min = 0;
-        range.max = 100;
-        range.step = 1;
-        range.cur = 50;
-        range.def = 50;
+        range.min                = 0;
+        range.max                = 100;
+        range.step               = 1;
+        range.cur                = 50;
+        range.def                = 50;
         EXPECT_GT(range.max, range.min);
         EXPECT_GE(range.cur, range.min);
         EXPECT_LE(range.cur, range.max);
     }
     {
         OBFloatPropertyRange range = {};
-        range.min = 0.0f;
-        range.max = 1.0f;
-        range.step = 0.1f;
-        range.cur = 0.5f;
-        range.def = 0.5f;
+        range.min                  = 0.0f;
+        range.max                  = 1.0f;
+        range.step                 = 0.1f;
+        range.cur                  = 0.5f;
+        range.def                  = 0.5f;
         EXPECT_GT(range.max, range.min);
     }
     {
         OBFilterConfigSchemaItem item = {};
-        item.name = "test_param";
-        item.min = 0.0;
-        item.max = 100.0;
-        item.step = 1.0;
-        item.def = 50.0;
+        item.name                     = "test_param";
+        item.min                      = 0.0;
+        item.max                      = 100.0;
+        item.step                     = 1.0;
+        item.def                      = 50.0;
         EXPECT_STREQ(item.name, "test_param");
     }
 }

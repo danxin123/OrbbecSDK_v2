@@ -71,7 +71,7 @@ std::shared_ptr<FrameProcessor> FrameProcessorFactory::createFrameProcessor(OBSe
         case OB_SENSOR_DEPTH: {
             processor = std::make_shared<DepthFrameProcessor>(owner, context_);
         } break;
-        case OB_SENSOR_COLOR:{
+        case OB_SENSOR_COLOR: {
             processor = std::make_shared<ColorFrameProcessor>(owner, context_);
         } break;
         case OB_SENSOR_COLOR_LEFT: {
@@ -426,8 +426,7 @@ void DepthFrameProcessor::getPropertyRange(uint32_t propertyId, OBPropertyRange 
     FrameProcessor::getPropertyRange(configName, range);
 }
 
-ColorFrameProcessor::ColorFrameProcessor(IDevice *owner, std::shared_ptr<FrameProcessorContext> context)
-    : FrameProcessor(owner, context, OB_SENSOR_COLOR) {}
+ColorFrameProcessor::ColorFrameProcessor(IDevice *owner, std::shared_ptr<FrameProcessorContext> context) : FrameProcessor(owner, context, OB_SENSOR_COLOR) {}
 
 void ColorFrameProcessor::setPropertyValue(uint32_t propertyId, const OBPropertyValue &value) {
     std::string configSchemaName = "";

@@ -337,8 +337,8 @@ void FemtoMegaINetDevice::initSensorList() {
 
 void FemtoMegaINetDevice::initProperties() {
     const auto &sourcePortInfoList = enumInfo_->getSourcePortInfoList();
-    auto        vendorPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
-                                                  [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_NET_VENDOR; });
+    auto vendorPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
+                                           [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_NET_VENDOR; });
 
     if(vendorPortInfoIter == sourcePortInfoList.end()) {
         return;

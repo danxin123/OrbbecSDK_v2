@@ -29,10 +29,10 @@ private:
     void decimateOthers(OBFormat format, void *frame_data_in, void *frame_data_out, size_t width_in, size_t scale);
 
 protected:
-    //std::map<std::tuple<const VideoStreamProfile *, uint8_t>, std::shared_ptr<VideoStreamProfile>> registered_profiles_;
+    // std::map<std::tuple<const VideoStreamProfile *, uint8_t>, std::shared_ptr<VideoStreamProfile>> registered_profiles_;
     std::map<std::tuple<std::string, uint8_t>, std::shared_ptr<VideoStreamProfile>> registered_profiles_;
-    std::shared_ptr<const VideoStreamProfile>                                                      source_stream_profile_;
-    std::shared_ptr<VideoStreamProfile>                                                            target_stream_profile_;
+    std::shared_ptr<const VideoStreamProfile>                                       source_stream_profile_;
+    std::shared_ptr<VideoStreamProfile>                                             target_stream_profile_;
 
     uint8_t  decimation_factor_;
     uint8_t  control_val_;
@@ -47,4 +47,3 @@ protected:
 };
 
 }  // namespace libobsensor
-

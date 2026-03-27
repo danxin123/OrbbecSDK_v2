@@ -25,15 +25,13 @@ private:
     void markOutputDisparityFrame(bool enable);
 
 private:
-    IDevice *owner_; 
+    IDevice *owner_;
 
     bool swDisparityToDepthEnabled_;
 
     int32_t                     currentDepthUnitLevel_;
     const std::vector<uint16_t> swD2DSupportList_ = { OB_PRECISION_1MM, OB_PRECISION_0MM8, OB_PRECISION_0MM4, OB_PRECISION_0MM2, OB_PRECISION_0MM1 };
 };
-
-
 
 class OpenNIFrameTransformPropertyAccessor : public IBasicPropertyAccessor {
 public:
@@ -47,8 +45,6 @@ public:
 private:
     IDevice *owner_;
 };
-
-
 
 class OpenNIHeartBeatPropertyAccessor : public IBasicPropertyAccessor {
 public:
@@ -75,8 +71,6 @@ private:
     std::thread             heartBeatThread_;
     std::condition_variable heartBeatCV_;
 };
-
-
 
 class OpenNITemperatureStructurePropertyAccessor : public IStructureDataAccessor {
 public:

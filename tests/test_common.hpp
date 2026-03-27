@@ -38,15 +38,33 @@ public:
         return env;
     }
 
-    bool hardwareAvailable() const { return hwAvailable_; }
-    const std::string &deviceSerial() const { return deviceSerial_; }
-    int  deviceCount() const { return deviceCount_; }
-    const std::string &playbackBagPath() const { return bagPath_; }
-    const std::vector<std::string> &allPlaybackBagPaths() const { return allBagPaths_; }
-    const std::string &firmwarePath() const { return firmwarePath_; }
-    const std::string &depthPresetPath() const { return depthPresetPath_; }
-    bool allowDestructive() const { return allowDestructive_; }
-    void setAllowDestructive(bool allowDestructive) { allowDestructive_ = allowDestructive; }
+    bool hardwareAvailable() const {
+        return hwAvailable_;
+    }
+    const std::string &deviceSerial() const {
+        return deviceSerial_;
+    }
+    int deviceCount() const {
+        return deviceCount_;
+    }
+    const std::string &playbackBagPath() const {
+        return bagPath_;
+    }
+    const std::vector<std::string> &allPlaybackBagPaths() const {
+        return allBagPaths_;
+    }
+    const std::string &firmwarePath() const {
+        return firmwarePath_;
+    }
+    const std::string &depthPresetPath() const {
+        return depthPresetPath_;
+    }
+    bool allowDestructive() const {
+        return allowDestructive_;
+    }
+    void setAllowDestructive(bool allowDestructive) {
+        allowDestructive_ = allowDestructive;
+    }
 
     // Helper: Check if device PID matches 335Le or 435Le
     static bool isPid335leOr435le(int pid) {
@@ -106,7 +124,6 @@ public:
         }
     }
 
-
     void skipIfNot335leOr435le() const {
         skipIfNoHardware();
         int pid = 0;
@@ -144,10 +161,10 @@ public:
 
 private:
     TestEnvironment() {
-        hwAvailable_     = true;
-        deviceSerial_    = getEnv("DEVICE_SERIAL");
+        hwAvailable_  = true;
+        deviceSerial_ = getEnv("DEVICE_SERIAL");
 
-        bagPath_ = getEnv("PLAYBACK_BAG_PATH");
+        bagPath_     = getEnv("PLAYBACK_BAG_PATH");
         allBagPaths_ = findAllPlaybackBags();
         if(bagPath_.empty()) {
             if(!allBagPaths_.empty()) {
@@ -159,7 +176,7 @@ private:
         }
         else {
             bool existsInList = false;
-            for(const auto &p : allBagPaths_) {
+            for(const auto &p: allBagPaths_) {
                 if(p == bagPath_) {
                     existsInList = true;
                     break;
@@ -183,7 +200,12 @@ private:
         allowDestructive_ = getEnv("ALLOW_DESTRUCTIVE_TESTS") == "true";
 
         const std::string countStr = getEnv("DEVICE_COUNT", "1");
-        try { deviceCount_ = std::stoi(countStr); } catch(...) { deviceCount_ = 1; }
+        try {
+            deviceCount_ = std::stoi(countStr);
+        }
+        catch(...) {
+            deviceCount_ = 1;
+        }
     }
 
     static std::string getEnv(const char *name, const char *fallback = "") {
@@ -227,9 +249,11 @@ private:
 
     // Case-insensitive extension comparison (e.g. ext = ".bin" or ".bag").
     static bool endsWithExt(const char *name, const char *ext) {
-        if(name == nullptr || ext == nullptr) return false;
+        if(name == nullptr || ext == nullptr)
+            return false;
         const char *found = std::strrchr(name, '.');
-        if(found == nullptr) return false;
+        if(found == nullptr)
+            return false;
 #ifdef _WIN32
         return _stricmp(found, ext) == 0;
 #else
@@ -262,7 +286,7 @@ private:
             return "";
         }
 
-        std::string result;
+        std::string    result;
         struct dirent *entry = nullptr;
         while((entry = readdir(d)) != nullptr) {
             if(entry->d_type == DT_DIR) {
@@ -332,9 +356,9 @@ private:
 
         std::vector<std::string> all;
         std::set<std::string>    seen;
-        for(const auto &dir : candidateDirs) {
+        for(const auto &dir: candidateDirs) {
             auto bags = findAllFilesWithExt(dir, ".bag");
-            for(const auto &bag : bags) {
+            for(const auto &bag: bags) {
                 if(seen.insert(bag).second) {
                     all.push_back(bag);
                 }
@@ -359,7 +383,7 @@ private:
             "../../../../tests/rosbag",
         };
 
-        for(const auto &dir : candidateDirs) {
+        for(const auto &dir: candidateDirs) {
             auto bag = findFirstFileWithExt(dir, ".bag");
             if(!bag.empty()) {
                 return bag;
@@ -371,14 +395,11 @@ private:
 
     static std::string findLocalFirmware() {
         const std::vector<std::string> candidateDirs = {
-            "tests/resource/firmware",
-            "../tests/resource/firmware",
-            "../../tests/resource/firmware",
-            "../../../tests/resource/firmware",
-            "../../../../tests/resource/firmware",
+            "tests/resource/firmware",          "../tests/resource/firmware",          "../../tests/resource/firmware",
+            "../../../tests/resource/firmware", "../../../../tests/resource/firmware",
         };
 
-        for(const auto &dir : candidateDirs) {
+        for(const auto &dir: candidateDirs) {
             auto f = findFirstFileWithExt(dir, ".bin");
             if(!f.empty()) {
                 return f;
@@ -390,14 +411,11 @@ private:
 
     static std::string findLocalDepthPreset() {
         const std::vector<std::string> candidateDirs = {
-            "tests/resource/present",
-            "../tests/resource/present",
-            "../../tests/resource/present",
-            "../../../tests/resource/present",
-            "../../../../tests/resource/present",
+            "tests/resource/present",          "../tests/resource/present",          "../../tests/resource/present",
+            "../../../tests/resource/present", "../../../../tests/resource/present",
         };
 
-        for(const auto &dir : candidateDirs) {
+        for(const auto &dir: candidateDirs) {
             auto f = findFirstFileWithExt(dir, ".bin");
             if(!f.empty()) {
                 return f;
@@ -407,14 +425,14 @@ private:
         return "";
     }
 
-    bool        hwAvailable_;
-    std::string deviceSerial_;
-    int         deviceCount_;
-    std::string bagPath_;
+    bool                     hwAvailable_;
+    std::string              deviceSerial_;
+    int                      deviceCount_;
+    std::string              bagPath_;
     std::vector<std::string> allBagPaths_;
-    std::string firmwarePath_;
-    std::string depthPresetPath_;
-    bool        allowDestructive_;
+    std::string              firmwarePath_;
+    std::string              depthPresetPath_;
+    bool                     allowDestructive_;
 };
 
 // ---------------------------------------------------------------------------
@@ -452,15 +470,10 @@ protected:
         int         endPid = 0;
         std::string endType;
 
-        ASSERT_TRUE(captureCurrentDeviceState(endPid, endType))
-            << "Device is unavailable during teardown; device may have been unplugged or switched";
+        ASSERT_TRUE(captureCurrentDeviceState(endPid, endType)) << "Device is unavailable during teardown; device may have been unplugged or switched";
 
-        EXPECT_EQ(endPid, caseStartPid_)
-            << "Device PID changed during test execution; start pid: 0x" << std::hex << caseStartPid_
-            << ", end pid: 0x" << endPid;
-        EXPECT_EQ(endType, caseStartType_)
-            << "Device type changed during test execution; start type: " << caseStartType_
-            << ", end type: " << endType;
+        EXPECT_EQ(endPid, caseStartPid_) << "Device PID changed during test execution; start pid: 0x" << std::hex << caseStartPid_ << ", end pid: 0x" << endPid;
+        EXPECT_EQ(endType, caseStartType_) << "Device type changed during test execution; start type: " << caseStartType_ << ", end type: " << endType;
     }
 
 private:
@@ -486,7 +499,7 @@ private:
                 return false;
             }
 
-            pid = info->getPid();
+            pid  = info->getPid();
             type = TestEnvironment::pidTypeName(pid);
             return true;
         }

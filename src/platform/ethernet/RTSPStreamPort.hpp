@@ -43,4 +43,3 @@ private:
     StreamProfileList                    streamProfileList_;
 };
 }  // namespace libobsensor
-

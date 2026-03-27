@@ -463,7 +463,7 @@ void G210FrameTransformPropertyAccessor::setPropertyValue(uint32_t propertyId, c
     case OB_PROP_IR_ROTATE_INT: {
         auto processor = owner_->getComponentT<FrameProcessor>(OB_DEV_COMPONENT_IR_FRAME_PROCESSOR);
 
-        if (propertyId == OB_PROP_IR_MIRROR_BOOL) {
+        if(propertyId == OB_PROP_IR_MIRROR_BOOL) {
             OBPropertyValue correctValue = value;
             correctValue.intValue        = !correctValue.intValue;
             processor->setPropertyValue(propertyId, correctValue);
@@ -504,7 +504,7 @@ void G210FrameTransformPropertyAccessor::getPropertyValue(uint32_t propertyId, O
         auto processor = owner_->getComponentT<FrameProcessor>(OB_DEV_COMPONENT_IR_FRAME_PROCESSOR);
         processor->getPropertyValue(propertyId, value);
 
-        if (propertyId == OB_PROP_IR_MIRROR_BOOL) {
+        if(propertyId == OB_PROP_IR_MIRROR_BOOL) {
             value->intValue = !value->intValue;
         }
     } break;

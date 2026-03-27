@@ -60,14 +60,14 @@ void PlaybackDeviceParamManager::bindDisparityParam(std::vector<std::shared_ptr<
 
 void PlaybackDeviceParamManager::initDeviceParams() {
     std::vector<uint8_t> rawData   = port_->getRecordedStructData(OB_RAW_DATA_D2C_ALIGN_SUPPORT_PROFILE_LIST);
-    auto itemCount = rawData.size() / sizeof(OBD2CProfile);
+    auto                 itemCount = rawData.size() / sizeof(OBD2CProfile);
     for(uint32_t i = 0; i < itemCount; i++) {
         auto item = reinterpret_cast<OBD2CProfile *>(rawData.data() + i * sizeof(OBD2CProfile));
         d2cProfileList_.push_back(*item);
     }
 
     rawData.clear();
-    rawData = port_->getRecordedStructData(OB_RAW_DATA_ALIGN_CALIB_PARAM);
+    rawData   = port_->getRecordedStructData(OB_RAW_DATA_ALIGN_CALIB_PARAM);
     itemCount = rawData.size() / sizeof(OBCameraParam);
     for(uint32_t i = 0; i < itemCount; i++) {
         auto item = reinterpret_cast<OBCameraParam *>(rawData.data() + i * sizeof(OBCameraParam));
@@ -90,11 +90,9 @@ void PlaybackDeviceParamManager::initDeviceParams() {
             frameProcessParam_ = *(reinterpret_cast<OpenNIFrameProcessParam *>(rawData.data()));
         }
         else if(!rawData.empty()) {
-            LOG_WARN("Playback Device: invalid OpenNI depth processor param size, expected: {}, actual: {}", sizeof(OpenNIFrameProcessParam),
-                     rawData.size());
+            LOG_WARN("Playback Device: invalid OpenNI depth processor param size, expected: {}, actual: {}", sizeof(OpenNIFrameProcessParam), rawData.size());
         }
     }
 }
-
 
 }  // namespace libobsensor

@@ -61,7 +61,7 @@ public:
      */
     float getMemoryUsage();
 
-    const std::vector<SystemInfo>& getData() const;
+    const std::vector<SystemInfo> &getData() const;
 
 private:
     void monitoringLoop();

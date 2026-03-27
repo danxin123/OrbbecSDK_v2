@@ -12,7 +12,7 @@ public:
     ~DisparityBasedSensor() override = default;
 
     void start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) override;
-    
+
     void stop() override;
 
     void updateFormatFilterConfig(const std::vector<FormatFilterConfig> &configs) override;

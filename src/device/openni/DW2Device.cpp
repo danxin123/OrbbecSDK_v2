@@ -28,7 +28,6 @@
 #include "DevicePids.hpp"
 #include <algorithm>
 
-
 namespace libobsensor {
 
 constexpr uint8_t  INTERFACE_COLOR = 0;
@@ -171,14 +170,13 @@ void DW2Device::initSensorList() {
             return frameProcessor;
         });
     }
-
 }
 
 void DW2Device::initProperties() {
     OpenNIDeviceBase::initProperties();
 
     auto propertyServer = getPropertyServer();
-    auto sensors = getSensorTypeList();
+    auto sensors        = getSensorTypeList();
     for(auto &sensor: sensors) {
         auto &sourcePortInfo = getSensorPortInfo(sensor);
         if(sensor == OB_SENSOR_COLOR) {

@@ -77,12 +77,14 @@ public:
     DepthFrameProcessor(IDevice *owner, std::shared_ptr<FrameProcessorContext> context);
     virtual ~DepthFrameProcessor() noexcept override;
 
-    void setHardwareD2CProcessParams(std::shared_ptr<const VideoStreamProfile> colorVideoStreamProfile,std::shared_ptr<const VideoStreamProfile> depthVideoStreamProfile,std::vector<OBCameraParam> calibrationCameraParams, std::vector<OBD2CProfile> d2cProfiles, bool matchTargetResolution);
+    void setHardwareD2CProcessParams(std::shared_ptr<const VideoStreamProfile> colorVideoStreamProfile,
+                                     std::shared_ptr<const VideoStreamProfile> depthVideoStreamProfile, std::vector<OBCameraParam> calibrationCameraParams,
+                                     std::vector<OBD2CProfile> d2cProfiles, bool matchTargetResolution);
 
     void enableHardwareD2CProcess(bool enable);
 
 private:
-    OBD2CProfile  currentD2CProfile_ = {};
+    OBD2CProfile currentD2CProfile_ = {};
 
     virtual void setPropertyValue(uint32_t propertyId, const OBPropertyValue &value) override;
     virtual void getPropertyValue(uint32_t propertyId, OBPropertyValue *value) override;

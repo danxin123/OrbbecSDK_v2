@@ -25,7 +25,7 @@ LiDARSensor::~LiDARSensor() noexcept {
 }
 
 void LiDARSensor::start(std::shared_ptr<const StreamProfile> sp, FrameCallback callback) {
-    if ( isStreamActivated()) {
+    if(isStreamActivated()) {
         throw unsupported_operation_exception(utils::string::to_string() << "The LiDAR stream has already been started.");
     }
 

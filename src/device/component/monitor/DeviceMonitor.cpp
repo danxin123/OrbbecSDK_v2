@@ -48,7 +48,7 @@ void DeviceMonitor::start() {
         while(heartbeatAndFetchStateThreadStarted_) {
             std::unique_lock<std::mutex> lock(commMutex_);
             heartbeatAndFetchStateThreadCv_.wait_for(lock, std::chrono::milliseconds(HEARTBEAT_INTERVAL_MS),
-                                                            [this]() { return !heartbeatAndFetchStateThreadStarted_; });
+                                                     [this]() { return !heartbeatAndFetchStateThreadStarted_; });
             if(!heartbeatAndFetchStateThreadStarted_) {
                 break;
             }
@@ -237,7 +237,7 @@ void DeviceMonitor::sendAndReceiveData(const uint8_t *sendData, uint32_t sendDat
     std::lock_guard<std::mutex> lock(commMutex_);
     auto                        recvLen = vendorDataPort_->sendAndReceive(sendData, sendDataSize, receiveData, *receiveDataSize);
     *receiveDataSize                    = recvLen;
-    
+
     // update active time
     if(activityRecorder_) {
         activityRecorder_->touch(DeviceActivity::Command);

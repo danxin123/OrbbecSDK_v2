@@ -312,12 +312,12 @@ bool DecimationFilter::isFrameFormatTypeSupported(OBFormat type) {
 
 void DecimationFilter::updateOutputProfile(const std::shared_ptr<const Frame> frame) {
     auto streamProfile = frame->getStreamProfile()->as<VideoStreamProfile>();
-    if(options_changed_ || !source_stream_profile_ ||!(*(streamProfile) == *(source_stream_profile_))) {
+    if(options_changed_ || !source_stream_profile_ || !(*(streamProfile) == *(source_stream_profile_))) {
         options_changed_       = false;
         source_stream_profile_ = streamProfile->clone()->as<VideoStreamProfile>();
         std::stringstream oss;
         *source_stream_profile_ << oss;
-        const auto pf          = registered_profiles_.find(std::make_tuple(oss.str(), decimation_factor_));
+        const auto pf = registered_profiles_.find(std::make_tuple(oss.str(), decimation_factor_));
         if(registered_profiles_.end() != pf) {
             target_stream_profile_ = pf->second;
 
@@ -729,4 +729,3 @@ void DecimationFilter::decimateOthers(OBFormat format, void *frame_data_in, void
 }
 
 }  // namespace libobsensor
-

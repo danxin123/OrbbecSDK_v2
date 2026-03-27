@@ -88,10 +88,14 @@ void enumerateSensors(std::shared_ptr<ob::Device> device) {
 // ============================================================
 std::string permissionToString(OBPermissionType perm) {
     switch(perm) {
-    case OB_PERMISSION_READ: return "R/_";
-    case OB_PERMISSION_WRITE: return "_/W";
-    case OB_PERMISSION_READ_WRITE: return "R/W";
-    default: return "_/_";
+    case OB_PERMISSION_READ:
+        return "R/_";
+    case OB_PERMISSION_WRITE:
+        return "_/W";
+    case OB_PERMISSION_READ_WRITE:
+        return "R/W";
+    default:
+        return "_/_";
     }
 }
 
@@ -102,7 +106,7 @@ bool isPrimaryProperty(OBPropertyItem item) {
 void printPropertyList(std::shared_ptr<ob::Device> device, const std::vector<OBPropertyItem> &props) {
     std::cout << "\n--- Properties (" << props.size() << ") ---" << std::endl;
     for(size_t i = 0; i < props.size(); i++) {
-        auto &p = props[i];
+        auto       &p = props[i];
         std::string range;
         if(p.type == OB_BOOL_PROPERTY) {
             range = "Bool(0/1)";

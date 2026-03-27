@@ -132,4 +132,4 @@ void ObRTPPacketProcessor::release() {
     }
 }
 
-}
+}  // namespace libobsensor

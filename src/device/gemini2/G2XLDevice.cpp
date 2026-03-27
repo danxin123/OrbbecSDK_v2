@@ -867,7 +867,7 @@ void G2XLNetDevice::initProperties() {
     auto        vendorPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
                                                   [](const std::shared_ptr<const SourcePortInfo> &portInfo) {  //
                                                return portInfo->portType == SOURCE_PORT_NET_VENDOR;
-                                           });
+                                                  });
     if(vendorPortInfoIter == sourcePortInfoList.end()) {
         return;
     }

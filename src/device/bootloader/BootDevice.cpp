@@ -60,8 +60,8 @@ void BootDevice::init() {
 
 void BootDevice::fetchDeviceInfo() {
 
-    auto propServer                   = getPropertyServer();
-    auto version                      = propServer->getStructureDataT<OBVersionInfo>(OB_STRUCT_VERSION);
+    auto propServer = getPropertyServer();
+    auto version    = propServer->getStructureDataT<OBVersionInfo>(OB_STRUCT_VERSION);
     if(enumInfo_->getConnectionType() == "Ethernet") {
         auto deviceInfo                   = std::make_shared<NetDeviceInfo>();
         auto portInfo                     = enumInfo_->getSourcePortInfoList().front();
@@ -95,7 +95,6 @@ void BootDevice::fetchDeviceInfo() {
         deviceInfo_->connectionType_      = enumInfo_->getConnectionType();
     }
 
-
     // remove the prefix "Orbbec " from the device name if contained
     if(deviceInfo_->name_.find("Orbbec ") == 0) {
         deviceInfo_->name_ = deviceInfo_->name_.substr(7);
@@ -104,8 +103,6 @@ void BootDevice::fetchDeviceInfo() {
 
     // mark the device as a multi-sensor device with same clock at default
     extensionInfo_["AllSensorsUsingSameClock"] = "true";
-
 }
-
 
 }  // namespace libobsensor

@@ -8,8 +8,7 @@
 
 namespace libobsensor {
 OpenNIFrameTimestampCalculator::OpenNIFrameTimestampCalculator(IDevice *device, uint64_t deviceTimeFreq, uint64_t frameTimeFreq)
-    : device_(device), deviceTimeFreq_(deviceTimeFreq), frameTimeFreq_(frameTimeFreq) {
-}
+    : device_(device), deviceTimeFreq_(deviceTimeFreq), frameTimeFreq_(frameTimeFreq) {}
 
 void OpenNIFrameTimestampCalculator::calculate(std::shared_ptr<Frame> frame) {
     auto realtime = utils::getNowTimesUs();
@@ -17,8 +16,6 @@ void OpenNIFrameTimestampCalculator::calculate(std::shared_ptr<Frame> frame) {
     frame->setSystemTimeStampUsec(realtime);
 }
 
-void OpenNIFrameTimestampCalculator::clear() {
-}
+void OpenNIFrameTimestampCalculator::clear() {}
 
 }  // namespace libobsensor
-

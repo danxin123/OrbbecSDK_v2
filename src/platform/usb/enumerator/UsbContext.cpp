@@ -9,7 +9,7 @@
 namespace libobsensor {
 UsbContext::UsbContext() {
     libusbEventHandlerExit_ = 0;
-    libusbCtx_             = nullptr;
+    libusbCtx_              = nullptr;
 #ifdef __ANDROID__
     auto rc = libusb_set_option(libusbCtx_, LIBUSB_OPTION_WEAK_AUTHORITY, NULL);
     if(rc != LIBUSB_SUCCESS) {
@@ -18,11 +18,11 @@ UsbContext::UsbContext() {
     }
 #endif
 
-     auto sts = libusb_init(&libusbCtx_);
-     if(sts != LIBUSB_SUCCESS) {
-         LOG_ERROR("libusb_init failed");
-         return;
-     }
+    auto sts = libusb_init(&libusbCtx_);
+    if(sts != LIBUSB_SUCCESS) {
+        LOG_ERROR("libusb_init failed");
+        return;
+    }
 
     startEventHandleThread();
 
@@ -61,4 +61,4 @@ void UsbContext::stopEventHandleThread() {
     }
 }
 
-} // namespace liborsensor
+}  // namespace libobsensor

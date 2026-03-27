@@ -92,8 +92,8 @@ const std::vector<uint8_t> &PlaybackVendorPropertyAccessor::getStructureData(uin
 
     switch(propertyId) {
     case OB_STRUCT_GET_ACCEL_PRESETS_ODR_LIST: {
-        AccelSampleRateList *dataPtr = allocateData<AccelSampleRateList>(data_);
-        const auto          profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
+        AccelSampleRateList *dataPtr  = allocateData<AccelSampleRateList>(data_);
+        const auto           profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
         if(profiles.empty()) {
             dataPtr->num = 0;
             break;
@@ -102,7 +102,7 @@ const std::vector<uint8_t> &PlaybackVendorPropertyAccessor::getStructureData(uin
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_ACCEL_PRESETS_FULL_SCALE_LIST: {
-        AccelFullScaleRangeList *dataPtr = allocateData<AccelFullScaleRangeList>(data_);
+        AccelFullScaleRangeList *dataPtr  = allocateData<AccelFullScaleRangeList>(data_);
         const auto               profiles = playPort_->getStreamProfileList(OB_SENSOR_ACCEL);
         if(profiles.empty()) {
             dataPtr->num = 0;
@@ -112,7 +112,7 @@ const std::vector<uint8_t> &PlaybackVendorPropertyAccessor::getStructureData(uin
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_GYRO_PRESETS_ODR_LIST: {
-        GyroSampleRateList *dataPtr = allocateData<GyroSampleRateList>(data_);
+        GyroSampleRateList *dataPtr  = allocateData<GyroSampleRateList>(data_);
         const auto          profiles = playPort_->getStreamProfileList(OB_SENSOR_GYRO);
         if(profiles.empty()) {
             dataPtr->num = 0;
@@ -122,7 +122,7 @@ const std::vector<uint8_t> &PlaybackVendorPropertyAccessor::getStructureData(uin
         dataPtr->num       = 1;
     } break;
     case OB_STRUCT_GET_GYRO_PRESETS_FULL_SCALE_LIST: {
-        GyroFullScaleRangeList *data = allocateData<GyroFullScaleRangeList>(data_);
+        GyroFullScaleRangeList *data     = allocateData<GyroFullScaleRangeList>(data_);
         const auto              profiles = playPort_->getStreamProfileList(OB_SENSOR_GYRO);
         if(profiles.empty()) {
             data->num = 0;

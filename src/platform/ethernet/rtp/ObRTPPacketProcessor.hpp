@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 namespace libobsensor {
 
 struct RTPHeader {
@@ -97,7 +96,7 @@ private:
     uint32_t maxPacketSize_;
     uint64_t timestamp_;
 
-    //metadataSize(96) + framedataSize
+    // metadataSize(96) + framedataSize
     uint32_t dataSize_;
     // metadata(96) + framedata
     uint8_t *rtpBuffer_;
@@ -107,5 +106,4 @@ private:
     uint32_t fameSequenceNumberCount_;
 };
 
-}
-
+}  // namespace libobsensor

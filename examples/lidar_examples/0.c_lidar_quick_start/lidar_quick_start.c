@@ -11,9 +11,9 @@
 int main(void) {
 
     // Used to return SDK interface error information.
-    ob_error    *error    = NULL;
-    ob_pipeline *pipe     = NULL;
-    ob_device   *device   = NULL;
+    ob_error    *error  = NULL;
+    ob_pipeline *pipe   = NULL;
+    ob_device   *device = NULL;
 
     // Create a pipeline to manage the streams
     pipe = ob_create_pipeline(&error);
@@ -41,10 +41,10 @@ int main(void) {
 
     // Main loop, continuously wait for frames and print their index and rate.
     while(true) {
-        ob_frame *frame  = NULL;
+        ob_frame *frame    = NULL;
         ob_frame *frameset = NULL;
-        bool      result = false;
-        char      key    = ob_smpl_wait_for_key_press(10);
+        bool      result   = false;
+        char      key      = ob_smpl_wait_for_key_press(10);
         if(key == ESC_KEY) {
             break;
         }

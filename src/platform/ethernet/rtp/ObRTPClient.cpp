@@ -14,9 +14,8 @@ void ObRTPClient::init(std::string localAddress, std::string address, uint16_t p
         udpClient_.reset();
     }
 
-    LOG_DEBUG("RTP localAddress: {}",localAddress);
+    LOG_DEBUG("RTP localAddress: {}", localAddress);
     udpClient_ = std::make_shared<ObRTPUDPClient>(localAddress, address, port);
-
 }
 
 void ObRTPClient::start(std::shared_ptr<const StreamProfile> profile, MutableFrameCallback callback) {

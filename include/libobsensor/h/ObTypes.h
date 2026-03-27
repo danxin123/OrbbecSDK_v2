@@ -486,8 +486,8 @@ typedef struct {
     OBCameraIntrinsic  intrinsics[OB_SENSOR_TYPE_COUNT];  ///< Sensor internal parameters
     OBCameraDistortion distortion[OB_SENSOR_TYPE_COUNT];  ///< Sensor distortion
     OBExtrinsic        extrinsics[OB_SENSOR_TYPE_COUNT]
-                          [OB_SENSOR_TYPE_COUNT];  ///< The extrinsic parameters allow 3D coordinate conversions between sensor.To transform from a
-                                                   ///< source to a target 3D coordinate system,under extrinsics[source][target].
+                                 [OB_SENSOR_TYPE_COUNT];  ///< The extrinsic parameters allow 3D coordinate conversions between sensor.To transform from a
+                                                          ///< source to a target 3D coordinate system,under extrinsics[source][target].
 } OBCalibrationParam, ob_calibration_param;
 
 /**

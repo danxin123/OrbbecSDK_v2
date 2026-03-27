@@ -39,7 +39,7 @@ int main(void) try {
     // Start the pipeline.
     pipe.start(config);
 
-    bool     render3D   = true;    // Default: 3D rendering ON
+    bool     render3D   = true;  // Default: 3D rendering ON
     int      colormapId = cv::COLORMAP_JET;
     uint32_t saveIndex  = 0;
 
@@ -66,10 +66,10 @@ int main(void) try {
 
         // Print center distance every 30 frames
         if(depthFrame->getIndex() % 30 == 0 && depthFrame->getFormat() == OB_FORMAT_Y16) {
-            uint32_t        width  = depthFrame->getWidth();
-            uint32_t        height = depthFrame->getHeight();
-            float           scale  = depthFrame->getValueScale();
-            const uint16_t *data   = reinterpret_cast<const uint16_t *>(depthFrame->getData());
+            uint32_t        width          = depthFrame->getWidth();
+            uint32_t        height         = depthFrame->getHeight();
+            float           scale          = depthFrame->getValueScale();
+            const uint16_t *data           = reinterpret_cast<const uint16_t *>(depthFrame->getData());
             float           centerDistance = data[width * height / 2 + width / 2] * scale;
             std::cout << "Center distance: " << centerDistance << " mm\n";
         }
@@ -85,12 +85,11 @@ int main(void) try {
 
         if(!displayMat.empty()) {
             // Draw operation prompt
-            cv::putText(displayMat, "M:3D/2D  C:Colormap  S:Save  Esc:Exit", cv::Point(12, displayMat.rows - 14), 
-                       cv::FONT_HERSHEY_DUPLEX, 0.55, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+            cv::putText(displayMat, "M:3D/2D  C:Colormap  S:Save  Esc:Exit", cv::Point(12, displayMat.rows - 14), cv::FONT_HERSHEY_DUPLEX, 0.55,
+                        cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
             // Draw mode indicator
             std::string mode = render3D ? "3D Rendering" : "2D Colormap";
-            cv::putText(displayMat, mode, cv::Point(12, 24), 
-                       cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+            cv::putText(displayMat, mode, cv::Point(12, 24), cv::FONT_HERSHEY_DUPLEX, 0.7, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
             cv::imshow("Depth Viewer", displayMat);
         }
 
@@ -104,8 +103,8 @@ int main(void) try {
             std::cout << (render3D ? "3D depth rendering ON\n" : "3D depth rendering OFF (colormap ON)\n");
         }
         else if(key == 'c' || key == 'C') {
-            const int   maps[]  = {cv::COLORMAP_JET, cv::COLORMAP_TURBO, cv::COLORMAP_MAGMA, cv::COLORMAP_INFERNO, cv::COLORMAP_PLASMA};
-            const char *names[] = {"JET", "TURBO", "MAGMA", "INFERNO", "PLASMA"};
+            const int   maps[]  = { cv::COLORMAP_JET, cv::COLORMAP_TURBO, cv::COLORMAP_MAGMA, cv::COLORMAP_INFERNO, cv::COLORMAP_PLASMA };
+            const char *names[] = { "JET", "TURBO", "MAGMA", "INFERNO", "PLASMA" };
             const int   count   = sizeof(maps) / sizeof(maps[0]);
             int         idx     = 0;
             for(int i = 0; i < count; i++) {
@@ -123,11 +122,11 @@ int main(void) try {
 
         // Save depth PNG
         if(saveRequested && latestDepth) {
-            uint32_t w = latestDepth->getWidth();
-            uint32_t h = latestDepth->getHeight();
-            cv::Mat  rawMat(h, w, CV_16UC1, latestDepth->getData());
+            uint32_t    w = latestDepth->getWidth();
+            uint32_t    h = latestDepth->getHeight();
+            cv::Mat     rawMat(h, w, CV_16UC1, latestDepth->getData());
             std::string name = "depth_" + std::to_string(w) + "x" + std::to_string(h) + "_" + std::to_string(saveIndex) + ".png";
-            cv::imwrite(name, rawMat, {cv::IMWRITE_PNG_COMPRESSION, 0});
+            cv::imwrite(name, rawMat, { cv::IMWRITE_PNG_COMPRESSION, 0 });
             std::cout << "Saved: " << name << "\n";
             saveIndex++;
             saveRequested = false;

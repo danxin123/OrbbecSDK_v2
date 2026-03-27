@@ -27,10 +27,10 @@ namespace libobsensor {
 #pragma pack(2)
 typedef struct {
     uint64_t frameCounter;  // Frame number
-    uint16_t extentionLen;  // Extended data length, default is 0    
+    uint16_t extentionLen;  // Extended data length, default is 0
     uint64_t timestamp;     // timestamp
     uint32_t width;         // Frame pixel width
-    uint32_t height;        // Frame pixel height    
+    uint32_t height;        // Frame pixel height
 } OBNetworkFrameHeader;
 struct MJPGMetadataHeader {
     uint8_t  magic[8];  // fixed magic:"ORBBEC"
@@ -43,18 +43,16 @@ struct MJPGMetadataHeader {
 };
 #pragma pack()
 
-const std::vector<std::string> OBVendorCodecs = {
-    "OB_FMT_Y16", "OB_FMT_Y8", "OB_FMT_Y10", "OB_FMT_RVL", "OB_FMT_MJPEG", "YUYV", "I420", "Y12C4"
-};
+const std::vector<std::string> OBVendorCodecs = { "OB_FMT_Y16", "OB_FMT_Y8", "OB_FMT_Y10", "OB_FMT_RVL", "OB_FMT_MJPEG", "YUYV", "I420", "Y12C4" };
 
 bool isOBVendorCodec(const std::string &codec) {
     return std::find(OBVendorCodecs.begin(), OBVendorCodecs.end(), codec) != OBVendorCodecs.end();
 }
 
 const std::map<std::string, OBFormat> CodecToFormatMap = {
-    { "H264", OB_FORMAT_H264 },    { "H265", OB_FORMAT_H265 },      { "JPEG", OB_FORMAT_MJPG },      { "OB_FMT_Y16", OB_FORMAT_Y16 },
-    { "OB_FMT_Y8", OB_FORMAT_Y8 }, { "OB_FMT_Y10", OB_FORMAT_Y10 }, { "OB_FMT_RVL", OB_FORMAT_RVL }, { "OB_FMT_MJPEG", OB_FORMAT_MJPG },
-    { "YUYV", OB_FORMAT_YUYV }, { "OB_FMT_YUYV", OB_FORMAT_YUYV }, {"I420", OB_FORMAT_I420 }, { "Y12C4", OB_FORMAT_Y12C4 },
+    { "H264", OB_FORMAT_H264 },    { "H265", OB_FORMAT_H265 },        { "JPEG", OB_FORMAT_MJPG },      { "OB_FMT_Y16", OB_FORMAT_Y16 },
+    { "OB_FMT_Y8", OB_FORMAT_Y8 }, { "OB_FMT_Y10", OB_FORMAT_Y10 },   { "OB_FMT_RVL", OB_FORMAT_RVL }, { "OB_FMT_MJPEG", OB_FORMAT_MJPG },
+    { "YUYV", OB_FORMAT_YUYV },    { "OB_FMT_YUYV", OB_FORMAT_YUYV }, { "I420", OB_FORMAT_I420 },      { "Y12C4", OB_FORMAT_Y12C4 },
 };
 
 OBFormat codecToOBFormat(const std::string &codec) {
@@ -258,11 +256,11 @@ void ObRTPSink::outputFrameFunc() {
                     frame->setTimeStampUsec(header->timestamp);
                     frame->setSystemTimeStampUsec(utils::getNowTimesUs());
                     frame->setNumber(header->frameCounter);
-                    
+
                     if(header->extentionLen != 0) {
                         frame->updateMetadata(output->getRecvdDataBuffer() + frameOffset, header->extentionLen);
                         frameOffset += header->extentionLen;
-                    }                    
+                    }
                 }
                 else {
                     frame->setTimeStampUsec(output->getTimestamp());
@@ -340,4 +338,3 @@ void ObRTPSink::mjpgUpdateMetadata(std::shared_ptr<Frame> frame) {
 }
 
 }  // namespace libobsensor
-

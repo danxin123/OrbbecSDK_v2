@@ -20,9 +20,9 @@ void G330NetDisparitySensor::start(std::shared_ptr<const StreamProfile> sp, Fram
                                                            << linkSpeed_ << "Mb/s! Please check the ethernet connection and reconnect the device.");
     }
 
-    auto currentVSP  = sp->as<VideoStreamProfile>();
-    auto rtpStreamPort = std::dynamic_pointer_cast<RTPStreamPort>(backend_);
-    uint16_t port = rtpStreamPort->getStreamPort();
+    auto     currentVSP    = sp->as<VideoStreamProfile>();
+    auto     rtpStreamPort = std::dynamic_pointer_cast<RTPStreamPort>(backend_);
+    uint16_t port          = rtpStreamPort->getStreamPort();
     LOG_DEBUG("Start {} stream port: {}", utils::obSensorToStr(sensorType_), port);
 
     OBInternalVideoStreamProfile vsp = { 0 };
@@ -36,21 +36,17 @@ void G330NetDisparitySensor::start(std::shared_ptr<const StreamProfile> sp, Fram
     auto propServer = owner_->getPropertyServer();
     propServer->setStructureDataT<OBInternalVideoStreamProfile>(OB_STRUCT_DEPTH_STREAM_PROFILE, vsp);
     DisparityBasedSensor::start(sp, callback);
-    BEGIN_TRY_EXECUTE({
-        propServer->setPropertyValueT<bool>(OB_PROP_START_DEPTH_STREAM_BOOL, true);
-    })
+    BEGIN_TRY_EXECUTE({ propServer->setPropertyValueT<bool>(OB_PROP_START_DEPTH_STREAM_BOOL, true); })
     CATCH_EXCEPTION_AND_EXECUTE({
         LOG_ERROR("Start {} stream failed!", utils::obSensorToStr(sensorType_));
         DisparityBasedSensor::stop();
         propServer->setPropertyValueT<bool>(OB_PROP_START_DEPTH_STREAM_BOOL, false);
     })
 }
-    
+
 void G330NetDisparitySensor::stop() {
     auto propServer = owner_->getPropertyServer();
-    BEGIN_TRY_EXECUTE({
-        propServer->setPropertyValueT<bool>(OB_PROP_START_DEPTH_STREAM_BOOL, false);
-    })
+    BEGIN_TRY_EXECUTE({ propServer->setPropertyValueT<bool>(OB_PROP_START_DEPTH_STREAM_BOOL, false); })
     CATCH_EXCEPTION_AND_EXECUTE({ LOG_ERROR("Failed to send the {} stream stop command!", utils::obSensorToStr(sensorType_)); })
     DisparityBasedSensor::stop();
 }
@@ -59,7 +55,6 @@ void G330NetDisparitySensor::setStreamProfileList(const StreamProfileList &profi
     DisparityBasedSensor::setStreamProfileList(profileList);
 }
 
-G330NetDisparitySensor::~G330NetDisparitySensor() noexcept {
-}
+G330NetDisparitySensor::~G330NetDisparitySensor() noexcept {}
 
 }  // namespace libobsensor

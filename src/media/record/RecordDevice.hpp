@@ -81,6 +81,7 @@ private:
     void initializeFrameQueueOnce(OBSensorType sensorType, std::shared_ptr<const Frame> frame);
 
     void stopRecord();
+
 private:
     std::shared_ptr<IDevice> device_;
     std::string              filePath_;

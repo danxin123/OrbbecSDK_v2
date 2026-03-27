@@ -194,4 +194,3 @@ catch(ob::Error &e) {
     ob_smpl::waitForKeyPressed();
     exit(EXIT_FAILURE);
 }
-

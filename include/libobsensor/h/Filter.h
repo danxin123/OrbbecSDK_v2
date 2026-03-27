@@ -270,4 +270,3 @@ OB_EXPORT void ob_align_filter_set_align_to_stream_profile(ob_filter *filter, co
 #ifdef __cplusplus
 }
 #endif
-

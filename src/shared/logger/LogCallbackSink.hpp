@@ -56,4 +56,3 @@ inline std::shared_ptr<logger> callback_logger_st(const std::string &logger_name
 }
 
 }  // namespace spdlog
-

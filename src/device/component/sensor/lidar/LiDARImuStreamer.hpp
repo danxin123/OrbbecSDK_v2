@@ -35,8 +35,8 @@ private:
     void convertGyroUnit(std::shared_ptr<Frame> frame);
 
 private:
-    IDevice                              *owner_;
-    std::shared_ptr<LiDARDataStreamPort>  backend_;
+    IDevice                             *owner_;
+    std::shared_ptr<LiDARDataStreamPort> backend_;
 
     std::mutex                                cbMtx_;
     MutableFrameCallback                      accelCallback_      = nullptr;

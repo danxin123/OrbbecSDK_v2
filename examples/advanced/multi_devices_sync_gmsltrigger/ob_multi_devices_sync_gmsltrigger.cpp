@@ -12,7 +12,7 @@ on the nvidia arm64 xavier/orin platform ,this sample use nvidia platform soc pw
 #include <iostream>
 #include <string>
 
-static const char *  DEVICE_PATH = "/dev/camsync";
+static const char   *DEVICE_PATH = "/dev/camsync";
 static const uint8_t WRITE_MODE  = 1;
 static const uint8_t READ_MODE   = 0;
 

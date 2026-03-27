@@ -70,12 +70,12 @@ void G330SensorStreamStrategy::validateISPFirmwareVersion(const std::vector<std:
     for(auto profile: profiles) {
         auto streamType = profile->getType();
 
-        if (streamType == OB_STREAM_COLOR) {
+        if(streamType == OB_STREAM_COLOR) {
             rgbEnable = true;
             break;
         }
     }
-    if (rgbEnable) {
+    if(rgbEnable) {
         bool        needUpgrade = false;
         std::string ispFwVer    = getOwner()->getExtensionInfo(ISP_FW_VER_KEY);
         std::string ispNeedVer  = getOwner()->getExtensionInfo(ISP_NEED_VER_KEY);
@@ -127,7 +127,7 @@ void G330SensorStreamStrategy::validatePreset(const std::vector<std::shared_ptr<
     if(strncmp(currentDepthMode.name, FactoryMode, strlen(FactoryMode) + 1) == 0) {
         // Factory Calibration mode
         for(auto profile: profiles) {
-            auto        streamType  = profile->getType();
+            auto streamType = profile->getType();
             switch(streamType) {
             case OB_STREAM_IR_LEFT:
             case OB_STREAM_IR_RIGHT: {
@@ -136,7 +136,8 @@ void G330SensorStreamStrategy::validatePreset(const std::vector<std::shared_ptr<
                 auto height = vsp->getHeight();
                 auto format = vsp->getFormat();
                 if(!(((width == 1280 && height == 800) || (width == 640 && height == 400)) && (format == OB_FORMAT_Y12 || format == OB_FORMAT_Y16))) {
-                    throw unsupported_operation_exception("Preset is in Factory Calibration mode, only support IR streams at 1280x800@Y12/Y16 and 640x400@Y12/Y16");
+                    throw unsupported_operation_exception(
+                        "Preset is in Factory Calibration mode, only support IR streams at 1280x800@Y12/Y16 and 640x400@Y12/Y16");
                 }
             } break;
             case OB_STREAM_DEPTH:

@@ -2,16 +2,11 @@
 #include <map>
 #include <algorithm>
 
-
 uint64_t getFrameTimestampMsec(const std::shared_ptr<const ob::Frame> frame) {
     return frame->getTimeStampUs() / 1000;
 }
 
-
-FramePairingManager::FramePairingManager()
-    : destroy_(false) {
-
-}
+FramePairingManager::FramePairingManager() : destroy_(false) {}
 
 FramePairingManager::~FramePairingManager() {
     release();
@@ -31,7 +26,7 @@ bool FramePairingManager::pipelineHoldersFrameNotEmpty() {
 }
 
 void FramePairingManager::setPipelineHolderList(std::vector<std::shared_ptr<PipelineHolder>> pipelineHolderList) {
-	this->pipelineHolderList_ = pipelineHolderList;
+    this->pipelineHolderList_ = pipelineHolderList;
     for(auto &&pipelineHolder: pipelineHolderList) {
         int deviceIndex = pipelineHolder->getDeviceIndex();
         if(pipelineHolder->getSensorType() == OB_SENSOR_DEPTH) {
@@ -46,13 +41,13 @@ void FramePairingManager::setPipelineHolderList(std::vector<std::shared_ptr<Pipe
 std::vector<std::pair<std::shared_ptr<ob::Frame>, std::shared_ptr<ob::Frame>>> FramePairingManager::getFramePairs() {
     std::vector<std::pair<std::shared_ptr<ob::Frame>, std::shared_ptr<ob::Frame>>> framePairs;
     if(pipelineHolderList_.size() > 0) {
-        int depthPipelineHolderSize = static_cast<int>(depthPipelineHolderList_.size());
-        auto start = std::chrono::steady_clock::now();
+        int  depthPipelineHolderSize = static_cast<int>(depthPipelineHolderList_.size());
+        auto start                   = std::chrono::steady_clock::now();
         // Timestamp Matching Mode.
         while(!pipelineHoldersFrameNotEmpty() && !destroy_) {
             // Wait for frames if not yet available (optional: add sleep for simulation)
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            auto now = std::chrono::steady_clock::now();
+            auto now     = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
             if(elapsed > 200) {
                 return framePairs;
@@ -88,7 +83,7 @@ std::vector<std::pair<std::shared_ptr<ob::Frame>, std::shared_ptr<ob::Frame>>> F
             auto diffTsp = tarTsp - refTsp;
             if(diffTsp > tspHalfGap) {
                 discardFrame = true;
-                //std::cout << "index = " << index << " frame type = " << frameType << " diff tsp = " << diffTsp << std::endl;
+                // std::cout << "index = " << index << " frame type = " << frameType << " diff tsp = " << diffTsp << std::endl;
                 break;
             }
 

@@ -111,7 +111,7 @@ bool UsbDeviceEnumerator::onPlatformDeviceChanged(OBDeviceChangedType changeType
         newUsbPortArrivalCV_.notify_all();
     }
 
-    return true; // default
+    return true;  // default
 }
 
 DeviceEnumInfoList UsbDeviceEnumerator::queryRemovedDevice(std::string rmDevUid) {
@@ -144,8 +144,8 @@ DeviceEnumInfoList UsbDeviceEnumerator::queryRemovedDevice(std::string rmDevUid)
 }
 
 DeviceEnumInfoList UsbDeviceEnumerator::queryArrivalDevice() {
-    auto currentDeviceInfoListTemp = deviceInfoList_;
-    auto                                   portInfoList = platform_->queryUsbSourcePortInfos();
+    auto                                   currentDeviceInfoListTemp = deviceInfoList_;
+    auto                                   portInfoList              = platform_->queryUsbSourcePortInfos();
     std::unique_lock<std::recursive_mutex> lock(deviceInfoListMutex_);
     if(portInfoList != currentUsbPortInfoList_) {
         LOG_DEBUG("Current usb device port list:");
@@ -277,4 +277,3 @@ void UsbDeviceEnumerator::setDeviceChangedCallback(DeviceChangedCallback callbac
 }
 
 }  // namespace libobsensor
-

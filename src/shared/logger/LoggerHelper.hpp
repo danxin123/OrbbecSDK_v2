@@ -49,4 +49,3 @@ struct ObLogRecord {
             iter->second->lastTime = now;                                                                                                  \
         }                                                                                                                                  \
     } while(0)
-

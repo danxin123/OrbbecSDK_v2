@@ -6,8 +6,7 @@
 
 namespace libobsensor {
 
-LiDARDeviceMonitor::LiDARDeviceMonitor(IDevice *owner, std::shared_ptr<ISourcePort> dataPort)
-    : DeviceComponentBase(owner) {
+LiDARDeviceMonitor::LiDARDeviceMonitor(IDevice *owner, std::shared_ptr<ISourcePort> dataPort) : DeviceComponentBase(owner) {
     vendorDataPort_ = std::dynamic_pointer_cast<IVendorDataPort>(dataPort);
     if(!vendorDataPort_) {
         throw std::runtime_error("LiDARDeviceMonitor: data port must be a vendor data port!");
@@ -19,8 +18,7 @@ LiDARDeviceMonitor::LiDARDeviceMonitor(IDevice *owner, std::shared_ptr<ISourcePo
     }
 }
 
-LiDARDeviceMonitor::~LiDARDeviceMonitor() noexcept {
-}
+LiDARDeviceMonitor::~LiDARDeviceMonitor() noexcept {}
 
 OBDeviceState LiDARDeviceMonitor::getCurrentDeviceState() const {
     LOG_ERROR("LiDAR device doesn't support heartbeat and fetching state right now!");

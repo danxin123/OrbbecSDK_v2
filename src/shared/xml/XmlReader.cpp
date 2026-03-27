@@ -7,7 +7,7 @@
 #include "utils/Utils.hpp"
 
 namespace libobsensor {
-XmlReader::XmlReader(const std::string& filePath) {
+XmlReader::XmlReader(const std::string &filePath) {
     doc_ = std::make_shared<XMLDocument>();
     if(filePath.empty()) {
         throw invalid_value_exception("XmlReader::XmlReader: filePath is empty!");
@@ -84,7 +84,7 @@ bool XmlReader::getTextOfLeafNode(const std::string &nodePathName, std::string &
 }
 
 bool XmlReader::isNodeContained(const std::string &nodePathName) {
-    if (nodePathName.empty()) {
+    if(nodePathName.empty()) {
         return false;
     }
     auto nodeList = utils::string::split(nodePathName, ".");
@@ -93,9 +93,9 @@ bool XmlReader::isNodeContained(const std::string &nodePathName) {
     }
 
     XMLElement *currentElement = rootXMLElement_;
-    for (const auto &nodeName : nodeList) {
+    for(const auto &nodeName: nodeList) {
         currentElement = currentElement->FirstChildElement(nodeName.c_str());
-        if (!currentElement) {
+        if(!currentElement) {
             return false;
         }
     }

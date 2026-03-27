@@ -52,4 +52,3 @@ private:
     uint32_t                          structListDataTransferPacketSize_;
 };
 }  // namespace libobsensor
-

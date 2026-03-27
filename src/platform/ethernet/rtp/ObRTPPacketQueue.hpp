@@ -6,7 +6,6 @@
 #include <queue>
 #include <condition_variable>
 
-
 namespace libobsensor {
 
 class ObRTPPacketQueue {
@@ -24,7 +23,6 @@ private:
     std::mutex                       mutex_;
     std::condition_variable          cond_var_;
     bool                             destroy_;
-
 };
 
 }  // namespace libobsensor

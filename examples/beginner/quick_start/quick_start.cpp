@@ -20,7 +20,7 @@ static std::mutex logMutex;
 
 static void onLogMessage(OBLogSeverity severity, const char *logMsg) {
     static const char *sevNames[] = { "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
-    const char *sev = (severity >= 0 && severity <= OB_LOG_SEVERITY_FATAL) ? sevNames[severity] : "???";
+    const char        *sev        = (severity >= 0 && severity <= OB_LOG_SEVERITY_FATAL) ? sevNames[severity] : "???";
 
     std::lock_guard<std::mutex> lock(logMutex);
     std::cerr << "[SDK " << sev << "] " << logMsg << std::endl;
@@ -64,12 +64,9 @@ int main(void) try {
     uint64_t frameCount = 0;
 
     // Log severity levels to cycle through with 'L' key.
-    static const OBLogSeverity levels[] = {
-        OB_LOG_SEVERITY_DEBUG, OB_LOG_SEVERITY_INFO, OB_LOG_SEVERITY_WARN,
-        OB_LOG_SEVERITY_ERROR, OB_LOG_SEVERITY_OFF
-    };
-    static const char *levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR", "OFF" };
-    int currentLevel = 1; // start at INFO
+    static const OBLogSeverity levels[]     = { OB_LOG_SEVERITY_DEBUG, OB_LOG_SEVERITY_INFO, OB_LOG_SEVERITY_WARN, OB_LOG_SEVERITY_ERROR, OB_LOG_SEVERITY_OFF };
+    static const char         *levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR", "OFF" };
+    int                        currentLevel = 1;  // start at INFO
 
     while(true) {
         // Wait for a frameset from the pipeline (timeout 1000ms).
@@ -84,25 +81,23 @@ int main(void) try {
             continue;
         }
 
-        auto depth = depthFrame->as<ob::DepthFrame>();
+        auto     depth  = depthFrame->as<ob::DepthFrame>();
         uint32_t width  = depth->getWidth();
         uint32_t height = depth->getHeight();
         float    scale  = depth->getValueScale();
 
         // Read the center pixel depth value.
-        uint16_t *data       = reinterpret_cast<uint16_t *>(depth->getData());
-        uint32_t  centerX    = width / 2;
-        uint32_t  centerY    = height / 2;
-        uint16_t  rawValue   = data[centerY * width + centerX];
-        float     depthInMm  = rawValue * scale;
+        uint16_t *data      = reinterpret_cast<uint16_t *>(depth->getData());
+        uint32_t  centerX   = width / 2;
+        uint32_t  centerY   = height / 2;
+        uint16_t  rawValue  = data[centerY * width + centerX];
+        float     depthInMm = rawValue * scale;
 
         // Print every 15 frames to avoid flooding the terminal.
         if(frameCount % 15 == 0) {
-            std::cout << "Frame #" << std::setw(6) << depth->getIndex()
-                      << " | " << width << "x" << height
-                      << " | Center depth: " << std::fixed << std::setprecision(1) << depthInMm << " mm"
-                      << " | Timestamp: " << depth->getTimeStampUs() / 1000 << " ms"
-                      << std::endl;
+            std::cout << "Frame #" << std::setw(6) << depth->getIndex() << " | " << width << "x" << height << " | Center depth: " << std::fixed
+                      << std::setprecision(1) << depthInMm << " mm"
+                      << " | Timestamp: " << depth->getTimeStampUs() / 1000 << " ms" << std::endl;
         }
         frameCount++;
 

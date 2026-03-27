@@ -26,7 +26,7 @@ private:
      */
     explicit Error(ob_error *error) : impl_(error) {};
 
-    Error& operator=(const Error&) = default;
+    Error &operator=(const Error &) = default;
 
 public:
     /**
@@ -113,4 +113,3 @@ public:
     }
 };
 }  // namespace ob
-

@@ -6,17 +6,15 @@
 #include <queue>
 #include <condition_variable>
 
-
 class PipelineHolder {
 public:
     PipelineHolder(std::shared_ptr<ob::Pipeline> pipeline, OBSensorType sensorType, std::string deviceSN, int deviceIndex);
     ~PipelineHolder();
 
-
 public:
     void startStream();
 
-    void processFrame(std::shared_ptr<ob::FrameSet> frameSet); 
+    void processFrame(std::shared_ptr<ob::FrameSet> frameSet);
 
     bool isFrameReady();
 
@@ -46,14 +44,15 @@ public:
         return frameType_;
     }
 
-    int getDeviceIndex(){
+    int getDeviceIndex() {
         return deviceIndex_;
     }
 
-   int getFrameQueueSize() {
-	       std::lock_guard<std::mutex> lock(queueMutex_);
-	        return static_cast<int>(obFrames.size());
+    int getFrameQueueSize() {
+        std::lock_guard<std::mutex> lock(queueMutex_);
+        return static_cast<int>(obFrames.size());
     }
+
 private:
     bool startStream_;
 
@@ -66,7 +65,6 @@ private:
     std::condition_variable condVar_;
     std::mutex              queueMutex_;
     uint32_t                maxFrameSize_ = 16;
-
 
     std::queue<std::shared_ptr<ob::Frame>> obFrames;
 

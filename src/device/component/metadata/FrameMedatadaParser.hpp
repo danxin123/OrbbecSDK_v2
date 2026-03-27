@@ -31,7 +31,7 @@ public:
 
 private:
     Field T::*field_;
-    
+
     FrameMetadataModifier modifier_;
 };
 
@@ -39,4 +39,4 @@ template <typename T, typename Field>
 std::shared_ptr<StructureMetadataParser<T, Field>> makeStructureMetadataParser(Field T::*field, FrameMetadataModifier mod = nullptr) {
     return std::make_shared<StructureMetadataParser<T, Field>>(field, mod);
 }
-} // namespace libobsensor
+}  // namespace libobsensor

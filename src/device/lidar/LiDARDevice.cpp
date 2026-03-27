@@ -43,13 +43,13 @@ void LiDARDevice::init() {
     fetchDeviceInfo();
 
     registerComponent(
-    OB_DEV_COMPONENT_DEVICE_ACTIVITY_RECORDER,
-    [this]() {
-        std::shared_ptr<DeviceActivityRecorder> activityRecorder;
-        TRY_EXECUTE({ activityRecorder = std::make_shared<DeviceActivityRecorder>(this); })
-        return activityRecorder;
-    },
-    false);
+        OB_DEV_COMPONENT_DEVICE_ACTIVITY_RECORDER,
+        [this]() {
+            std::shared_ptr<DeviceActivityRecorder> activityRecorder;
+            TRY_EXECUTE({ activityRecorder = std::make_shared<DeviceActivityRecorder>(this); })
+            return activityRecorder;
+        },
+        false);
 
     auto algParamManager = std::make_shared<LiDARAlgParamManager>(this);
     registerComponent(OB_DEV_COMPONENT_ALG_PARAM_MANAGER, algParamManager);
@@ -98,8 +98,8 @@ void LiDARDevice::fetchDeviceInfo() {
 
 void LiDARDevice::initProperties() {
     const auto &sourcePortInfoList = enumInfo_->getSourcePortInfoList();
-    auto        vendorPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
-                                                  [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_NET_VENDOR; });
+    auto vendorPortInfoIter = std::find_if(sourcePortInfoList.begin(), sourcePortInfoList.end(),
+                                           [](const std::shared_ptr<const SourcePortInfo> &portInfo) { return portInfo->portType == SOURCE_PORT_NET_VENDOR; });
 
     if(vendorPortInfoIter == sourcePortInfoList.end()) {
         return;
@@ -167,7 +167,6 @@ void LiDARDevice::initProperties() {
     propertyServer->registerProperty(OB_PROP_IMU_STREAM_PORT_INT, "", "w", vendorPropertyAccessor);
     propertyServer->registerProperty(OB_PROP_LIDAR_IMU_FRAME_RATE_INT, "", "rw", vendorPropertyAccessor);
     propertyServer->registerProperty(OB_RAW_DATA_IMU_CALIB_PARAM, "", "r", vendorPropertyAccessor);
-    
 
     // register property server
     registerComponent(OB_DEV_COMPONENT_PROPERTY_SERVER, propertyServer, true);
@@ -330,9 +329,7 @@ void LiDARDevice::initSensorStreamProfile(std::shared_ptr<ISensor> sensor) {
                     defaultProfile = *it;
                 }
             })
-            CATCH_EXCEPTION_AND_EXECUTE({
-                LOG_ERROR("fetch LiDAR scan speed error!");
-            })
+            CATCH_EXCEPTION_AND_EXECUTE({ LOG_ERROR("fetch LiDAR scan speed error!"); })
             sensor->setStreamProfileList(profileList);
             sensor->updateDefaultStreamProfile(defaultProfile);
 

@@ -28,8 +28,8 @@ UsageEnvironment &operator<<(UsageEnvironment &env, const MediaSubsession &subse
     return env << subsession.mediumName() << "/" << subsession.codecName();
 }
 
-ObRTSPClient *ObRTSPClient::createNew(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback, int verbosityLevel,
-                                      portNumBits tunnelOverHTTPPortNum, int socketNumToServer) {
+ObRTSPClient *ObRTSPClient::createNew(std::shared_ptr<const StreamProfile> profile, UsageEnvironment &env, char const *rtspURL, MutableFrameCallback callback,
+                                      int verbosityLevel, portNumBits tunnelOverHTTPPortNum, int socketNumToServer) {
     return new ObRTSPClient(profile, env, rtspURL, callback, verbosityLevel, tunnelOverHTTPPortNum, socketNumToServer);
 }
 
@@ -129,7 +129,7 @@ void ObRTSPClient::cmdResponseHandlerDESCRIBE(RTSPClient *rtspClient, int result
 
             if(obRtspClient->mediaSession_ == NULL) {
                 obRtspClient->commandState_ = CMD_RESP_WITH_ERROR;
-                obRtspClient->errorMsg_     = utils::string::to_string()
+                obRtspClient->errorMsg_ = utils::string::to_string()
                                           << rtspClient->url() << ": Failed to create a MediaSession object from the SDP description: " << env.getResultMsg();
                 obRtspClient->commandCv_.notify_all();
                 break;
@@ -157,7 +157,7 @@ void ObRTSPClient::setupNextSubsession() {
         if(!curSubsession_->initiate()) {
             commandState_ = CMD_RESP_WITH_ERROR;
             errorMsg_     = utils::string::to_string() << "Failed to initiate the \"" << curSubsession_->mediumName() << "/" << curSubsession_->codecName()
-                                                   << "\" subsession: " << envir().getResultMsg() << "\n";
+                                                       << "\" subsession: " << envir().getResultMsg() << "\n";
             commandCv_.notify_all();
         }
         else {
@@ -189,7 +189,7 @@ void ObRTSPClient::cmdResponseHandlerSETUP(RTSPClient *rtspClient, int resultCod
             if(resultCode != 0) {
                 obRtspClient->commandState_ = CMD_RESP_WITH_ERROR;
                 obRtspClient->errorMsg_     = utils::string::to_string() << rtspClient->url() << ": Failed to set up the \"" << *subsession->mediumName() << "/"
-                                                                     << *subsession->codecName() << "\" subsession: " << resultString << "";
+                                                                         << *subsession->codecName() << "\" subsession: " << resultString << "";
                 obRtspClient->commandCv_.notify_all();
                 break;
             }
@@ -200,8 +200,8 @@ void ObRTSPClient::cmdResponseHandlerSETUP(RTSPClient *rtspClient, int resultCod
             if(subsession->sink == NULL) {
                 obRtspClient->commandState_ = CMD_RESP_WITH_ERROR;
                 obRtspClient->errorMsg_     = utils::string::to_string()
-                                          << rtspClient->url() << ": Failed to create a data sink for the \"" << *subsession->mediumName() << "/"
-                                          << *subsession->codecName() << "\" subsession: " << env.getResultMsg();
+                                              << rtspClient->url() << ": Failed to create a data sink for the \"" << *subsession->mediumName() << "/"
+                                              << *subsession->codecName() << "\" subsession: " << env.getResultMsg();
                 obRtspClient->commandCv_.notify_all();
                 break;
             }
@@ -242,7 +242,7 @@ void ObRTSPClient::cmdResponseHandlerPLAY(RTSPClient *rtspClient, int resultCode
         if(resultCode != 0) {
             obRtspClient->commandState_ = CMD_RESP_WITH_ERROR;
             obRtspClient->errorMsg_     = utils::string::to_string() << "[URL:\"" << rtspClient->url() << "\"]: "
-                                                                 << "Failed to start playing session: " << resultString << "\n";
+                                                                     << "Failed to start playing session: " << resultString << "\n";
             obRtspClient->commandCv_.notify_all();
         }
         else {
@@ -362,4 +362,3 @@ void ObRTSPClient::streamStopEventHandler(void *clientData) {
 }
 
 }  // namespace libobsensor
-

@@ -21,7 +21,7 @@ typedef struct MDNSDeviceInfo {
     std::string ip    = "unknown";
     std::string sn    = "unknown";
     std::string model = "unknown";
-    std::string mac   = "unknown"; // unique
+    std::string mac   = "unknown";  // unique
     uint16_t    port  = 0;
     uint32_t    pid   = 0;
 
@@ -85,11 +85,11 @@ private:
     MDNSDeviceInfo parseDeviceInfo(const MDNSAckData &ack);
 
 private:
-    std::vector<MDNSDeviceInfo>         devInfoList_;
-    std::mutex                          devInfoListMtx_;
-    std::mutex                          queryMtx_;
-    std::vector<MDNSSocketInfo>         cachedSockInfos_;
-    std::mutex                          cacheMtx_;
+    std::vector<MDNSDeviceInfo> devInfoList_;
+    std::mutex                  devInfoListMtx_;
+    std::mutex                  queryMtx_;
+    std::vector<MDNSSocketInfo> cachedSockInfos_;
+    std::mutex                  cacheMtx_;
 
     static std::mutex                   instanceMutex_;
     static std::weak_ptr<MDNSDiscovery> instanceWeakPtr_;

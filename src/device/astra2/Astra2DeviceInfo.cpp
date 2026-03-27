@@ -61,4 +61,3 @@ std::vector<std::shared_ptr<IDeviceEnumInfo>> Astra2DeviceInfo::pickDevices(cons
 #endif
 
 }  // namespace libobsensor
-

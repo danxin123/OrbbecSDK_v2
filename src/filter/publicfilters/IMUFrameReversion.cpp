@@ -62,4 +62,3 @@ std::shared_ptr<Frame> IMUFrameReversion::process(std::shared_ptr<const Frame> f
 }
 
 }  // namespace libobsensor
-

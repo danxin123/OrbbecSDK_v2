@@ -22,4 +22,3 @@ const std::vector<OBD2CProfile> &FemtoBoltAlgParamManager::getD2CProfileList() c
 }
 
 }  // namespace libobsensor
-

@@ -19,7 +19,7 @@
 namespace libobsensor {
 template <typename T> class G330MetadataTimestampParser : public IFrameMetadataParser {
 public:
-    G330MetadataTimestampParser(){};
+    G330MetadataTimestampParser() {};
     virtual ~G330MetadataTimestampParser() noexcept override = default;
 
     int64_t getValue(const uint8_t *metadata, size_t dataSize) override {
@@ -40,8 +40,8 @@ public:
 // for depth and ir sensor
 class G330MetadataSensorTimestampParser : public IFrameMetadataParser {
 public:
-    G330MetadataSensorTimestampParser(){};
-    explicit G330MetadataSensorTimestampParser(FrameMetadataModifier exp_to_usec) : exp_to_usec_(exp_to_usec){};
+    G330MetadataSensorTimestampParser() {};
+    explicit G330MetadataSensorTimestampParser(FrameMetadataModifier exp_to_usec) : exp_to_usec_(exp_to_usec) {};
     virtual ~G330MetadataSensorTimestampParser() noexcept override = default;
 
     int64_t getValue(const uint8_t *metadata, size_t dataSize) override {
@@ -65,8 +65,8 @@ private:
 
 class G330ColorMetadataSensorTimestampParser : public IFrameMetadataParser {
 public:
-    G330ColorMetadataSensorTimestampParser(){};
-    explicit G330ColorMetadataSensorTimestampParser(FrameMetadataModifier exp_to_usec) : exp_to_usec_(exp_to_usec){};
+    G330ColorMetadataSensorTimestampParser() {};
+    explicit G330ColorMetadataSensorTimestampParser(FrameMetadataModifier exp_to_usec) : exp_to_usec_(exp_to_usec) {};
     virtual ~G330ColorMetadataSensorTimestampParser() noexcept override = default;
 
     int64_t getValue(const uint8_t *metadata, size_t dataSize) override {
@@ -90,7 +90,7 @@ private:
 
 class G330ScrMetadataParserBase : public IFrameMetadataParser {
 public:
-    G330ScrMetadataParserBase(){};
+    G330ScrMetadataParserBase() {};
     virtual ~G330ScrMetadataParserBase() noexcept override = default;
 
     bool isSupported(const uint8_t *metadata, size_t dataSize) override {
@@ -144,7 +144,7 @@ public:
 
         auto calculatedTimestamp = G330PayloadHeadMetadataTimestampParser::getValue(metadata, dataSize);
         // get frame offset,unit 100us
-        auto    standardUvcMetadata = *(reinterpret_cast<const StandardUvcFramePayloadHeader *>(metadata));
+        auto     standardUvcMetadata = *(reinterpret_cast<const StandardUvcFramePayloadHeader *>(metadata));
         uint16_t rawValue            = (((standardUvcMetadata.scrSourceClock[1] & 0xF8) >> 3) | ((standardUvcMetadata.scrSourceClock[2] & 0x7F) << 5));
         int32_t  frameOffset         = 0;
         // 12bit offset value check sign bit
@@ -394,7 +394,7 @@ public:
         }
 
         auto propertyServer = device_->getPropertyServer();
-        if (propertyServer) {
+        if(propertyServer) {
             propertyServer_ = propertyServer.get();
         }
         if(propertyServer_ && propertyServer_->isPropertySupported(propertyId_, PROP_OP_READ, PROP_ACCESS_INTERNAL)) {
@@ -405,7 +405,7 @@ public:
                     if(propertyId != static_cast<uint32_t>(propertyId_)) {
                         return;
                     }
-                    auto propertyItem   = propertyServer_->getPropertyItem(propertyId_, PROP_ACCESS_USER);
+                    auto propertyItem = propertyServer_->getPropertyItem(propertyId_, PROP_ACCESS_USER);
                     if(propertyItem.type == OB_STRUCT_PROPERTY) {
                         data_ = parseStructurePropertyValue(type, propertyId, data);
                     }
@@ -543,7 +543,7 @@ private:
 
     FrameMetadataModifier modifier_;
 
-    std::atomic<bool> initPropertyValue_;
+    std::atomic<bool>                initPropertyValue_;
     std::shared_ptr<IPropertyServer> propertyServer_;
 };
 

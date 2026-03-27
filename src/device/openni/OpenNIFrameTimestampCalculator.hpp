@@ -19,7 +19,7 @@ public:
 
 private:
     IDevice *device_;
-    
+
     uint64_t deviceTimeFreq_;
     uint64_t frameTimeFreq_;
 };

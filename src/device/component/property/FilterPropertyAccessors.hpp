@@ -21,4 +21,3 @@ private:
     std::shared_ptr<IFilter> filter_;
 };
 }  // namespace libobsensor
-

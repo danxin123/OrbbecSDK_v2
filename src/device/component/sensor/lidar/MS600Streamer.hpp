@@ -33,7 +33,7 @@ private:
     void parseLiDARData(std::shared_ptr<Frame> frame);
 
 private:
-    IDevice *                            owner_;
+    IDevice                             *owner_;
     std::shared_ptr<IDataStreamPort>     backend_;
     std::mutex                           mutex_;
     std::shared_ptr<const StreamProfile> profile_;

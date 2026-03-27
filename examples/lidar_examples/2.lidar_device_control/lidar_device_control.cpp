@@ -186,7 +186,7 @@ void printfPropertyList(std::shared_ptr<ob::Device> device, const std::vector<OB
             try {
                 floatRange = device->getFloatPropertyRange(propertyItem.id);
                 strRange   = "Float value(min:" + std::to_string(floatRange.min) + ", max:" + std::to_string(floatRange.max)
-                           + ", step:" + std::to_string(floatRange.step) + ")";
+                             + ", step:" + std::to_string(floatRange.step) + ")";
             }
             catch(...) {
                 std::cout << "get float property range failed." << std::endl;
