@@ -92,6 +92,23 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
     return result;
 }
 
+static std::string replaceExtension(const std::string &path, const std::string &newExt) {
+    auto dot = path.rfind('.');
+    if(dot != std::string::npos) {
+        return path.substr(0, dot) + newExt;
+    }
+    return path + newExt;
+}
+
+std::string saveFrame(std::shared_ptr<const ob::Frame> frame, const std::string &path) {
+    if(!frame) return "";
+    std::string name = replaceExtension(path, ".png");
+    if(ob::FrameSaveHelper::saveFrameToPng(name.c_str(), frame)) {
+        return name;
+    }
+    return "";
+}
+
 const std::string defaultKeyMapPrompt = "'Esc': Exit Window, '?': Show Key Map";
 CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMode arrangeMode)
     : name_(std::move(name)),

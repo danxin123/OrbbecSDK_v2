@@ -107,6 +107,35 @@ OB_EXPORT bool ob_calibration_2d_to_2d(const ob_calibration_param calibration_pa
                                        const ob_sensor_type source_sensor_type, const ob_sensor_type target_sensor_type, ob_point2f *target_point2f,
                                        ob_error **error);
 /**
+ * @brief Save a video frame as a PNG file.
+ *
+ * Supported frame types: Depth (Y16/Z16 → 16-bit grayscale PNG), IR (Y8 → 8-bit grayscale PNG, Y16 → 16-bit grayscale PNG),
+ * Color (RGB/BGR/MJPG/UYVY/YUYV → 8-bit RGB PNG). Format conversion is handled internally.
+ *
+ * @param[in] file_name Output file path (should end with .png)
+ * @param[in] frame The video frame to save
+ * @param[out] error Pointer to an error object that will be set if an error occurs.
+ *
+ * @return bool true on success
+ */
+OB_EXPORT bool ob_frame_save_to_png(const char *file_name, ob_frame *frame, ob_error **error);
+
+/**
+ * @brief Save a color video frame as a JPEG file.
+ *
+ * Supported frame types: Color (RGB/BGR/MJPG/UYVY/YUYV), IR (Y8).
+ * Format conversion is handled internally.
+ *
+ * @param[in] file_name Output file path (should end with .jpg or .jpeg)
+ * @param[in] frame The video frame to save
+ * @param[in] quality JPEG quality (1-100, recommended: 90-95)
+ * @param[out] error Pointer to an error object that will be set if an error occurs.
+ *
+ * @return bool true on success
+ */
+OB_EXPORT bool ob_frame_save_to_jpeg(const char *file_name, ob_frame *frame, int quality, ob_error **error);
+
+/**
  * @brief save point cloud to ply file.
  *
  * @param[in] file_name Point cloud save path

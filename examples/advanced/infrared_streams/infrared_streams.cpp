@@ -139,28 +139,12 @@ int main() try {
                 auto typeName = ob::TypeHelper::convertOBFrameTypeToString(type);
                 auto filename = std::string("ir_") + typeName + "_" + std::to_string(frameIdx) + ".png";
 
-                auto w = vf->getWidth();
-                auto h = vf->getHeight();
-
-                // Most IR frames are Y8 or Y16
-                cv::Mat mat;
-                auto    format = vf->getFormat();
-                if(format == OB_FORMAT_Y8) {
-                    mat = cv::Mat(h, w, CV_8UC1, vf->getData());
-                }
-                else if(format == OB_FORMAT_Y16 || format == OB_FORMAT_RLE) {
-                    mat = cv::Mat(h, w, CV_16UC1, vf->getData());
-                    cv::Mat mat8;
-                    mat.convertTo(mat8, CV_8UC1, 255.0 / 4096.0);
-                    mat = mat8;
-                }
-                else {
+                auto saved = ob_smpl::saveFrame(frame, filename);
+                if(saved.empty()) {
                     win.addLog("Unsupported IR format for save");
                     continue;
                 }
-
-                cv::imwrite(filename, mat);
-                win.addLog("Saved: " + filename);
+                win.addLog("Saved: " + saved);
             }
         }
     }

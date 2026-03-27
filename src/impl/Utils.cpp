@@ -10,6 +10,7 @@
 #include "FilterFactory.hpp"
 #include "ImplTypes.hpp"
 #include "utils/PointCloudSaveUtil.hpp"
+#include "utils/FrameSaveUtil.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -239,6 +240,20 @@ void transformation_depth_to_rgbd_pointcloud(ob_xy_tables *xy_tables, const void
     return libobsensor::CoordinateUtil::transformationDepthToRGBDPointCloud(xy_tables, depth_image_data, color_image_data, pointcloud_data);
 }
 HANDLE_EXCEPTIONS_NO_RETURN(xy_tables, depth_image_data, pointcloud_data)
+
+bool ob_frame_save_to_png(const char *file_name, ob_frame *frame, ob_error **error) BEGIN_API_CALL {
+    VALIDATE_NOT_NULL(file_name);
+    VALIDATE_NOT_NULL(frame);
+    return libobsensor::FrameSaveUtil::saveFrameToPng(file_name, frame->frame);
+}
+HANDLE_EXCEPTIONS_AND_RETURN(false, file_name, frame)
+
+bool ob_frame_save_to_jpeg(const char *file_name, ob_frame *frame, int quality, ob_error **error) BEGIN_API_CALL {
+    VALIDATE_NOT_NULL(file_name);
+    VALIDATE_NOT_NULL(frame);
+    return libobsensor::FrameSaveUtil::saveFrameToJpeg(file_name, frame->frame, quality);
+}
+HANDLE_EXCEPTIONS_AND_RETURN(false, file_name, frame, quality)
 
 bool ob_save_pointcloud_to_ply(const char *file_name, ob_frame *frame, bool save_binary, bool use_mesh, float mesh_threshold, ob_error **error) BEGIN_API_CALL {
     VALIDATE_NOT_NULL(file_name);

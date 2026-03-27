@@ -18,6 +18,10 @@ target_include_directories(shared PUBLIC ${OB_PUBLIC_HEADERS_DIR} ${CMAKE_CURREN
 add_subdirectory(${OB_3RDPARTY_DIR}/tinyxml2 tinyxml2)
 target_link_libraries(shared PUBLIC tinyxml2::tinyxml2)
 
+# libjpeg-turbo headers needed for FrameSaveUtil (JPEG encoding).
+# The actual library is linked via the filter module; we only need the headers here.
+target_include_directories(shared PRIVATE ${OB_3RDPARTY_DIR}/libjpeg/src)
+
 add_subdirectory(environment)
 target_link_libraries(shared PUBLIC ob::env_config_rc ob::core)
 

@@ -166,6 +166,52 @@ public:
     }
 };
 
+class FrameSaveHelper {
+public:
+    /**
+     * @brief Save a video frame as a PNG file.
+     *
+     * Supported frame types:
+     * - Depth (Y16/Z16) → 16-bit grayscale PNG (lossless, preserves raw depth values)
+     * - IR (Y8) → 8-bit grayscale PNG, IR (Y16) → 16-bit grayscale PNG
+     * - Color (RGB/BGR/MJPG/UYVY/YUYV) → 8-bit RGB PNG
+     *
+     * Format conversion is handled internally.
+     *
+     * @param[in] fileName Output file path (should end with .png)
+     * @param[in] frame The video frame to save
+     *
+     * @return bool true on success
+     */
+    static bool saveFrameToPng(const char *fileName, std::shared_ptr<const ob::Frame> frame) {
+        ob_error *error       = NULL;
+        auto      unConstImpl = const_cast<ob_frame *>(frame->getImpl());
+        bool      result      = ob_frame_save_to_png(fileName, unConstImpl, &error);
+        Error::handle(&error);
+        return result;
+    }
+
+    /**
+     * @brief Save a video frame as a JPEG file.
+     *
+     * Supported frame types: Color (RGB/BGR/MJPG/UYVY/YUYV), IR (Y8).
+     * Format conversion is handled internally.
+     *
+     * @param[in] fileName Output file path (should end with .jpg or .jpeg)
+     * @param[in] frame The video frame to save
+     * @param[in] quality JPEG quality (1-100, recommended: 90-95)
+     *
+     * @return bool true on success
+     */
+    static bool saveFrameToJpeg(const char *fileName, std::shared_ptr<const ob::Frame> frame, int quality = 95) {
+        ob_error *error       = NULL;
+        auto      unConstImpl = const_cast<ob_frame *>(frame->getImpl());
+        bool      result      = ob_frame_save_to_jpeg(fileName, unConstImpl, quality, &error);
+        Error::handle(&error);
+        return result;
+    }
+};
+
 class PointCloudHelper {
 public:
     /**

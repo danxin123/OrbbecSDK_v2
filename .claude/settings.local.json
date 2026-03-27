@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /c/Users/xcy50/workspaces/orbbec_forks/OrbbecSDK_v2/CMake*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -n \"^[[:space:]]*[a-zA-Z_].*_;[[:space:]]*$\" /c/Users/xcy50/workspaces/orbbec_forks/OrbbecSDK_v2/src/device/component/monitor/DeviceMonitor.hpp)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(clang-format --version)",
+      "Bash(pip install:*)",
+      "Bash(xargs clang-format:*)",
+      "Bash(git diff:*)",
+      "Bash(find tools:*)",
+      "Bash(cmake -S . -B build -DOB_BUILD_TESTS=ON -DOB_BUILD_EXAMPLES=OFF -DOB_BUILD_TOOLS=OFF -DOB_BUILD_DOCS=OFF)",
+      "Bash(cmake --build build --config Release --parallel 4)",
+      "Bash(cmake --install build --config Release --prefix build/install)",
+      "Bash(./bin/ob_nohw_full_test.exe --gtest_output=xml:nohw_report.xml)",
+      "Bash(git config:*)"
+    ]
+  }
+}
