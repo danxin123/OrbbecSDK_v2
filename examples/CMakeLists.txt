@@ -6,24 +6,26 @@ cmake_minimum_required(VERSION 3.10)
 file(GLOB subdirectories RELATIVE ${CMAKE_CURRENT_LIST_DIR} "*")
 
 # dependecies
-if(NOT DEFINED OpenCV_DIR OR OpenCV_DIR STREQUAL "")
-    set(_opencv_candidate_dirs
-        "D:/tools/opencv/build/x64/vc16/lib"
-        "D:/tools/opencv/build"
-    )
+# if(NOT DEFINED OpenCV_DIR OR OpenCV_DIR STREQUAL "")
+#     set(_opencv_candidate_dirs
+#         "D:/tools/opencv/build/x64/vc16/lib"
+#         "D:/tools/opencv/build"
+#     )
 
-    foreach(_opencv_dir IN LISTS _opencv_candidate_dirs)
-        if(EXISTS "${_opencv_dir}/OpenCVConfig.cmake")
-            set(OpenCV_DIR "${_opencv_dir}" CACHE PATH "Path to OpenCVConfig.cmake" FORCE)
-            message(STATUS "OpenCV_DIR auto-set to: ${OpenCV_DIR}")
-            break()
-        endif()
-    endforeach()
-endif()
+#     foreach(_opencv_dir IN LISTS _opencv_candidate_dirs)
+#         if(EXISTS "${_opencv_dir}/OpenCVConfig.cmake")
+#             set(OpenCV_DIR "${_opencv_dir}" CACHE PATH "Path to OpenCVConfig.cmake" FORCE)
+#             message(STATUS "OpenCV_DIR auto-set to: ${OpenCV_DIR}")
+#             break()
+#         endif()
+#     endforeach()
+# endif()
 
-find_package(OpenCV QUIET)
+find_package(OpenCV  QUIET)
 if(NOT OpenCV_FOUND)
     message(STATUS "OpenCV not found. Examples will run in console-only mode (no GUI).")
+else()
+    message(STATUS "OpenCV found: ${OpenCV_VERSION} at ${OpenCV_DIR}")
 endif()
 
 # utils

@@ -814,11 +814,11 @@ public:
 
 public:
     // The following interfaces are deprecated and are retained here for compatibility purposes.
-    OBAccelValue value() {
+    OBAccelValue value() const {
         return getValue();
     }
 
-    float temperature() {
+    float temperature() const {
         return getTemperature();
     }
 };
@@ -861,11 +861,11 @@ public:
 
 public:
     // The following interfaces are deprecated and are retained here for compatibility purposes.
-    OBGyroValue value() {
+    OBGyroValue value() const {
         return getValue();
     }
 
-    float temperature() {
+    float temperature() const {
         return getTemperature();
     }
 };

@@ -165,12 +165,12 @@ void CVWindow::printFrameInfo(const std::shared_ptr<const ob::Frame> &frame) {
     }
     else if(type == OB_FRAME_ACCEL) {
         auto af    = frame->as<const ob::AccelFrame>();
-        auto value = af->value();
+        auto value = af->getValue();
         oss << " ax=" << std::fixed << std::setprecision(2) << value.x << " ay=" << value.y << " az=" << value.z;
     }
     else if(type == OB_FRAME_GYRO) {
         auto gf    = frame->as<const ob::GyroFrame>();
-        auto value = gf->value();
+        auto value = gf->getValue();
         oss << " gx=" << std::fixed << std::setprecision(2) << value.x << " gy=" << value.y << " gz=" << value.z;
     }
 
