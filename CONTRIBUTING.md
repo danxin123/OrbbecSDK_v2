@@ -1,5 +1,15 @@
 # Contributing Guide
 
+## Coding Standards
+
+All code must follow the project coding standards documented in
+[docs/coding-standards.md](docs/coding-standards.md). Key points:
+
+- Run `clang-format` before committing (or use `pre-commit install` to automate it).
+- Follow the naming conventions: PascalCase classes, camelCase methods, `_` suffix members.
+- C++11 only — no C++14/17/20 features.
+- Use the SDK exception hierarchy for error handling.
+
 ## Testing Requirements For API Changes
 
 Any pull request that adds, removes, or changes API behavior must include related
@@ -73,8 +83,12 @@ int test_TC_CPP_XXX_002_hw_example() {
 
 ## Code Review Checklist
 
+- [ ] Code is `clang-format` clean (CI will verify this)
+- [ ] No new clang-tidy warnings introduced
+- [ ] Naming follows conventions (see [coding standards](docs/coding-standards.md))
 - [ ] API change has corresponding automated tests, or waiver is documented
 - [ ] Test names are aligned with TC naming convention
 - [ ] No-hardware validation path is covered where feasible
 - [ ] New tests are wired into CI execution path
 - [ ] Risk and rollback impact are described for behavior changes
+- [ ] New public API has Doxygen comments (`@brief`, `@param`, `@return`)
