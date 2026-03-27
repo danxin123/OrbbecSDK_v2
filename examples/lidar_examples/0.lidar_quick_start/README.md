@@ -1,63 +1,46 @@
-# C++ Sample: 0.lidar_quik_start
+# LiDAR Quick Start
 
-## Overview
+This is the fastest LiDAR example to run.
+It starts the default LiDAR stream and saves the current point cloud to a PLY file when you press a key.
 
-Use the SDK interface to quickly obtain LiDAR point cloud data and save it to a PLY file when triggered by user input.
+## When To Use It
 
-### Knowledge
+- verify that the LiDAR can stream correctly
+- save a quick sample point cloud without building a full workflow
+- check the generated PLY file in a point-cloud viewer
 
-- **Pipeline** is a data stream processing pipeline that provides multi-stream configuration, switching, frame aggregation, and frame synchronization functions
-- **FrameSet** is a combination of different types of frames
-- **LiDAR Point Cloud** contains 3D spatial coordinate data collected by the LiDAR sensor
+## Prerequisites
 
-## Code Overview
+- Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)
+- A supported Orbbec LiDAR device must be connected
 
-1. **Initialize pipeline and start LiDAR stream**
-   
-    ```cpp
-    ob::Pipeline pipe;
-    pipe.start();
-    ```
+## Build & Run
 
-2. **Wait for user input to trigger point cloud capture**
-
-    ```cpp
-    auto key = ob_smpl::waitForKeyPressed();
-    if(key == 'r' || key == 'R') {
-        // Capture point cloud
-    }
-    ```
-
-3. **Capture and save LiDAR point cloud data**
-
-    ```cpp
-    auto frameset = pipe.waitForFrameset();
-    auto frame = frameset->getFrame(OB_FRAME_LIDAR_POINTS);
-    ob::PointCloudHelper::savePointcloudToPly("LiDARPoints.ply", frame, false, false, 50);
-    ```
-
-4. **Stop the pipeline**
-
-    ```cpp
-    pipe.stop();
-    ```
-
-## Run Sample
-
-- Press **R** or **r** key to capture and save LiDAR point cloud data to "LiDARPoints.ply" file
-- Press **ESC** key to exit the program
-
-### Result
-
-The program will generate "LiDARPoints.ply" file containing the 3D point cloud data when the R key is pressed. The file can be opened with 3D point cloud visualization software.
-
-```shell
-LiDAR stream is started!
-Press R or r to create LiDAR PointCloud and save to ply file!
-Press ESC to exit!
-Save LiDAR PointCloud to ply file, this will take some time...
-LiDARPoints.ply Saved
-Save LiDAR PointCloud to ply file, this will take some time...
-LiDARPoints.ply Saved
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_lidar_quick_start
 ```
 
+```bash
+.\build\win_x64\bin\ob_lidar_quick_start.exe     # Windows
+./build/linux_x86_64/bin/ob_lidar_quick_start    # Linux x86_64
+./build/linux_arm64/bin/ob_lidar_quick_start     # Linux ARM64
+./build/macOS/bin/ob_lidar_quick_start           # macOS
+```
+
+## Controls
+
+| Key | Action |
+| --- | --- |
+| `R` | Capture the current LiDAR point cloud and save it to `LiDARPoints.ply` |
+| `Esc` | Exit |
+
+## Output
+
+- The sample saves `LiDARPoints.ply` in the current working directory.
+- The file can be opened with common point-cloud visualization tools.
+
+## Related Examples
+
+- [../1.lidar_stream/README.md](../1.lidar_stream/README.md) - inspect live LiDAR and IMU data
+- [../3.lidar_record/README.md](../3.lidar_record/README.md) - record LiDAR data to a `.bag` file

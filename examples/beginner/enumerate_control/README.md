@@ -1,45 +1,55 @@
 # Enumerate & Control
 
-Browse connected **devices**, their **sensors**, **stream profiles**, and **get/set device properties** — all from the terminal.
+This terminal example helps you inspect connected devices, available sensors, stream profiles, and device properties.
+Use it as the first troubleshooting tool when you need to confirm what the SDK can see from the hardware.
 
-## Features
+## When To Use It
 
-- List all connected Orbbec devices with PID, SN, and connection type
-- Drill down into sensors → stream profiles (format, resolution, FPS)
-- View and modify device properties (exposure, gain, laser power, etc.)
+- check whether the device is detected correctly
+- inspect supported sensors and stream profiles
+- read or update device properties from the terminal
+- confirm property ranges and read/write permissions
 
-## No OpenCV Required
+## Prerequisites
 
-This example is purely CLI-based with no external dependencies.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- No OpenCV or additional GUI dependency is required
 
-## Usage
+## Build & Run
 
-```
-=== Enumerate & Control ===
-  0. Gemini 2 (PID: 0x0670, SN: AY3D41100B3, USB)
-
-Select device index, or 'q' to quit: 0
-
-  1. Enumerate sensors & stream profiles
-  2. Get/Set device properties
-  b. Back to device selection
-  Choice: 2
-
---- Properties (42) ---
-  0. LDP_BOOL [R/W] Bool(0/1)
-  1. LASER_BOOL [R/W] Bool(0/1)
-  ...
-
-Usage: <index> get | <index> set <value> | '?' to list | 'b' to go back
-> 1 get
-  LASER_BOOL = 1
-> 1 set 0
-  Set LASER_BOOL = 0
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_enumerate_control
 ```
 
-## Key Concepts
+```bash
+.\build\win_x64\bin\ob_enumerate_control.exe     # Windows
+./build/linux_x86_64/bin/ob_enumerate_control    # Linux x86_64
+./build/linux_arm64/bin/ob_enumerate_control     # Linux ARM64
+./build/macOS/bin/ob_enumerate_control           # macOS
+```
 
-- **`ob::Context::queryDeviceList()`** — Discover connected devices
-- **`Device::getSensorList()`** → **`Sensor::getStreamProfileList()`** — Browse capabilities
-- **`Device::getIntProperty()` / `setIntProperty()`** — Read/write device parameters
-- **`OBPropertyItem`** — Property descriptor with name, type, permission, and range
+## How To Use It
+
+1. Start the program and select a device index, or enter `q` to quit from the top-level device menu.
+2. Choose `1` to inspect sensors and stream profiles, or `2` to inspect and modify device properties.
+3. In the sensor menu, enter a sensor index to print its stream profiles, or enter `b` to go back.
+4. In the property menu, use the commands below, or enter `b` to go back.
+
+Property commands:
+
+- `?` - list all available properties
+- `<index> get` - read the current property value
+- `<index> set <value>` - write a new property value
+- `b` - go back to the previous menu
+
+## What You Will Get
+
+- device name, PID, serial number, and connection type
+- sensor list and available stream profiles
+- property type, current value, range, and permission information
+
+## Related Examples
+
+- [../quick_start/README.md](../quick_start/README.md) - verify basic streaming first
+- [../../advanced/camera_params/README.md](../../advanced/camera_params/README.md) - inspect calibration data after device discovery

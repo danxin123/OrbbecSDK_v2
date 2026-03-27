@@ -1,133 +1,54 @@
-# C++ Sample: 4.lidar_playback
+# LiDAR Playback
 
-## Overview
+This sample replays a recorded LiDAR `.bag` file and prints frame information while the data is being played back.
+Use it when you want to debug with recorded data instead of a live device.
 
-This sample demonstrates how to play back recorded LiDAR and IMU sensor data from bag files, providing full control over playback including pause/resume functionality and automatic replay capabilities.
+## When To Use It
 
-### Knowledge
+- validate a recorded LiDAR dataset
+- debug algorithms with repeatable offline input
+- pause and resume playback during inspection
+- compare live behavior with offline replay behavior
 
-- **PlaybackDevice** handles reading and streaming data from recorded bag files
-- **Playback Status** tracks the current state of playback (playing, paused, stopped)
-- **Frame Callback** processes replayed frames similarly to live data
-- **Automatic Replay** enables continuous playback loops
+## Prerequisites
 
-## Code overview
+- Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)
+- A valid `.bag` file recorded from a LiDAR workflow
 
-1. **Initialize playback device with user-specified bag file**
+## Build & Run
 
-    ```cpp
-    std::string filePath;
-    getRosbagPath(filePath);
-    
-    auto playback = std::make_shared<ob::PlaybackDevice>(filePath);
-    auto pipe = std::make_shared<ob::Pipeline>(playback);
-    ```
-
-2. **Configure playback with automatic replay capability**
-
-    ```cpp
-    playback->setPlaybackStatusChangeCallback([&](OBPlaybackStatus status) {
-        playStatus = status;
-        replayCv.notify_all();
-    });
-    ```
-
-3. **Enable all recorded streams and start playback**
-
-    ```cpp
-    auto sensorList = playback->getSensorList();
-    for(uint32_t i = 0; i < sensorList->getCount(); i++) {
-        auto sensorType = sensorList->getSensorType(i);
-        config->enableStream(sensorType);
-    }
-    
-    pipe->start(config, frameCallback);
-    ```
-
-4. **Frame monitoring callback with playback control**
-
-    ```cpp
-    auto frameCallback = [&](std::shared_ptr<ob::FrameSet> frameSet) {
-        if(frameCount % 20 == 0) {
-            std::cout << "frame index: " << frame->getIndex() 
-                      << ", format: " << ob::TypeHelper::convertOBFormatTypeToString(frame->getFormat()) << std::endl;
-        }
-        frameCount++;
-    };
-    ```
-
-5. **Interactive playback control loop**
-
-    ```cpp
-    while(true) {
-        auto key = ob_smpl::waitForKeyPressed(1);
-        if(key == ESC_KEY) {
-            break;  // Exit playback
-        }
-        else if(key == 'p' || key == 'P') {
-            // Toggle pause/resume playback
-            if(playback->getPlaybackStatus() == OB_PLAYBACK_PLAYING) {
-                playback->pause();
-            } else {
-                playback->resume();
-            }
-        }
-    }
-    ```
-
-## Run Sample
-
-### Operation Instructions
-
-1. **Start Program**: Enter the path to a valid `.bag` file when prompted
-2. **Playback Information**: Program displays file duration and starts playback
-3. **Control Options**:
-   - Press **P** to pause/resume playback
-   - Press **ESC** to stop playback and exit
-   - When playback completes, it automatically restarts from the beginning
-
-### Playback Features
-
-- **File Validation**: Ensures provided file has correct `.bag` extension
-- **Real-time Monitoring**: Displays frame information every 20 frames during playback
-- **Seamless Looping**: Automatically restarts when playback reaches end
-- **Status Awareness**: Tracks and responds to playback state changes
-
-### Result
-
-The program provides a complete playback solution that:
-- Recreates the original sensor data stream with timing fidelity
-- Maintains frame metadata including indices, timestamps, and formats
-- Offers interactive control for analysis and debugging
-- Supports continuous operation for testing and demonstration purposes
-
-This enables thorough analysis of recorded sensor data with the same processing pipeline used for live data, making it ideal for algorithm development and data validation.
-
-```shell
-Please input the path of the Rosbag file (.bag) to playback:
-Path: LiDAR
-Invalid file format. Please provide a .bag file.
-
-Please input the path of the Rosbag file (.bag) to playback:
-Path: LiDAR.bag
-Playback file confirmed: LiDAR.bag
-
-Duration: 5669
-frame index: 2, tsp: 1758807585910889, format: ACCEL
-frame index: 2, tsp: 1758807585910889, format: GYRO
-frame index: 22, tsp: 1758807586330468, format: ACCEL
-frame index: 22, tsp: 1758807586330468, format: GYRO
-frame index: 9, tsp: 1758807586336156, format: LIDAR_SPHERE_POINT
-frame index: 42, tsp: 1758807586750593, format: ACCEL
-frame index: 42, tsp: 1758807586750593, format: GYRO
-Playback paused
-Playback resumed
-frame index: 130, tsp: 1758807588598443, format: ACCEL
-frame index: 130, tsp: 1758807588598443, format: GYRO
-frame index: 150, tsp: 1758807589018829, format: ACCEL
-frame index: 150, tsp: 1758807589018829, format: GYRO
-frame index: 71, tsp: 1758807589436271, format: LIDAR_SPHERE_POINT
-Replay monitor thread exists
-exit
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_lidar_playback
 ```
 
+```bash
+.\build\win_x64\bin\ob_lidar_playback.exe     # Windows
+./build/linux_x86_64/bin/ob_lidar_playback    # Linux x86_64
+./build/linux_arm64/bin/ob_lidar_playback     # Linux ARM64
+./build/macOS/bin/ob_lidar_playback           # macOS
+```
+
+## Controls
+
+| Key | Action |
+| --- | --- |
+| `P` | Pause or resume playback |
+| `Esc` | Stop playback and exit |
+
+## How To Use It
+
+1. Start the program.
+2. Enter the path to a `.bag` file.
+3. Watch the terminal output for duration, frame index, timestamp, and frame format.
+4. Use `P` to pause or resume.
+5. Use `Esc` to exit.
+
+## Notes
+
+- The sample validates the `.bag` suffix before playback starts.
+- When playback reaches the end, it automatically restarts from the beginning.
+
+## Related Examples
+
+- [../3.lidar_record/README.md](../3.lidar_record/README.md) - create the dataset that this sample plays back

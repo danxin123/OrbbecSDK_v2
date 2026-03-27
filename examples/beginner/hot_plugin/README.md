@@ -1,74 +1,48 @@
-﻿# Hot Plugin
+# Hot Plug
 
-## Overview
+This example demonstrates how to detect device disconnect and reconnect events.
+It is useful when your application must respond to users unplugging or reconnecting a camera while the program is running.
 
-Use SDK to handle the settings of device unplug callback and process the acquired code stream after unplugging
+## When To Use It
 
-### Knowledge
+- test device hot-plug behavior
+- verify that the SDK callback is triggered on disconnect and reconnect
+- build applications that must survive cable unplug and device reboot events
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions.
+## Prerequisites
 
-Device is a class that can be used to get device information, parameters, and a list of contained sensors.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- GMSL devices such as Gemini 335Lg do not support hot plugging
 
-Sensor can be used to obtain different components of the camera and the stream of the component, for example, RGB, IR, Depth stream can be obtained through the RGB, IR, Depth sensor.
+## Build & Run
 
-### Attention
-
-*The GMSL devices (such as Gemini335Lg) do not support hot plugging.*
-
-## code overview
-
-1. Register device callback and execute relevant functions during device unplugging and unplugging
-
-    ```cpp
-        auto id = ctx.registerDeviceChangedCallback( []( std::shared_ptr< ob::DeviceList > removedList, std::shared_ptr< ob::DeviceList > addedList ) {
-                DeviceDisconnectCallback( removedList );
-                DeviceConnectCallback( addedList );
-            } );
-    ```
-
-2. Trigger the callback function to print relevant information
-
-    ```cpp
-        void printDeviceList(const std::string &prompt, std::shared_ptr<ob::DeviceList> deviceList) {
-            auto count = deviceList->getCount();
-            if(count == 0) {
-                return;
-            }
-            std::cout << count << " device(s) " << prompt << ": " << std::endl;
-            for(uint32_t i = 0; i < count; i++) {
-                auto uid          = deviceList->getUid(i);
-                auto vid          = deviceList->getVid(i);
-                auto pid          = deviceList->getPid(i);
-                auto serialNumber = deviceList->getSerialNumber(i);
-                auto connection   = deviceList->getConnectionType(i);
-                std::cout << " - uid: " << uid << ", vid: 0x" << std::hex << std::setfill('0') << std::setw(4) << vid << ", pid: 0x" << pid
-                            << ", serial number: " << serialNumber << ", connection: " << connection << std::endl;
-            }
-            std::cout << std::endl;
-        }
-    ```
-
-3. Restart your device
-
-```cpp
-    void rebootDevices(std::shared_ptr<ob::DeviceList> deviceList) {
-        for(uint32_t i = 0; i < deviceList->getCount(); i++) {
-            // get device from device list
-            auto device = deviceList->getDevice(i);
-
-            // reboot device
-            device->reboot();
-        }
-    }
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_hot_plugin
 ```
 
-## Run Sample
+```bash
+.\build\win_x64\bin\ob_hot_plugin.exe     # Windows
+./build/linux_x86_64/bin/ob_hot_plugin    # Linux x86_64
+./build/linux_arm64/bin/ob_hot_plugin     # Linux ARM64
+./build/macOS/bin/ob_hot_plugin           # macOS
+```
 
-Press R to reboot the device
-You can try to manually unplug and plug the device
-Press the Esc key in the window to exit the program
+## Controls
 
-### Result
+| Key | Action |
+| --- | --- |
+| `R` | Reboot the currently connected device to trigger disconnect and reconnect callbacks |
+| `Esc` | Exit |
 
-![image](../../docs/resource/hotplugin.jpg)
+You can also manually unplug and reconnect the device to observe the callback behavior.
+
+## What You Will See
+
+- callback output when devices are removed
+- callback output when devices are added again
+- device identity information such as UID, PID, serial number, and connection type
+
+## Result
+
+![image](../../../docs/resource/hotplugin.jpg)

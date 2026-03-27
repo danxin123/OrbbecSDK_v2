@@ -1,39 +1,45 @@
-﻿# Preset
+# Preset
 
-## Overview
+This sample lists the available device presets and lets you load them by index.
 
-Use the SDK interface to set and get the preset value.
+## When To Use It
 
-### Knowledge
+- inspect which presets are available on the current device
+- switch between presets during evaluation
+- verify which preset is currently active
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions
+## Prerequisites
 
-## Code overview
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- The connected device must support presets
 
-1. Get preset list from device.
+## Build & Run
 
-    ```cpp
-    std::shared_ptr<ob::DevicePresetList> presetLists = device->getAvailablePresetList();
-    ```
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_preset
+```
 
-2. Get preset value from device.
+```bash
+.\build\win_x64\bin\ob_preset.exe     # Windows
+./build/linux_x86_64/bin/ob_preset    # Linux x86_64
+./build/linux_arm64/bin/ob_preset     # Linux ARM64
+./build/macOS/bin/ob_preset           # macOS
+```
 
-    ```cpp
-        // Print current preset name.
-        std::cout << "Current PresetName: " << device->getCurrentPresetName() << std::endl;
-    ```
+## How To Use It
 
-3. Set preset value to device.
+1. Start the sample.
+2. Review the preset list printed in the terminal.
+3. Check the current preset name.
+4. Enter the index of the preset to load.
+5. The sample prints the active preset again after loading.
 
-    ```cpp
-        // Load preset.
-        device->loadPreset(presetName);
-    ```
+## Notes
 
-## Run Sample
+- The sample stays in the preset-selection loop so you can switch presets repeatedly.
+- There is currently no dedicated quit command in this sample. End the session from the terminal when you are finished.
 
-Press the button according to the interface prompts
+## Result
 
-### Result
-
-![image](../../docs/resource/preset.jpg)
+![image](../../../docs/resource/preset.jpg)

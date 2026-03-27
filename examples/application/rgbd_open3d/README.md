@@ -1,35 +1,43 @@
-﻿# Open3D Wrapper
+# Open3D Wrapper
 
-## Overview
+This example captures synchronized color and depth frames and renders them in real time with Open3D.
 
-This example shows how to capture synchronized color and depth frames and render them in real time with Open3D's visualizer.
+## About Open3D
 
-### About Open3D
-Open3D is an open-source library designed for 3D data processing. It provides:
+Open3D is an open-source library for 3D data processing and visualization.
+It is a good fit when you want to work with RGB-D images, point clouds, and interactive 3D rendering.
 
- - Efficient data structures for 3D geometry (point clouds, meshes)
- - Tensor-based operations with GPU support
- - High-level visualization tools (e.g., VisualizerWithKeyCallback)
+## What This Example Does
 
-For detailed installation instructions and advanced usage, visit the [Open3D GitHub repository](https://github.com/isl-org/Open3D).
+1. Enables synchronized color and depth streams.
+2. Forces complete framesets with `OB_FRAME_AGGREGATE_OUTPUT_ALL_TYPE_FRAME_REQUIRE`.
+3. Converts SDK frame buffers into Open3D image tensors.
+4. Renders color and depth images in Open3D windows.
+5. Stops when you press `Esc` in either Open3D window.
 
-### Knowledge
+## Build and Run
 
- - Pipeline: Manages multi-channel stream configuration, frame aggregation, and synchronization.
+Build from the repository root with Open3D examples enabled:
 
- - Frameset: A collection of synchronized frames of different types (e.g., color, depth).
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOB_BUILD_OPEN3D_EXAMPLES=ON -DOpen3D_DIR=/path/to/Open3D
+cmake --build build --config Release --target ob_open3d
+```
 
- - Config: A set of parameters that define the behavior of the pipeline.
+```bash
+.\build\win_x64\bin\ob_open3d.exe      # Windows
+./build/linux_x86_64/bin/ob_open3d     # Linux x86_64
+./build/linux_arm64/bin/ob_open3d      # Linux ARM64
+./build/macOS/bin/ob_open3d            # macOS
+```
 
-
-## Code overview
+## How It Works
 
 1. Configure the output format of color and depth frames.
 
     ```cpp
     auto pipeline = std::make_shared<ob::Pipeline>();
 
-    // Configure which streams to enable or disable for the Pipeline by creating a Config.
     std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
 
     config->enableVideoStream(OB_STREAM_COLOR, OB_WIDTH_ANY, OB_HEIGHT_ANY, OB_FPS_ANY, OB_FORMAT_RGB);
@@ -38,11 +46,7 @@ For detailed installation instructions and advanced usage, visit the [Open3D Git
     pipeline->enableFrameSync();
     ```
 
-    The `OB_FRAME_AGGREGATE_OUTPUT_ALL_TYPE_FRAME_REQUIRE` mode ensures all frame types are present in each frameset.
-
-
-
-2. Retrieve frames.
+2. Retrieve synchronized frames.
 
     ```cpp
     auto frameset = pipeline->waitForFrames();
@@ -50,12 +54,11 @@ For detailed installation instructions and advanced usage, visit the [Open3D Git
         continue;
     }
 
-    // Get the color and depth frames from the frameset.
     auto colorFrame = frameset->getFrame(OB_FRAME_COLOR)->as<ob::ColorFrame>();
     auto depthFrame = frameset->getFrame(OB_FRAME_DEPTH)->as<ob::DepthFrame>();
     ```
 
-3. Convert to Open3D format.
+3. Convert SDK data to Open3D tensors.
 
     ```cpp
     std::shared_ptr<t::geometry::RGBDImage> preRgbd = std::make_shared<t::geometry::RGBDImage>();
@@ -64,9 +67,9 @@ For detailed installation instructions and advanced usage, visit the [Open3D Git
         core::Tensor(static_cast<const uint8_t *>(colorFrame->getData()), { colorFrame->getHeight(), colorFrame->getWidth(), 3 }, core::Dtype::UInt8);
     preRgbd->depth_ =
         core::Tensor(reinterpret_cast<const uint16_t *>(depthFrame->getData()), { depthFrame->getHeight(), depthFrame->getWidth() }, core::Dtype::UInt16);
-   ```
+    ```
 
-4. Visualize.
+4. Render in Open3D windows.
 
     ```cpp
     if(!windowsInited) {
@@ -83,24 +86,8 @@ For detailed installation instructions and advanced usage, visit the [Open3D Git
         colorVis.UpdateGeometry(colorImage);
         depthVis.UpdateGeometry(depthImage);
     }
-    depthVis.PollEvents();
-    depthVis.UpdateRender();
-
-    colorVis.PollEvents();
-    colorVis.UpdateRender();
     ```
-5. Shutdown.
-Press `ESC` in either window to exit and stop the pipeline.
 
-## Build and run
-```bash
-mkdir build
-cd build
-cmake .. -DOB_BUILD_OPEN3D_EXAMPLES=ON -DOpen3D_DIR=<path to Open3D installation>
-make -j4
-./ob_open3d
-```
+## Result
 
-### Result
-
-![image](../../docs/resource/open3d.jpg)
+![image](../../../docs/resource/open3d.jpg)

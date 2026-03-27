@@ -1,58 +1,44 @@
-﻿# Confidence
+# Confidence
 
-## Overview
+This sample displays the depth stream together with the confidence stream from a supported device.
+Use it when you want to understand confidence output and compare it with the corresponding depth image.
 
-Use the SDK interface to obtain the depth and confidence stream of the camera and display them in the window
+## When To Use It
 
-### Knowledge
+- inspect a device that exposes a confidence sensor
+- compare confidence output with depth output
+- validate depth-confidence pairing on supported hardware
 
-Enabling the confidence stream requires the depth stream to be active, and its resolution and frame rate must match the depth stream's.
+## Prerequisites
 
-## Code overview
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- OpenCV is required for the display window
+- The connected device must provide a confidence sensor
 
-1. Configure the depth and confidence streams, then start the pipeline with this configuration. All stream configurations must be completed before calling pipe.start().
+## Build & Run
 
-    ```cpp
-        // By creating config to configure which streams to enable or disable for the pipeline, here the depth stream will be enabled.
-        std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOpenCV_DIR=/path/to/opencv
+cmake --build build --config Release --target ob_confidence
+```
 
-        // Enable depth stream.
-        config->enableVideoStream(OB_STREAM_DEPTH);
+```bash
+.\build\win_x64\bin\ob_confidence.exe     # Windows
+./build/linux_x86_64/bin/ob_confidence    # Linux x86_64
+./build/linux_arm64/bin/ob_confidence     # Linux ARM64
+./build/macOS/bin/ob_confidence           # macOS
+```
 
-        // Enable confidence stream.  The resolution and fps of confidence must match depth stream.
-        auto enabledProfiles = config->getEnabledStreamProfileList();
-        if(enabledProfiles) {
-            for(uint32_t i = 0; i < enabledProfiles->getCount(); i++) {
-                auto profile = enabledProfiles->getProfile(i);
-                if(profile && profile->getType() == OB_STREAM_DEPTH) {
-                    auto depthProfile = profile->as<ob::VideoStreamProfile>();
-                    if(depthProfile) {
-                        config->enableVideoStream(OB_STREAM_CONFIDENCE, depthProfile->getWidth(), depthProfile->getHeight(), depthProfile->getFps());
-                    }
-                    break;
-                }
-            }
-        }
-    ```
+## Operation
 
-2. After waiting for a while, get the depth and confidence stream in the frameset and display them in the window
+- The sample enables the depth stream first, then enables a matching confidence stream with the same resolution and frame rate.
+- A window shows the live output.
+- Press `Esc` to exit.
 
-    ```cpp
-        while(win.run()) {
-            // Wait for up to 100ms for a frameset in blocking mode.
-            auto frameSet = pipe.waitForFrameset(100);
-            if(frameSet == nullptr) {
-                continue;
-            }
-            // Render frame in the wisndow.
-            win.pushFramesToView(frameSet);
-        }
-    ```
+## Notes
 
-## Run Sample
+- If the device does not expose a confidence sensor, the sample prints a message and exits.
 
-Press the Esc key in the window to exit the program.
+## Result
 
-### Result
-
-![image](../../docs/resource/confidence.jpg)
+![image](../../../docs/resource/confidence.jpg)

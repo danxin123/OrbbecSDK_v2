@@ -1,96 +1,44 @@
-﻿# Callback
+# Callback
 
-## Overview
+This example shows how to start a pipeline in callback mode and render the latest frames in a window.
+Use it when you want to build an application that processes frames asynchronously instead of polling in the main loop.
 
-In this sample,user can get the depth、RGB、IR image.This sample also support users can perform user-defined operations such as data acquisition, data processing, and data modification within the callback function.
+## When To Use It
 
-### Knowledge
+- learn the callback-based pipeline pattern
+- add your own processing logic inside the frame callback
+- separate frame acquisition from UI rendering
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions.
+## Prerequisites
 
-Device is a class that can be used to get device information, parameters, and a list of contained sensors.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- OpenCV is required for the preview window
 
-Sensor can be used to obtain different components of the camera and the stream of the component, for example, RGB, IR, Depth stream can be obtained through the RGB, IR, Depth sensor.
+## Build & Run
 
-## code overview
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOpenCV_DIR=/path/to/opencv
+cmake --build build --config Release --target ob_callback
+```
 
-1. Create the pipeline instance using the default configuration and create a config instance to enable or disable the streams.Get the device instance from pipeline,and then get the sensor instance from device.
+```bash
+.\build\win_x64\bin\ob_callback.exe     # Windows
+./build/linux_x86_64/bin/ob_callback    # Linux x86_64
+./build/linux_arm64/bin/ob_callback     # Linux ARM64
+./build/macOS/bin/ob_callback           # macOS
+```
 
-    ```c++
-        // Create a pipeline.
-        ob::Pipeline pipe;
+## Operation
 
-        // Configure which streams to enable or disable for the Pipeline by creating a Config.
-        std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
+- The sample automatically enables available video sensors.
+- Frames are received in a callback and displayed in the preview window.
+- Press `Esc` in the window to exit.
 
-        // Get device from pipeline.
-        auto device = pipe.getDevice();
+## Notes
 
-        // Get sensorList from device.
-        auto sensorList = device->getSensorList();
-    ```
+- Keep callback work lightweight. Long-running processing inside the callback can cause frame drops.
+- For heavier processing, use a queue and hand off work to another thread.
 
-2. Get only the sensor for the VideoStream,enable the stream from these sensor.
+## Result
 
-    ```c++
-        for(uint32_t index = 0; index < sensorList->getCount(); index++) {
-                // Query all supported infrared sensor type and enable the infrared stream.
-                // For dual infrared device, enable the left and right infrared streams.
-                // For single infrared device, enable the infrared stream.
-                OBSensorType sensorType = sensorList->getSensorType(index);
-
-                // exclude non-video sensor type
-                if(!ob::TypeHelper::isVideoSensorType(sensorType)) {
-                    continue;
-                }
-
-                // Enable the stream for the sensor type.
-                config->enableStream(sensorType);
-            }
-    ```
-
-3. In this callback function, you can add what you want to do with the data.Avoid performing complex computational operations within callback functions; prolonged operations can lead to data frame drops. It is recommended to use a queue for processing.
-
-    ```c++
-        // Start the pipeline with callback.
-        pipe.start(config, [&](std::shared_ptr<ob::FrameSet> output) {
-            std::lock_guard<std::mutex> lock(framesetMutex);
-            frameset = output;
-        });
-    ```
-
-4. Render window
-
-    ```c++
-        while(win.run()) {
-            std::lock_guard<std::mutex> lock(framesetMutex);
-
-            if(frameset == nullptr) {
-                continue;
-            }
-
-            // Rendering display
-            win.pushFramesToView(frameset);
-        }
-    ```
-
-5. stop pipeline
-
-    ```c++
-        // Stop the Pipeline, no frame data will be generated
-        pipe.stop();
-    ```
-
-## Run Sample
-
-If you are on Windows, you can switch to the directory `OrbbecSDK-dev/build/win_XX/bin` to find the `ob_callback.exe`.
-
-If you are on linux, you can switch to the directory `OrbbecSDK-dev/build/linux_XX/bin` to find the `ob_callback`.
-
-### Key introduction
-
-Press the Esc key in the window to exit the program.
-
-### Result
-
-![result](../../docs/resource/callback.jpg)
+![result](../../../docs/resource/callback.jpg)

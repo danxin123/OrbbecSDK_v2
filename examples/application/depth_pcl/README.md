@@ -1,37 +1,49 @@
-﻿# PCL Wrapper
+# PCL Point Cloud Examples
 
-This project provides a set of examples and utilities for working with the Orbbec SDK and PCL (Point Cloud Library). It includes various modules for processing depth, color, and point cloud data.
+This directory contains the PCL-based examples for OrbbecSDK.
+Use them when you want to convert SDK point-cloud frames into PCL data structures and visualize them with the PCL viewer.
 
-## Project Structure
+## Included Samples
 
-The project is organized into several subdirectories, each corresponding to different functionalities:
+- [pcl](pcl/README.md) - generate `pcl::PointCloud<pcl::PointXYZ>`
+- [pcl_color](pcl_color/README.md) - generate `pcl::PointCloud<pcl::PointXYZRGB>`
 
-- [Pcl](./pcl/README.md): Contains PCL-related functionality for processing point clouds and depth data.
-- [Pcl-Color](./pcl_color/README.md): Contains PCL-related functionality specifically for handling color point clouds.
+## Prerequisites
 
-## Building the Project
+- Install PCL on your system.
+- Make sure CMake can find PCL. If needed, pass `-DPCL_DIR=/path/to/PCL`.
+- Build from the repository root with PCL examples enabled.
 
-### Step 1: Install PCL
-More information on installing PCL can be found [here](https://github.com/PointCloudLibrary/pcl).
+## Build
 
-If you are using windows, you can modify the `PCL_DIR` value in the `CMakeLists.txt` file.
-```CMake
-if(OB_BUILD_PCL)
-    # set(PCL_DIR "user/lib/PCL 1.12.1/cmake")
-    message(STATUS "- Building PCL examples")
-    add_subdirectory(pcl)
-    add_subdirectory(pcl_color)
-endif()
-```
-Note: If you need to run it, you may need to copy the dependent dlls to the same directory as the executable file.
-
-### Step 2: Configure the Project
-
-Find the following option and set it to ON. You can find this option in the `option.cmake` file under the `cmake` folder.
-```CMake
-option(OB_BUILD_PCL "Build Point Cloud Library examples" ON)
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOB_BUILD_PCL_EXAMPLES=ON -DPCL_DIR=/path/to/PCL
+cmake --build build --config Release --target ob_pcl
+cmake --build build --config Release --target ob_pcl_color
 ```
 
-### Step 3: Build the OrbbecSDK
-You can follow the [build guide](../../docs/tutorial/building_orbbec_sdk.md) file for more information on building the Orbbec SDK.
+## Run
 
+```bash
+.\build\win_x64\bin\ob_pcl.exe           # Windows
+.\build\win_x64\bin\ob_pcl_color.exe     # Windows
+./build/linux_x86_64/bin/ob_pcl          # Linux x86_64
+./build/linux_x86_64/bin/ob_pcl_color    # Linux x86_64
+./build/linux_arm64/bin/ob_pcl           # Linux ARM64
+./build/linux_arm64/bin/ob_pcl_color     # Linux ARM64
+./build/macOS/bin/ob_pcl                 # macOS
+./build/macOS/bin/ob_pcl_color           # macOS
+```
+
+## Which One Should I Choose?
+
+| Sample | When to use it |
+| --- | --- |
+| [pcl](pcl/README.md) | You only need geometry and want an XYZ point cloud |
+| [pcl_color](pcl_color/README.md) | You need aligned color + depth and want an RGB point cloud |
+
+## Notes
+
+- The CMake option is `OB_BUILD_PCL_EXAMPLES`, not `OB_BUILD_PCL`.
+- On Windows, you may need to ensure the required PCL DLLs are available next to the executable or on `PATH`.
+- These samples are intended for users who already have the core SDK examples working and want to move into point-cloud tooling.

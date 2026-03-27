@@ -1,71 +1,39 @@
-﻿# Metadata
+# Metadata
 
-## Overview
+This sample prints frame metadata values from the active streams in the terminal.
+Use it when you need to inspect timestamps, exposure information, frame counters, and other metadata fields emitted by the device.
 
-Use the SDK interface to get the frameSet, then get the frame from frameSet, print the value of the frame metadata and exit the program using the ESC_KEY key.
+## When To Use It
 
-### Knowledge
+- inspect per-frame metadata
+- debug timestamps and frame numbering
+- verify whether a specific metadata field is present on a device
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions.
+## Prerequisites
 
-Frameset is a combination of different types of Frames.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- No OpenCV dependency is required
 
-Metadata is used to describe the various properties and states of a frame.
+## Build & Run
 
-## Code overview
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_metadata
+```
 
-1. Create an ob::Pipeline object, and start the pipeline.
+```bash
+.\build\win_x64\bin\ob_metadata.exe     # Windows
+./build/linux_x86_64/bin/ob_metadata    # Linux x86_64
+./build/linux_arm64/bin/ob_metadata     # Linux ARM64
+./build/macOS/bin/ob_metadata           # macOS
+```
 
-    ```cpp
-    // Create a pipeline.
-    ob::Pipeline pipe;
+## Operation
 
-    // Start the pipeline with default config.
-    // Modify the default configuration by the configuration file: "*SDKConfig.xml"
-    pipe.start();
-    ```
+- The sample starts the default pipeline automatically.
+- Metadata is printed in the terminal every 30 frames for the frames that expose metadata fields.
+- Press `Esc` to stop the sample.
 
-2. Get frameSet from pipeline.
+## Result
 
-    ```cpp
-    // Wait for frameSet from the pipeline, the default timeout is 1000ms.
-    auto frameSet   = pipe.waitForFrameset();
-    ```
-
-3. Get frame from frameSet.
-
-    ```cpp
-    auto frameCount = frameSet->getCount();
-    for(uint32_t i = 0; i < frameCount; i++) {
-        // Get the frame from frameSet
-        auto frame = frameSet->getFrame(i);
-    }
-   ```
-
-4. Check if the frame object contains metadata, then retrieve it.
-
-    ```cpp
-    // Get the metadata of the frame
-    for(uint32_t j = 0; j < static_cast<uint32_t>(metadataCount); j++) {
-        // If the frame has the metadata, get the metadata value
-        if(frame->hasMetadata(static_cast<OBFrameMetadataType>(j))) {
-            std::cout << "metadata type: " << std::left << std::setw(50) << metadataTypeMap[j]
-                      << " metadata value: " << frame->getMetadataValue(static_cast<OBFrameMetadataType>(j)) << std::endl;
-        }
-    }
-    ```
-
-6. Stop pipeline
-
-    ```cpp
-    // Stop the Pipeline, no frame data will be generated
-    pipe.stop();
-    ```
-
-## Run Sample
-
-Press the Esc key in the window to exit the program.
-
-### Result
-
-![image](../../docs/resource/metadata.jpg)
+![image](../../../docs/resource/metadata.jpg)

@@ -1,60 +1,54 @@
-# Save to Disk
+# Save To Disk
 
 ## Overview
 
-This sample demonstrates how to configure a pipeline to capture color and depth frames and save the first 5 valid frames to disk as PNG files using the SDK's built-in `FrameSaveHelper`. The program discards initial frames to ensure stable stream capture. No OpenCV dependency is required — format conversion is handled internally by the SDK.
+This sample demonstrates how to configure a pipeline to capture synchronized color and depth frames and save the first 4 valid frame pairs to disk as PNG files. The program discards several startup frames to ensure stable capture. PNG saving is handled internally by the SDK through `FrameSaveHelper`, so the sample does not rely on OpenCV-based image conversion or `imwrite`.
 
-### Knowledge
+## When To Use It
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions.
+- save a small set of RGB-D frames for quick inspection
+- verify depth and color file output without building a full viewer
+- generate timestamped PNG pairs for later analysis
 
-Frameset is a combination of different types of Frames.
+## Prerequisites
 
-Metadata is used to describe the various properties and states of a frame.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- A device that provides both color and depth streams must be connected
 
-## Code overview
+## Build & Run
 
-1. Pipeline Configuration and Initialization.
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_save_to_disk
+```
 
-    ```cpp
-    // Create a pipeline.
-    std::shared_ptr<ob::Pipeline> pipeline = std::make_shared<ob::Pipeline>();
+```bash
+.\build\win_x64\bin\ob_save_to_disk.exe     # Windows
+./build/linux_x86_64/bin/ob_save_to_disk    # Linux x86_64
+./build/linux_arm64/bin/ob_save_to_disk     # Linux ARM64
+./build/macOS/bin/ob_save_to_disk           # macOS
+```
 
-    // Create a config and enable the depth and color streams.
-    std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
-    config->enableStream(OB_STREAM_COLOR);
-    config->enableStream(OB_STREAM_DEPTH);
-    // Set the frame aggregate output mode to all type frame require.
-    config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ALL_TYPE_FRAME_REQUIRE);
-    ```
+## What It Does
 
-2. Get frameSet from pipeline.
+1. Enables the color and depth streams and requires complete framesets.
+2. Drops the first 15 frames to avoid unstable startup output.
+3. Saves the next 4 valid depth and color frame pairs as PNG files.
+4. Stops the pipeline automatically after saving.
+5. Waits for a key press before the program exits.
 
-    ```cpp
-    // Wait for frameSet from the pipeline, the default timeout is 1000ms.
-    auto frameSet   = pipe.waitForFrameset();
-    ```
+## Output
 
-3. Save frames to disk as PNG using `ob_smpl::saveFrame`.
+- depth PNG files named like `Depth_<width>x<height>_<index>_<timestamp>ms.png`
+- color PNG files named like `Color_<width>x<height>_<index>_<timestamp>ms.png`
 
-    ```cpp
-    // Get the depth and color frames.
-    auto depthFrame = frameSet->getFrame(OB_FRAME_DEPTH)->as<ob::DepthFrame>();
-    auto colorFrame = frameSet->getFrame(OB_FRAME_COLOR)->as<ob::ColorFrame>();
+## Notes
 
-    // Save depth frame as PNG (16-bit grayscale, lossless)
-    std::string depthName = "Depth_" + std::to_string(depthFrame->width()) + "x"
-                            + std::to_string(depthFrame->height()) + "_" + std::to_string(frameIndex)
-                            + "_" + std::to_string(depthFrame->timeStamp()) + "ms";
-    auto savedDepth = ob_smpl::saveFrame(depthFrame, depthName);
+- The sample saves files through the SDK helper `ob::FrameSaveHelper::saveFrameToPng(...)`.
+- It runs as a terminal sample and does not open a preview window.
+- If no complete frameset arrives within 100 ms, it prints a retry message and continues waiting.
 
-    // Save color frame as PNG (8-bit RGB, format conversion handled internally)
-    std::string colorName = "Color_" + std::to_string(colorFrame->width()) + "x"
-                            + std::to_string(colorFrame->height()) + "_" + std::to_string(frameIndex)
-                            + "_" + std::to_string(colorFrame->timeStamp()) + "ms";
-    auto savedColor = ob_smpl::saveFrame(colorFrame, colorName);
-    ```
+## Related Examples
 
-## Run Sample
-
-Press any key in the window to exit the program.
+- [../../beginner/rgbd_viewer/README.md](../../beginner/rgbd_viewer/README.md) - preview live color and depth streams
+- [../../beginner/record_playback/README.md](../../beginner/record_playback/README.md) - record and replay stream data instead of saving a few PNG frames

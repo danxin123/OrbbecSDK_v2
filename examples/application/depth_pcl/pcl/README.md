@@ -1,72 +1,44 @@
-﻿# PCL Point Cloud
+# PCL Point Cloud
 
-## Overview
+This example converts SDK point-cloud output into `pcl::PointCloud<pcl::PointXYZ>` and renders it with the PCL visualizer.
 
-Acquire point cloud data and convert the acquired point cloud data to PCL library point cloud data
+## When To Use It
 
+- generate an XYZ point cloud from Orbbec depth data
+- verify that your PCL environment is working with OrbbecSDK
+- use a minimal PCL-based example before moving to color point clouds
 
-## Code overview
+## Prerequisites
 
-1. Create an ob::Pipeline object, and get frameSet from pipeline..
+- Build the examples from the repository root as described in [../README.md](../README.md)
+- PCL must be installed and discoverable by CMake
 
-    ```cpp
-    // create pipeline to manage the streams
-    auto pipeline = std::make_shared<ob::Pipeline>();
+## Build & Run
 
-    // Start pipeline with config
-    pipeline->start(config);
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOB_BUILD_PCL_EXAMPLES=ON -DPCL_DIR=/path/to/PCL
+cmake --build build --config Release --target ob_pcl
+```
 
-    // Wait for frames to be available
-    auto frameset    = pipeline->waitForFrames();
-    auto depth_frame = frameset->getFrame(OB_FRAME_DEPTH);
-    ```
+```bash
+.\build\win_x64\bin\ob_pcl.exe     # Windows
+./build/linux_x86_64/bin/ob_pcl    # Linux x86_64
+./build/linux_arm64/bin/ob_pcl     # Linux ARM64
+./build/macOS/bin/ob_pcl           # macOS
+```
 
-2. Create a PointCloud object and convert the depth frame to point cloud data.
+## How It Works
 
-    ```cpp
-    // Create a point cloud Filter, which will be used to generate pointcloud frame from depth and color frames.
-    auto pointCloudFilter = std::make_shared<ob::PointCloudFilter>();
+1. Start a pipeline and capture frames.
+2. Generate SDK point-cloud data from the depth frame.
+3. Convert the SDK point cloud into `pcl::PointCloud<pcl::PointXYZ>`.
+4. Render the cloud with the PCL visualizer.
 
-    // Set the format of the point cloud to be generated.
-    pointCloudFilter->setCreatePointFormat(OB_FORMAT_POINT);
-    auto result = pointCloudFilter->process(depth_frame);
-   ```
+## Operation
 
-3. Convert the point cloud data to PCL library point cloud data.
+- Rotate and inspect the point cloud in the PCL window.
+- Press `Q` in the PCL window to exit.
 
-    ```cpp
-    pcl::PointCloud<pcl::PointXYZ>::Ptr frameToPCL(std::shared_ptr<ob::Frame> frame) {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+## Result
 
-        uint32_t pointsSize = frame->dataSize() / sizeof(OBPoint);
-        OBPoint *point      = (OBPoint *)frame->data();
-
-        cloud->points.resize(pointsSize);
-
-        for(uint32_t i = 0; i < pointsSize; i++) {
-            cloud->points[i].x = point->x;
-            cloud->points[i].y = point->y;
-            cloud->points[i].z = point->z;
-
-            point++;
-        }
-
-        return cloud;
-    }
-    ```
-
-4. Render the point cloud data using PCL library.
-
-    ```cpp
-    pcl::visualization::PCLVisualizer vis2("Depth Cloud");
-    vis2.addPointCloud(pclPoint);
-    vis2.spin();
-    ```
-
-## Run Sample
-
-Press the q or Q key in the window to exit the program.
-
-### Result
-
-![image](../../../docs/resource/pcl.jpg)
+![image](../../../../docs/resource/pcl.jpg)

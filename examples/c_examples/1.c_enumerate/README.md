@@ -1,83 +1,46 @@
 # Enumerate with C
 
-This is a enumerate guide to get device streams profile information using the SDK C API.
+This C API sample helps you inspect connected devices, sensors, and stream profiles from the terminal.
 
-## Overview
+## When To Use It
 
-### Knowledge
+- discover devices through the C API
+- inspect available sensors and stream profiles
+- confirm what the current device supports before writing a larger C application
 
-Context is the environment context, the first object created during initialization, which can be used to perform some settings, including but not limited to device status change callbacks, log level settings, etc. Context can access multiple Devices.
+## Prerequisites
 
-## Code Overview
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- No OpenCV dependency is required
 
-### 1.Get inuput value
+## Build & Run
 
-```c
-if(input == 'q' || input == 'Q') {
-    value = -1;
-    break;
-}
-if(input >= '0' && input <= '9' && input - '0' >= min_value && input - '0' <= max_value) {
-    value = input - '0';
-    break;
-}
-printf("Invalid input, please input a number between %d and %d or \'q\' to exit program: ", min_value, max_value);
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_enumerate_c
 ```
 
-### 2.Enumerates stream information
-
-Get stream profile list, then different output formats are formulated according to sensor type. For example, if sensor type = 'OB_SENSOR_COLOR', need to print stream type、stream format、stream resolution、stream fps、stream index.
-
-```c
-// Get sensor type.
-ob_sensor_type sensor_type = ob_sensor_get_type(sensor, &error);
-check_ob_error(&error);
-
-// Get stream profile list.
-ob_stream_profile_list *stream_profile_list = ob_sensor_get_stream_profile_list(sensor, &error);
-check_ob_error(&error);
-
-// Get stream profile count.
-uint32_t stream_profile_count = ob_stream_profile_list_get_count(stream_profile_list, &error);
-check_ob_error(&error);
+```bash
+.\build\win_x64\bin\ob_enumerate_c.exe     # Windows
+./build/linux_x86_64/bin/ob_enumerate_c    # Linux x86_64
+./build/linux_arm64/bin/ob_enumerate_c     # Linux ARM64
+./build/macOS/bin/ob_enumerate_c           # macOS
 ```
 
-### 3.Enumerate sensor list
+## How To Use It
 
-Get sensor list, then print sensor type.
+1. Start the sample.
+2. Select a device index to inspect the device.
+3. Inspect the sensor list.
+4. Select a sensor index to inspect its available stream profiles.
+5. Enter `q` when you want to exit.
 
-```c
-// Get sensor list.
-ob_sensor_list *sensor_list = ob_device_get_sensor_list(device, &error);
-check_ob_error(&error);
+## What You Will See
 
-// Get sensor count.
-uint32_t sensor_count = ob_sensor_list_get_count(sensor_list, &error);
-check_ob_error(&error);
-```
+- device information
+- sensor list
+- stream profile information such as format, resolution, FPS, and index
 
-### 4.Enumerates device information
-
-Get device information. And then print device name、pid、SN、connect type.
-
-```c
-// Get device information.
-ob_device_info *dev_inf = ob_device_get_device_info(device, &error);
-check_ob_error(&error);
-```
-
-## Run Sample
-
-If you are on Windows, you can switch to the directory `build/win_XX/bin` to find the `ob_enumerate_c.exe`.
-
-If you are on linux, you can switch to the directory `build/linux_XX/bin` to find the `ob_enumerate_c`.
-
-### Key introduction
-
- Input the devices index to get the sensor list.
- Input 'q' to exit the program.
- Input the sensor index to get the stream profile list.
-
-### Result
+## Result
 
 ![Enumerate_C](../../../docs/resource/enumerate.jpg)

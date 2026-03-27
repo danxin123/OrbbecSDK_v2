@@ -1,101 +1,47 @@
-﻿# PCL Color Point Cloud
+# PCL Color Point Cloud
 
-## Overview
+This example creates an RGB point cloud by combining aligned color and depth data, then renders it with the PCL visualizer.
 
-Acquire point cloud data and convert the acquired point cloud data to PCL library point cloud data
+## When To Use It
 
+- generate a colored point cloud instead of geometry-only XYZ points
+- validate aligned RGB-D data before integrating with your own PCL pipeline
+- compare plain depth point clouds with RGB point clouds
 
-## Code overview
+## Prerequisites
 
-1. Create an ob::Pipeline object, and get frameSet from pipeline..
+- Build the examples from the repository root as described in [../README.md](../README.md)
+- PCL must be installed and discoverable by CMake
 
-    ```cpp
-    // create pipeline to manage the streams
-    auto pipeline = std::make_shared<ob::Pipeline>();
+## Build & Run
 
-    // Enable frame synchronization to ensure depth frame and color frame on output frameset are synchronized.
-    pipeline->enableFrameSync();
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOB_BUILD_PCL_EXAMPLES=ON -DPCL_DIR=/path/to/PCL
+cmake --build build --config Release --target ob_pcl_color
+```
 
-    // Start pipeline with config
-    pipeline->start(config);
+```bash
+.\build\win_x64\bin\ob_pcl_color.exe     # Windows
+./build/linux_x86_64/bin/ob_pcl_color    # Linux x86_64
+./build/linux_arm64/bin/ob_pcl_color     # Linux ARM64
+./build/macOS/bin/ob_pcl_color           # macOS
+```
 
-    // Wait for frames to arrive
-    auto frameset   = pipeline->waitForFrames();
-    auto colorFrame = frameset->getFrame(OB_FRAME_COLOR);
-    ```
+## How It Works
 
-2. Create a PointCloud object and convert the depth frame to point cloud data.
+1. Start synchronized color and depth streaming.
+2. Align the depth frame to the color frame.
+3. Convert the aligned result into RGB point-cloud format.
+4. Convert the SDK point cloud into `pcl::PointCloud<pcl::PointXYZRGB>`.
+5. Save the generated point cloud to `output.pcd` in the current working directory.
+6. Load the saved `.pcd` file and render it in the PCL viewer.
 
-    ```cpp
-    // Create a point cloud Filter, which will be used to generate pointcloud frame from depth and color frames.
-    auto pointCloudFilter = std::make_shared<ob::PointCloudFilter>();
-    // Create a align filter, which will be used to align depth frame to color frame.
-    auto alignFilter      = std::make_shared<ob::Align>(OB_STREAM_COLOR);
+## Operation
 
-    // Align depth frame to color frame.
-    auto aliggnFrameset = alignFilter->process(frameset);
+- The sample writes `output.pcd` to the current working directory before visualization.
+- Rotate and inspect the color point cloud in the PCL window.
+- Press `Q` in the PCL window to exit.
 
-    // set to create RGBD point cloud format (will be effective only if color frame and depth frame are contained in the frameset)
-    pointCloudFilter->setCreatePointFormat(OB_FORMAT_RGB_POINT);
-    auto result = pointCloudFilter->process(aliggnFrameset);
-   ```
+## Result
 
-3. Convert the point cloud data to PCL library point cloud data.
-
-    ```cpp
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr frameToPCL(std::shared_ptr<ob::Frame> pointsFrame, std::shared_ptr<ob::Frame> colorFrame) {
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-
-        uint32_t      pointsSize = pointsFrame->dataSize() / sizeof(OBColorPoint);
-        OBColorPoint *point      = (OBColorPoint *)pointsFrame->data();
-
-        cloud->width  = colorFrame->as<ob::VideoFrame>()->width();
-        cloud->height = colorFrame->as<ob::VideoFrame>()->height();
-        cloud->points.resize(pointsSize);
-
-        for(uint32_t i = 0; i < pointsSize; i++) {
-            cloud->points[i].x = point->x;
-            cloud->points[i].y = point->y;
-            cloud->points[i].z = point->z;
-            cloud->points[i].r = point->r;
-            cloud->points[i].g = point->g;
-            cloud->points[i].b = point->b;
-
-            point++;
-        }
-
-        return cloud;
-    }
-    ```
-
-4. Render the point cloud data using PCL library.
-
-    ```cpp
-    void loadPCDFile() {
-        // Generate object to store cloud in .pcd file
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudView(new pcl::PointCloud<pcl::PointXYZRGB>);
-
-        pcl::io::loadPCDFile("./output.pcd", *cloudView);  // Load .pcd File
-
-        std::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("Captured Frame"));
-
-        // Set background of viewer to black
-        viewer->setBackgroundColor(0, 0, 0);
-        // Add generated point cloud and identify with string "Cloud"
-        viewer->addPointCloud<pcl::PointXYZRGB>(cloudView, "Cloud");
-        // Default size for rendered points
-        viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud");
-        // Viewer Properties
-        viewer->initCameraParameters();  // Camera Parameters for ease of viewing
-
-        viewer->spin();  // Allow user to rotate point cloud and view it
-    }
-    ```
-
-## Run Sample
-
-Press the q or Q key in the window to exit the program.
-
-### Result
-
-![image](../../../docs/resource/pcl_color.jpg)
+![image](../../../../docs/resource/pcl_color.jpg)

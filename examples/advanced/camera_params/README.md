@@ -1,10 +1,45 @@
 # Camera Params
 
-Print camera **intrinsics**, **distortion coefficients**, **extrinsic matrices**, and demonstrate **2D↔3D coordinate transforms** — all from the terminal.
+This example prints camera intrinsics, distortion, and extrinsics, then demonstrates basic 2D-to-3D and 3D-to-2D coordinate transforms.
+It is a terminal-only sample for users who need to inspect calibration information directly.
 
-## No OpenCV Required
+## When To Use It
 
-This example is purely CLI-based.
+- inspect depth and color intrinsics
+- inspect lens distortion parameters
+- inspect depth-to-color and color-to-depth extrinsics
+- verify basic coordinate transform behavior with live stream profiles
+
+## Prerequisites
+
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- No OpenCV dependency is required
+
+## Build & Run
+
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_camera_params
+```
+
+```bash
+.\build\win_x64\bin\ob_camera_params.exe     # Windows
+./build/linux_x86_64/bin/ob_camera_params    # Linux x86_64
+./build/linux_arm64/bin/ob_camera_params     # Linux ARM64
+./build/macOS/bin/ob_camera_params           # macOS
+```
+
+## What The Sample Does
+
+1. Starts depth and color streaming
+2. Waits for a valid frameset
+3. Reads the active stream profiles from the returned frames
+4. Prints:
+   - depth and color stream resolution and frame rate
+   - depth and color intrinsics
+   - depth and color distortion coefficients
+   - depth-to-color and color-to-depth extrinsics
+5. Runs one 2D-to-3D transform demo and one 3D-to-2D transform demo
 
 ## Output Example
 

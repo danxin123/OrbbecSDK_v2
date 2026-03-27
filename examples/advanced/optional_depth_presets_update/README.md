@@ -1,63 +1,47 @@
-﻿# Optional Depth Presets Update
+# Optional Depth Presets Update
 
-## Overview
+This sample updates optional depth preset files on a supported device.
 
-This sample demonstrates how to use the SDK to update the optional depth presets of a connected device. It includes functions to list connected devices, select a device, and update its depth presets.
+## When To Use It
 
-> Note: This sample is only applicable to devices that support presets, such as G330 serials of devices
+- load additional depth presets onto a device
+- validate preset update workflows during manufacturing or testing
+- check the preset list before and after an update
 
-### Knowledge
+## Prerequisites
 
-Context is the environment context, the first object created during initialization, which can be used to perform some settings, including but not limited to device status change callbacks, log level settings, etc. Context can access multiple Devices.
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- The connected device must support optional depth presets
+- Prepare one or more preset `.bin` files
 
-Device is the device object, which can be used to obtain the device information, such as the model, serial number, and various sensors.One actual hardware device corresponds to one Device object.
+## Build & Run
 
-## code overview
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_device_optional_depth_presets_update
+```
 
-1. Initialize the SDK Context: This is necessary to access the connected devices.
+```bash
+.\build\win_x64\bin\ob_device_optional_depth_presets_update.exe     # Windows
+./build/linux_x86_64/bin/ob_device_optional_depth_presets_update    # Linux x86_64
+./build/linux_arm64/bin/ob_device_optional_depth_presets_update     # Linux ARM64
+./build/macOS/bin/ob_device_optional_depth_presets_update           # macOS
+```
 
-    ```c++
-        std::shared_ptr<ob::Context> context = std::make_shared<ob::Context>();
-    ```
-2. List Connected Devices.
+## How To Use It
 
-    ```c++
-        std::shared_ptr<ob::DeviceList> deviceList = context->queryDeviceList();
-        for(uint32_t i = 0; i < deviceList->getCount(); ++i) {
-            devices.push_back(deviceList->getDevice(i));
-        }
-    ```
-3. Define a Callback Function for Firmware Update Progress.
+1. Select a device from the list.
+2. Enter one preset `.bin` path per line.
+3. Press `Enter` on an empty line to finish path input.
+4. The sample starts the update and prints progress, status, and message output.
+5. Review the preset list again after a successful update.
 
-    You can define a callback function to get the progress of the firmware update. The callback function will be called every time the device updates its progress.
+## Notes
 
-    ```c++
-        void presetUpdateCallback(OBFwUpdateState state, const char *message, uint8_t percent) {
-            // show update state and message here
-        }
-    ```
+- Press `Q` or `q` during the input stage to exit.
+- Do not unplug the device during the update.
+- The original sample notes that a restart is not required after the update completes.
 
-4. Update the optional depth presets.
+## Result
 
-    After selecting a device, update its presets by calling the updateOptionalDepthPresets function with the specified callback.
-
-    ```c++
-        device->updateOptionalDepthPresets(filePaths, count, presetUpdateCallback);
-    ```
-    > Note: The api supports upgrading multiple presets at once. For G300 series devices, a maximum of 3 presets can be written at a time. The first preset written will be set as the default preset.
-
-### Attention
-
-1. After the optional depth presets update completes, you don't need to restart the device.
-
-2. Don't plug out the device during the presets update process.
-
-
-
-## Run Sample
-
-Select the device for presets update and input the path of the presets file. The SDK will start updating the presets, and the progress will be displayed on the console.
-
-### Result
-
-![image](../../docs/resource/device_optional_depth_presets_update.jpg)
+![image](../../../docs/resource/device_optional_depth_presets_update.jpg)

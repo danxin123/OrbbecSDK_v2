@@ -1,81 +1,52 @@
-﻿# Post Processing
+# Post Processing
 
-## Overview
+This sample demonstrates the recommended depth post-processing filters provided by the SDK.
+It shows the raw depth output and the processed result side by side while letting you inspect and modify filter settings from the terminal.
 
-Use the SDK interface to  demonstrate post-processing operations, display post-processed images, and exit the program using the ESC_KEY key
+## When To Use It
 
-### Knowledge
+- learn which depth post-processing filters are recommended for the current device
+- compare raw depth output with filtered output
+- tune filter parameters interactively
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions
+## Prerequisites
 
-Frameset is a combination of different types of Frames
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- OpenCV is required for the display window
 
-win is used to display the frame data.
+## Build & Run
 
-## Code overview
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOpenCV_DIR=/path/to/opencv
+cmake --build build --config Release --target ob_post_processing
+```
 
-1. Get the device and sensor, and create the list of recommended filters for the sensor
+```bash
+.\build\win_x64\bin\ob_post_processing.exe     # Windows
+./build/linux_x86_64/bin/ob_post_processing    # Linux x86_64
+./build/linux_arm64/bin/ob_post_processing     # Linux ARM64
+./build/macOS/bin/ob_post_processing           # macOS
+```
 
-    ```cpp
-        auto device     = pipe.getDevice();
-        auto sensor     = device->getSensor(OB_SENSOR_DEPTH);
-        auto filterList = sensor->createRecommendedFilters();
-    ```
+## How To Use It
 
-2. The filter operation.
+Window behavior:
 
-    - Get the type of filter
+- the left side shows the original depth frame
+- the right side shows the processed frame
+- press `Esc` to exit
 
-    ```cpp
-    filter->getName()
-    ```
+Terminal commands:
 
-    - Get the Config Schema Vec object
+- `L` or `l` - list all available filters
+- `H` or `h` - print help
+- `Q` or `q` - quit
+- `[Filter]` - show current config values for a filter
+- `[Filter] on` or `[Filter] off` - enable or disable a filter
+- `[Filter] list` - show the config schema for a filter
+- `[Filter] [Config]` - show the current value of a config item
+- `[Filter] [Config] [Value]` - set a new config value
 
-    ```cpp
-    filter->getConfigSchemaVec()
-    ```
+## Result
 
-    - Enable the filter
-
-    ```cpp
-    filter->enable(tokens[1] == "on");
-    ```
-
-    - Get the Config Value object by name.
-
-    ```cpp
-    filter->getConfigValue(configSchema.name)
-    ```
-
-    - Get the Enable State of the filter.
-
-    ```cpp
-    filter->isEnabled()
-    ```
-
-    - Set the filter config value by name.
-
-    ```cpp
-    filter->setConfigValue(tokens[1], value);
-    ```
-
-3. Apply the recommended filters to the depth frame
-
-    ```cpp
-        auto processedFrame = depthFrame;
-        // Apply the recommended filters to the depth frame
-        for(auto &filter: filterList) {
-            if(filter->isEnabled()) {  // Only apply enabled filters
-                processedFrame = filter->process(processedFrame);
-            }
-        }
-    ````
-
-## Run Sample
-
-Press the button according to the interface prompts
-
-### Result
-
-![image](../../docs/resource/post_processing.jpg)
+![image](../../../docs/resource/post_processing.jpg)

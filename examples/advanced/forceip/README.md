@@ -1,57 +1,46 @@
-﻿# Force IP
+# Force IP
 
-## Overview
-This sample demonstrates how to use the SDK context class to query connected devices, configure the network IP of a selected device using the ForceIP command (as defined by the GigE Vision standard)
+This sample configures the IP address of a supported Ethernet device with the GigE Vision Force IP command.
 
-- Notes:
-For the Gemini 335Le and Gemini 435Le, the Force IP feature temporarily assigns an IP to the camera, which will be lost after the camera reboots.
+## When To Use It
 
+- assign a reachable IP address to a network camera
+- recover a device whose current IP is outside your local subnet
+- verify basic Ethernet device discovery and network configuration
 
-### Knowledge
-The Context class serves as the entry point to the SDK. It provides functionality to:
-1. Query connected device lists
-2. Modify network configurations for the selected device
+## Prerequisites
 
-## Code Overview
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- A supported Ethernet device must be connected
 
-1. Query device list and select a device
+## Build & Run
 
-    ```cpp
-    // Create a Context object
-    ob::Context context;
-    // Query the list of connected devices
-    auto deviceList = context.queryDeviceList();
-    // Select a device to operate
-    uint32_t selectedIndex;
-    auto     res = selectDevice(deviceList, selectedIndex);
-    ```
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release --target ob_device_forceip
+```
 
-2. Get new IP configuration from user input
+```bash
+.\build\win_x64\bin\ob_device_forceip.exe     # Windows
+./build/linux_x86_64/bin/ob_device_forceip    # Linux x86_64
+./build/linux_arm64/bin/ob_device_forceip     # Linux ARM64
+./build/macOS/bin/ob_device_forceip           # macOS
+```
 
-    ```cpp
-    OBNetIpConfig config = getIPConfig();
-    ```
+## How To Use It
 
-3. Change the selected device IP configuration and print the result of the operation.
+1. Start the sample.
+2. Select one of the discovered Ethernet devices.
+3. Enter the new IP address.
+4. Enter the subnet mask.
+5. Enter the gateway address.
+6. The sample applies the new network configuration and prints the result.
 
-    ```cpp
-    res = context.forceIp(deviceList->getUid(deviceNumber), config);
-    if(res) {
-        std::cout << "The new IP configuration has been successfully applied to the device." << std::endl;
-    }
-    else {
-        std::cout << "Failed to apply the new IP configuration." << std::endl;
-    }
-    ```
+## Notes
 
-## Run Sample
-Device list:
-Enter your choice: 
-Please enter the network configuration information:
-Enter IP address:
-Enter Subnet Mask:
-Enter Gateway address:
-The new IP configuration has been successfully applied to the device.
+- For Gemini 335Le and Gemini 435Le, Force IP is temporary and is lost after reboot.
+- The sample lists only Ethernet-connected devices.
 
-### Result
-![result](/docs/resource/forceip.jpg)
+## Result
+
+![result](../../../docs/resource/forceip.jpg)

@@ -151,6 +151,24 @@ bash ./scripts/env_setup/setup.sh
 
 ## Quick Start
 
+If you want to verify that the SDK and device are working, the fastest path is:
+
+1. Build the SDK with examples enabled
+2. Run the examples guide in [examples/README.md](examples/README.md)
+3. Start with `quick_start` or `rgbd_viewer`
+
+### Build with examples enabled
+
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON
+cmake --build build --config Release
+```
+
+### Recommended first examples
+
+- General RGB-D workflow: [examples/README.md](examples/README.md)
+- LiDAR workflow: [examples/LiDAR_README.md](examples/LiDAR_README.md)
+
 Minimal C++ sample:
 
 ![RGBD Example](docs/resource/QuickStart.png)
@@ -200,7 +218,8 @@ sudo apt-get install zenity
 
 ## Examples
 
-- Examples overview: [examples/README.md](examples/README.md)
+- Examples overview and build / run guide: [examples/README.md](examples/README.md)
+- LiDAR examples guide: [examples/LiDAR_README.md](examples/LiDAR_README.md)
 - Wrappers overview: [wrappers/README.md](wrappers/README.md)
 - LiDAR usage: [LiDAR_README.md](LiDAR_README.md)
 

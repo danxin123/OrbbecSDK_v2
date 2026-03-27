@@ -1,83 +1,45 @@
-﻿# HDR
+# HDR
 
-## Overview
+This sample demonstrates HDR depth merging on devices that support HDR-related configuration.
+It shows the original depth and infrared frames together with the HDR-merged depth result.
 
-In this sample, user can get the HDR merge image. Also Allows the user to control the on-off of the HDR synthesis and whether the original image is displayed through the keyboard.
+## When To Use It
 
-### Knowledge
+- evaluate HDR depth behavior on supported devices
+- compare original input frames with merged HDR depth output
+- understand how the SDK HDR merge filter is used in a real sample
 
-Pipeline is a pipeline for processing data streams, providing multi-channel stream configuration, switching, frame aggregation, and frame synchronization functions
+## Prerequisites
 
-Frameset is a combination of different types of Frames
+- Build the examples from the repository root as described in [../../README.md](../../README.md)
+- OpenCV is required for the display window
+- The device must support HDR merge
 
-### Attentions
+## Build & Run
 
-> This Sample only supports Gemini330 series devices.
-
-## Code overview
-
-### 1. Check if the device supports HDR merge
-
-```c++
-if(!device->isPropertySupported(OB_STRUCT_DEPTH_HDR_CONFIG, OB_PERMISSION_READ_WRITE)) {
-    std::cerr << "Current default device does not support HDR merge" << std::endl;
-    std::cout << "Press any key to exit...";
-    ob_smpl::waitForKeyPressed();
-    return -1;
-}
+```bash
+cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOpenCV_DIR=/path/to/opencv
+cmake --build build --config Release --target ob_hdr
 ```
 
-### 2. Get depth stream profile
-
-Get all stream profiles of the depth camera, including stream resolution, frame rate, and frame format
-
-```c++
-auto depthProfiles = pipe.getStreamProfileList(OB_SENSOR_DEPTH);
-auto depthProfile  = depthProfiles->getProfile(OB_PROFILE_DEFAULT);
-config->enableStream(depthProfile);
+```bash
+.\build\win_x64\bin\ob_hdr.exe     # Windows
+./build/linux_x86_64/bin/ob_hdr    # Linux x86_64
+./build/linux_arm64/bin/ob_hdr     # Linux ARM64
+./build/macOS/bin/ob_hdr           # macOS
 ```
 
-### 3. Create HDRMerge
+## Operation
 
-Create HDRMerge post processor to merge depth frames betweens different hdr sequence ids.
-The HDRMerge also supports processing of infrared frames.
+- The sample automatically configures HDR or frame-interleave-based HDR depending on device capability.
+- The last row of the window shows the HDR-merged depth result.
+- Press `Esc` to exit.
 
-```c++
-auto hdrMerge = ob::FilterFactory::createFilter("HDRMerge");
-```
+## Notes
 
-### 5. Configure and enable Hdr stream
+- This sample is intended for devices that support HDR-related features. The original README notes Gemini 330 series support.
+- If the device does not support HDR merge, the sample exits early with a message.
 
-```c++
-    OBHdrConfig obHdrConfig;
-    obHdrConfig.enable     = true;  // enable HDR merge
-    obHdrConfig.exposure_1 = 7500;
-    obHdrConfig.gain_1     = 24;
-    obHdrConfig.exposure_2 = 100;
-    obHdrConfig.gain_2     = 16;
-    device->setStructuredData(OB_STRUCT_DEPTH_HDR_CONFIG, reinterpret_cast<uint8_t *>(&obHdrConfig), sizeof(OBHdrConfig));
-```
+## Result
 
-### 7. Stop the pipeline and close hdr merge
-
-```c++
-// Stop the Pipeline, no frame data will be generated
-pipe.stop();
-
-// close hdr merge
-obHdrConfig.enable = false;
-device->setStructuredData(OB_STRUCT_DEPTH_HDR_CONFIG, reinterpret_cast<uint8_t *>(&obHdrConfig), sizeof(OBHdrConfig));
-```
-
-## Run Sample
-
-### Key introduction
-
-Press the 'Esc' key in the window to exit the program.
-Press the '?' key in the window to show key map.
-Press the 'M' key in the window to Toggle HDR merge.
-Press the 'N' key in the window to Toggle alternate show origin frame.
-
-### Result
-
-![hdr](../../docs/resource/hdr.jpg)
+![hdr](../../../docs/resource/hdr.jpg)

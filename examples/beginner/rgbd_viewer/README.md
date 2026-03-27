@@ -23,13 +23,16 @@ Acquire **aligned RGB-D streams** and display them with OpenCV overlay visualiza
 ## Build & Run
 
 ```bash
-# Requires OpenCV
+# Build from the repository root
+# This target is generated only when OpenCV is found.
 cmake -S . -B build -DOB_BUILD_EXAMPLES=ON -DOpenCV_DIR=/path/to/opencv
 cmake --build build --config Release --target ob_rgbd_viewer
 
 # Run
-.\build\win_x64\bin\ob_rgbd_viewer.exe  # Windows
-./build/bin/ob_rgbd_viewer               # Linux
+.\build\win_x64\bin\ob_rgbd_viewer.exe     # Windows
+./build/linux_x86_64/bin/ob_rgbd_viewer    # Linux x86_64
+./build/linux_arm64/bin/ob_rgbd_viewer     # Linux ARM64
+./build/macOS/bin/ob_rgbd_viewer           # macOS
 ```
 
 ## Key Concepts
