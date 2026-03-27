@@ -1,0 +1,211 @@
+name: Performance & Thread-Safety Test
+
+on:
+  schedule:
+    - cron: "0 3 * * 6"          # Weekly: Saturday 03:00 UTC (11:00 CST)
+  workflow_dispatch:
+    inputs:
+      perf_duration:
+        description: "PERF_DURATION_SECONDS — streaming duration per perf case"
+        required: false
+        default: "60"
+      ts_duration:
+        description: "TS_DURATION_SECONDS — duration per thread-safety case"
+        required: false
+        default: "10"
+      ts_threads:
+        description: "TS_THREAD_COUNT — concurrent threads for thread-safety cases"
+        required: false
+        default: "4"
+      gtest_filter:
+        description: "Optional --gtest_filter (e.g. ThreadSafetyTest.*)"
+        required: false
+        default: ""
+
+concurrency:
+  group: perf-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------
+  # 1. Device health gate
+  # ----------------------------------------------------------------
+  device-health:
+    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+    outputs:
+      healthy: ${{ steps.health.outputs.healthy }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Device health check
+        id: health
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/device_health_check.sh
+          if bash scripts/device_health_check.sh; then
+            echo "healthy=true" >> "$GITHUB_OUTPUT"
+            echo "DEVICE_HEALTH=OK" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+            echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ----------------------------------------------------------------
+  # 2. Build & run performance / thread-safety tests
+  # ----------------------------------------------------------------
+  perf-tests:
+    needs: device-health
+    if: ${{ needs.device-health.outputs.healthy == 'true' }}
+    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+    env:
+      HARDWARE_AVAILABLE: "true"
+      DEVICE_TYPE: gemini-335
+      PERF_DURATION_SECONDS: ${{ github.event.inputs.perf_duration || '60' }}
+      TS_DURATION_SECONDS:   ${{ github.event.inputs.ts_duration   || '10' }}
+      TS_THREAD_COUNT:       ${{ github.event.inputs.ts_threads    || '4' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DOB_BUILD_TESTS=ON \
+            -DOB_BUILD_EXAMPLES=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build perf test target
+        run: cmake --build build --target extensions ob_perf_test --parallel 4
+
+      - name: Run performance & thread-safety tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+
+          BINARY=$(find build -name ob_perf_test -type f | head -n 1)
+          if [ -z "$BINARY" ]; then
+            echo "ob_perf_test not found under build" >&2
+            exit 1
+          fi
+          echo "Found binary: $BINARY"
+
+          FILTER="${{ github.event.inputs.gtest_filter }}"
+          FILTER_ARG=""
+          if [ -n "$FILTER" ]; then
+            FILTER_ARG="--gtest_filter=$FILTER"
+          fi
+
+          # Run from the parent of extensions/ so the SDK can locate them
+          BINARY_ABS=$(realpath "$BINARY")
+          INSTALL_DIR=$(dirname "$(find build -name extensions -type d | head -n 1)")
+          cd "$INSTALL_DIR"
+
+          "$BINARY_ABS" --gtest_output=xml:reports/perf_junit.xml $FILTER_ARG 2>&1 | tee reports/perf.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Collect CSV artifacts
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports/csv
+          # CSV files are generated in the working directory (next to the binary)
+          INSTALL_DIR=$(dirname "$(find build -name extensions -type d | head -n 1)")
+          find "$INSTALL_DIR" -maxdepth 1 -name '*.csv' -exec cp {} reports/csv/ \; 2>/dev/null || true
+          echo "### CSV files collected" >> "$GITHUB_STEP_SUMMARY"
+          ls -lh reports/csv/ 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo "No CSV files generated." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish perf test report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/perf_junit.xml
+          check_name: Performance & Thread-Safety Test Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: true
+
+      - name: Summarize failures
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path("reports/perf_junit.xml")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          with summary_path.open("a", encoding="utf-8") as summary:
+              summary.write("## Performance & Thread-Safety Test Results\n")
+              if not xml_path.exists():
+                  summary.write("- No JUnit report generated. Check reports/perf.log\n")
+              else:
+                  root = ET.parse(xml_path).getroot()
+                  total = int(root.get("tests", 0))
+                  failures_count = int(root.get("failures", 0))
+                  errors_count = int(root.get("errors", 0))
+                  skipped = int(root.get("skipped", root.get("disabled", 0)))
+                  passed = total - failures_count - errors_count - skipped
+                  summary.write(f"| Total | Passed | Failed | Errors | Skipped |\n")
+                  summary.write(f"|-------|--------|--------|--------|---------|\n")
+                  summary.write(f"| {total} | {passed} | {failures_count} | {errors_count} | {skipped} |\n\n")
+
+                  failures = []
+                  for tc in root.iter("testcase"):
+                      if tc.find("failure") is not None or tc.find("error") is not None:
+                          suite = tc.get("classname") or "unknown"
+                          name = tc.get("name") or "unknown"
+                          msg = ""
+                          fail_el = tc.find("failure")
+                          if fail_el is not None:
+                              msg = (fail_el.get("message") or "")[:200]
+                          failures.append((f"{suite}.{name}", msg))
+                  if failures:
+                      summary.write("### Failed Cases\n")
+                      for case_name, msg in failures:
+                          summary.write(f"- **{case_name}**")
+                          if msg:
+                              summary.write(f": {msg}")
+                          summary.write("\n")
+                  else:
+                      summary.write("All test cases passed.\n")
+          PY
+
+      - name: Upload test reports & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-reports-${{ github.run_id }}
+          path: |
+            reports/*.xml
+            reports/*.log
+          retention-days: 30
+
+      - name: Upload CSV data files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-csv-${{ github.run_id }}
+          path: reports/csv/
+          retention-days: 30
+
+  # ----------------------------------------------------------------
+  # 3. Infra failure summary (when device is unhealthy)
+  # ----------------------------------------------------------------
+  infra-summary:
+    needs: device-health
+    if: ${{ needs.device-health.outputs.healthy != 'true' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Report infra failure
+        run: |
+          echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
+          echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
+          echo "[HEALTH FAIL] Check device connections, power, and runner configuration." >> "$GITHUB_STEP_SUMMARY"
