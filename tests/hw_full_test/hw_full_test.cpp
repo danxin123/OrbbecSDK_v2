@@ -117,7 +117,10 @@ TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_01_usb_device_enum) {
 
 TEST_F(TC_CPP_02_Discovery_HW, TC_CPP_02_02_net_device_enum_toggle) {
     /// Test case: net device enum toggle.
-    ENV().skipIfNot335leOr435le();
+    const int currentPid = devInfo_->getPid();
+    if(!TestEnvironment::isPid335leOr435le(currentPid)) {
+        GTEST_SKIP() << "Test requires Gemini 335Le/435Le, current pid: 0x" << std::hex << currentPid;
+    }
 
     auto hasExpectedDevice = [&](const std::shared_ptr<ob::DeviceList> &devList) {
         if(!devList) {
@@ -385,6 +388,17 @@ TEST_F(TC_CPP_04_DeviceInfo, TC_CPP_04_02_id_fields) {
 
 TEST_F(TC_CPP_04_DeviceInfo, TC_CPP_04_03_net_ip_info) {
     /// Test case: net ip info.
+    const int currentPid = devInfo_->getPid();
+    if(!TestEnvironment::isPid335leOr435le(currentPid)) {
+        GTEST_SKIP() << "Test requires Gemini 335Le/435Le, current pid: 0x" << std::hex << currentPid;
+    }
+
+    const char *connType = devInfo_->getConnectionType();
+    if(connType == nullptr || std::string(connType) != "Ethernet") {
+        GTEST_SKIP() << "Test requires Ethernet connection, current connection type: "
+                     << (connType ? connType : "null");
+    }
+
     auto ip = devInfo_->getIpAddress();
     ASSERT_NE(ip, nullptr);
     EXPECT_NE(std::string(ip), "0.0.0.0");
