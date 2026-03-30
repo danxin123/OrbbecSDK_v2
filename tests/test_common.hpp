@@ -12,6 +12,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cctype>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -164,8 +165,8 @@ private:
         hwAvailable_  = true;
         deviceSerial_ = getEnv("DEVICE_SERIAL");
 
-        bagPath_     = getEnv("PLAYBACK_BAG_PATH");
         allBagPaths_ = findAllPlaybackBags();
+        bagPath_     = resolvePlaybackBagPath("tests/resource/rosbag/Orbbec Gemini 335L_CP3L44P00042_20260330135657.bag", allBagPaths_);
         if(bagPath_.empty()) {
             if(!allBagPaths_.empty()) {
                 bagPath_ = allBagPaths_.front();
@@ -211,6 +212,82 @@ private:
     static std::string getEnv(const char *name, const char *fallback = "") {
         const char *val = std::getenv(name);
         return val ? std::string(val) : std::string(fallback);
+    }
+
+    static bool fileExists(const std::string &path) {
+        if(path.empty()) {
+            return false;
+        }
+        std::ifstream f(path, std::ios::binary);
+        return static_cast<bool>(f);
+    }
+
+    static bool isAbsolutePath(const std::string &path) {
+        if(path.empty()) {
+            return false;
+        }
+#ifdef _WIN32
+        if(path.size() >= 2 && std::isalpha(static_cast<unsigned char>(path[0])) && path[1] == ':') {
+            return true;
+        }
+        if(path.size() >= 2 && ((path[0] == '\\' && path[1] == '\\') || (path[0] == '/' && path[1] == '/'))) {
+            return true;
+        }
+#endif
+        return path[0] == '/';
+    }
+
+    static std::string stripSurroundingQuotes(const std::string &path) {
+        if(path.size() >= 2) {
+            char first = path.front();
+            char last  = path.back();
+            if((first == '"' && last == '"') || (first == '\'' && last == '\'')) {
+                return path.substr(1, path.size() - 2);
+            }
+        }
+        return path;
+    }
+
+    static std::string baseName(const std::string &path) {
+        if(path.empty()) {
+            return "";
+        }
+        auto pos = path.find_last_of("\\/");
+        if(pos == std::string::npos) {
+            return path;
+        }
+        return path.substr(pos + 1);
+    }
+
+    static std::string resolvePlaybackBagPath(const std::string &rawPath, const std::vector<std::string> &allBags) {
+        auto path = stripSurroundingQuotes(rawPath);
+        if(path.empty()) {
+            return "";
+        }
+
+        if(fileExists(path)) {
+            return path;
+        }
+
+        // Keep missing absolute paths unchanged so callers still get explicit open-file errors.
+        if(isAbsolutePath(path)) {
+            return path;
+        }
+
+        // For relative PLAYBACK_BAG_PATH, remap by filename from discovered local playback bags.
+        auto wantedName = baseName(path);
+        for(const auto &candidate: allBags) {
+            if(baseName(candidate) == wantedName) {
+                return candidate;
+            }
+        }
+
+        // Final fallback: use any discovered bag to avoid CWD-sensitive false negatives.
+        if(!allBags.empty()) {
+            return allBags.front();
+        }
+
+        return path;
     }
 
     static bool tryGetFirstDevicePid(int &pid) {
@@ -371,16 +448,6 @@ private:
         // Prefer the canonical resource layout; keep legacy paths as fallback.
         const std::vector<std::string> candidateDirs = {
             "tests/resource/rosbag",
-            "../tests/resource/rosbag",
-            "../../tests/resource/rosbag",
-            "../../../tests/resource/rosbag",
-            "../../../../tests/resource/rosbag",
-            // legacy paths
-            "tests/rosbag",
-            "../tests/rosbag",
-            "../../tests/rosbag",
-            "../../../tests/rosbag",
-            "../../../../tests/rosbag",
         };
 
         for(const auto &dir: candidateDirs) {

@@ -693,7 +693,7 @@ protected:
         for(uint32_t i = 0; i < sensorList->getCount(); ++i) {
             config->enableStream(sensorList->getSensorType(i));
         }
-        config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
+        config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ALL_TYPE_FRAME_REQUIRE);
         pipeline->start(config);
         return pipeline;
     }
