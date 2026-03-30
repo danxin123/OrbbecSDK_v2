@@ -15,7 +15,9 @@
       "Bash(cmake --build build --config Release --parallel 4)",
       "Bash(cmake --install build --config Release --prefix build/install)",
       "Bash(./bin/ob_nohw_full_test.exe --gtest_output=xml:nohw_report.xml)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)"
     ]
   }
 }
