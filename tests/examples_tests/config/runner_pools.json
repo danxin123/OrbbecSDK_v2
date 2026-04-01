@@ -26,7 +26,10 @@
       "capabilities": [
         "depth",
         "color",
-        "imu"
+        "imu",
+        "preset",
+        "hdr_merge",
+        "frame_interleave"
       ],
       "device_count": 1,
       "priority": 10,
@@ -58,7 +61,10 @@
       "capabilities": [
         "depth",
         "color",
-        "imu"
+        "imu",
+        "preset",
+        "hdr_merge",
+        "frame_interleave"
       ],
       "device_count": 1,
       "priority": 10,
@@ -91,10 +97,65 @@
       "capabilities": [
         "depth",
         "color",
-        "imu"
+        "imu",
+        "preset",
+        "hdr_merge",
+        "frame_interleave"
       ],
       "device_count": 1,
       "priority": 5,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-femto-bolt",
+      "platform": "linux_x86_64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "sdk",
+        "usb",
+        "femto-bolt"
+      ],
+      "device_series": [
+        "Femto Series"
+      ],
+      "device_models": [
+        "Femto Bolt"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "preset"
+      ],
+      "device_count": 1,
+      "priority": 12,
+      "allow_destructive": false
+    },
+    {
+      "name": "windows-femto-bolt",
+      "platform": "windows_x64",
+      "runs_on": [
+        "self-hosted",
+        "windows",
+        "sdk",
+        "usb",
+        "femto-bolt"
+      ],
+      "device_series": [
+        "Femto Series"
+      ],
+      "device_models": [
+        "Femto Bolt"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "preset"
+      ],
+      "device_count": 1,
+      "priority": 12,
       "allow_destructive": false
     },
     {

@@ -309,6 +309,30 @@ def supports_pool(case: Dict[str, Any], pool: Dict[str, Any]) -> bool:
     return False
 
 
+def pool_match_rank(case: Dict[str, Any], pool: Dict[str, Any]) -> tuple[int, int, int, int]:
+    """Return ranking for candidate pool selection.
+
+    Higher tuple value means a better candidate. Ranking priorities:
+    1) Exact model overlap preferred over series overlap.
+    2) Narrower pool model/series scope preferred (more specific pool wins).
+    3) Lower configured priority value preferred as tie-breaker.
+    """
+    supported_models = {normalize_name(item) for item in case.get("supported_models", [])}
+    supported_series = {normalize_name(item) for item in case.get("supported_series", [])}
+    pool_models = {normalize_name(item) for item in pool.get("device_models", [])}
+    pool_series = {normalize_name(item) for item in pool.get("device_series", [])}
+
+    has_model_overlap = bool(supported_models & pool_models)
+    has_series_overlap = bool(supported_series & pool_series)
+    match_level = 2 if has_model_overlap else (1 if has_series_overlap else 0)
+
+    # Prefer narrower pools when multiple pools match the same case.
+    model_specificity = -len(pool_models)
+    series_specificity = -len(pool_series)
+    priority_tiebreak = -int(pool.get("priority", 100))
+    return (match_level, model_specificity, series_specificity, priority_tiebreak)
+
+
 def batch(items: Sequence[str], batch_size: int) -> List[List[str]]:
     result: List[List[str]] = []
     for index in range(0, len(items), batch_size):
@@ -329,7 +353,7 @@ def generate_matrix(manifest: Dict[str, Any], runner_pools: Dict[str, Any], batc
             candidates = [pool for pool in pools if pool["platform"] == platform and supports_pool(case, pool)]
             if not candidates:
                 continue
-            pool = candidates[0]
+            pool = max(candidates, key=lambda item: pool_match_rank(case, item))
             assigned_platforms.append(platform)
             grouped.setdefault(pool["name"], {"pool": pool, "case_ids": []})["case_ids"].append(case["id"])
 

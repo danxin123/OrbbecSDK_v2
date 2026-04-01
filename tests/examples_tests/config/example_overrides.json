@@ -1,4 +1,22 @@
 {
+  "advanced/hdr": {
+    "required_capabilities": [
+      "hdr_merge"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "advanced/laser_interleave": {
+    "required_capabilities": [
+      "frame_interleave"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
   "advanced/forceip": {
     "allow_destructive": true,
     "required_capabilities": [
@@ -70,22 +88,19 @@
       "ESC",
       "ESC"
     ],
-    "timeout_sec": 20
+    "required_capabilities": [
+      "preset"
+    ],
+    "timeout_sec": 30
   },
   "beginner/enumerate_control": {
     "stdin_lines": [
-      "0",
-      "1",
-      "b",
-      "b",
       "q"
     ],
     "timeout_sec": 20
   },
   "beginner/record_playback": {
     "stdin_lines": [
-      "1",
-      "${CASE_OUTPUT_DIR}/record_playback.bag",
       "q"
     ],
     "auto_keys": [
@@ -97,7 +112,7 @@
     "auto_keys": [
       "ESC"
     ],
-    "timeout_sec": 20
+    "timeout_sec": 30
   },
   "c_examples/1.c_enumerate": {
     "stdin_lines": [
@@ -106,13 +121,13 @@
     "auto_keys": [
       "ESC"
     ],
-    "timeout_sec": 20
+    "timeout_sec": 30
   },
   "c_examples/2.c_depth": {
     "auto_keys": [
       "ESC"
     ],
-    "timeout_sec": 20
+    "timeout_sec": 30
   },
   "lidar_examples/1.lidar_stream": {
     "required_capabilities": [

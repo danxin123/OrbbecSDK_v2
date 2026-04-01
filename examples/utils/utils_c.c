@@ -288,8 +288,10 @@ char ob_smpl_wait_for_key_press(uint32_t timeout_ms) {
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD  originalMode = 0;
     int    modeChanged  = 0;
+    int    hasConsoleInput = 0;
 
     if(hStdin != INVALID_HANDLE_VALUE && GetConsoleMode(hStdin, &originalMode)) {
+        hasConsoleInput = 1;
         DWORD rawMode = originalMode & ~ENABLE_ECHO_INPUT;
         if(SetConsoleMode(hStdin, rawMode)) {
             modeChanged = 1;
@@ -302,13 +304,6 @@ char ob_smpl_wait_for_key_press(uint32_t timeout_ms) {
     }
     DWORD start_time = GetTickCount();
     while(true) {
-        if(_kbhit()) {
-            char ch = (char)_getch();
-            if(modeChanged) {
-                SetConsoleMode(hStdin, originalMode);
-            }
-            return ch;
-        }
         {
             char auto_key = ob_smpl_test_poll_auto_key();
             if(auto_key != 0) {
@@ -317,6 +312,13 @@ char ob_smpl_wait_for_key_press(uint32_t timeout_ms) {
                 }
                 return auto_key;
             }
+        }
+        if(hasConsoleInput && _kbhit()) {
+            char ch = (char)_getch();
+            if(modeChanged) {
+                SetConsoleMode(hStdin, originalMode);
+            }
+            return ch;
         }
         if(timeout_ms > 0 && GetTickCount() - start_time > timeout_ms) {
             if(modeChanged) {
