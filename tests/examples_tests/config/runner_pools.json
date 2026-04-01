@@ -1,0 +1,184 @@
+{
+  "pools": [
+    {
+      "name": "linux-gemini-335",
+      "platform": "linux_x86_64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "sdk",
+        "usb",
+        "gemini-335"
+      ],
+      "device_series": [
+        "Gemini 330 Series"
+      ],
+      "device_models": [
+        "Gemini 330",
+        "Gemini 330L",
+        "Gemini 335",
+        "Gemini 335L",
+        "Gemini 335Le",
+        "Gemini 336",
+        "Gemini 336L",
+        "Gemini 335Lg"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu"
+      ],
+      "device_count": 1,
+      "priority": 10,
+      "allow_destructive": false
+    },
+    {
+      "name": "windows-gemini-335",
+      "platform": "windows_x64",
+      "runs_on": [
+        "self-hosted",
+        "windows",
+        "sdk",
+        "usb",
+        "gemini-335"
+      ],
+      "device_series": [
+        "Gemini 330 Series"
+      ],
+      "device_models": [
+        "Gemini 330",
+        "Gemini 330L",
+        "Gemini 335",
+        "Gemini 335L",
+        "Gemini 335Le",
+        "Gemini 336",
+        "Gemini 336L",
+        "Gemini 335Lg"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu"
+      ],
+      "device_count": 1,
+      "priority": 10,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-arm64-gemini-335",
+      "platform": "linux_arm64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "arm64",
+        "sdk",
+        "usb",
+        "gemini-335"
+      ],
+      "device_series": [
+        "Gemini 330 Series"
+      ],
+      "device_models": [
+        "Gemini 330",
+        "Gemini 330L",
+        "Gemini 335",
+        "Gemini 335L",
+        "Gemini 335Le",
+        "Gemini 336",
+        "Gemini 336L",
+        "Gemini 335Lg"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu"
+      ],
+      "device_count": 1,
+      "priority": 5,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-lidar",
+      "platform": "linux_x86_64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "sdk",
+        "lidar"
+      ],
+      "device_series": [
+        "LiDAR Series"
+      ],
+      "device_models": [
+        "Orbbec LiDAR"
+      ],
+      "capabilities": [
+        "lidar",
+        "playback_bag"
+      ],
+      "device_count": 1,
+      "priority": 20,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-multi-device",
+      "platform": "linux_x86_64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "sdk",
+        "usb",
+        "multi-device",
+        "gemini-335"
+      ],
+      "device_series": [
+        "Gemini 330 Series"
+      ],
+      "device_models": [
+        "Gemini 330",
+        "Gemini 330L",
+        "Gemini 335",
+        "Gemini 335L",
+        "Gemini 335Le",
+        "Gemini 336",
+        "Gemini 336L",
+        "Gemini 335Lg"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "multi_device"
+      ],
+      "device_count": 2,
+      "priority": 15,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-gmsl",
+      "platform": "linux_arm64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "arm64",
+        "sdk",
+        "gmsl"
+      ],
+      "device_series": [
+        "Gemini 330 Series"
+      ],
+      "device_models": [
+        "Gemini 335Lg"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "multi_device",
+        "gmsl"
+      ],
+      "device_count": 2,
+      "priority": 20,
+      "allow_destructive": false
+    }
+  ]
+}

@@ -24,7 +24,7 @@ static std::string replaceExtension(const std::string &path, const std::string &
 
 std::string saveFrame(std::shared_ptr<const ob::Frame> frame, const std::string &path) {
     if(!frame) return "";
-    std::string name = replaceExtension(path, ".png");
+    std::string name = replaceExtension(resolveSaveOutputPath(path), ".png");
     if(ob::FrameSaveHelper::saveFrameToPng(name.c_str(), frame)) {
         return name;
     }

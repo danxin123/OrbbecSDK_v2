@@ -1,0 +1,153 @@
+{
+  "advanced/forceip": {
+    "allow_destructive": true,
+    "required_capabilities": [
+      "network_device",
+      "destructive"
+    ],
+    "stdin_lines": [
+      "0",
+      "192.168.10.10",
+      "255.255.255.0",
+      "192.168.10.1"
+    ],
+    "timeout_sec": 30
+  },
+  "advanced/multi_devices_sync": {
+    "required_capabilities": [
+      "multi_device"
+    ],
+    "min_device_count": 2,
+    "stdin_lines": [
+      "1"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 30
+  },
+  "advanced/multi_devices_sync_gmsltrigger": {
+    "required_capabilities": [
+      "multi_device",
+      "gmsl"
+    ],
+    "min_device_count": 2,
+    "auto_keys": [
+      "ESC"
+    ],
+    "supported_platforms": [
+      "linux_x86_64",
+      "linux_arm64"
+    ],
+    "timeout_sec": 30
+  },
+  "advanced/optional_depth_presets_update": {
+    "allow_destructive": true,
+    "required_capabilities": [
+      "depth_preset_update",
+      "destructive"
+    ],
+    "stdin_lines": [
+      "0",
+      "${DEFAULT_PRESET_BIN}",
+      "",
+      "q"
+    ],
+    "timeout_sec": 45
+  },
+  "advanced/post_processing": {
+    "stdin_lines": [
+      "q"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "advanced/preset": {
+    "auto_keys": [
+      "0",
+      "ESC",
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "beginner/enumerate_control": {
+    "stdin_lines": [
+      "0",
+      "1",
+      "b",
+      "b",
+      "q"
+    ],
+    "timeout_sec": 20
+  },
+  "beginner/record_playback": {
+    "stdin_lines": [
+      "1",
+      "${CASE_OUTPUT_DIR}/record_playback.bag",
+      "q"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 25
+  },
+  "c_examples/0.c_quick_start": {
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "c_examples/1.c_enumerate": {
+    "stdin_lines": [
+      "q"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "c_examples/2.c_depth": {
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "lidar_examples/1.lidar_stream": {
+    "required_capabilities": [
+      "lidar"
+    ],
+    "auto_keys": [
+      "0",
+      "0",
+      "ESC"
+    ],
+    "timeout_sec": 20
+  },
+  "lidar_examples/3.lidar_record": {
+    "required_capabilities": [
+      "lidar"
+    ],
+    "stdin_lines": [
+      "${CASE_OUTPUT_DIR}/lidar_record.bag"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 25
+  },
+  "lidar_examples/4.lidar_playback": {
+    "required_capabilities": [
+      "lidar",
+      "playback_bag"
+    ],
+    "stdin_lines": [
+      "${DEFAULT_BAG}"
+    ],
+    "auto_keys": [
+      "ESC"
+    ],
+    "timeout_sec": 25
+  }
+}

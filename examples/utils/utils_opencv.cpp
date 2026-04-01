@@ -102,7 +102,7 @@ static std::string replaceExtension(const std::string &path, const std::string &
 
 std::string saveFrame(std::shared_ptr<const ob::Frame> frame, const std::string &path) {
     if(!frame) return "";
-    std::string name = replaceExtension(path, ".png");
+    std::string name = replaceExtension(resolveSaveOutputPath(path), ".png");
     if(ob::FrameSaveHelper::saveFrameToPng(name.c_str(), frame)) {
         return name;
     }
@@ -162,6 +162,12 @@ bool CVWindow::run() {
     }
 
     int key = cv::waitKey(1);
+    if(key == -1) {
+        char autoKey = pollTestAutomationKey();
+        if(autoKey != 0) {
+            key = static_cast<unsigned char>(autoKey);
+        }
+    }
     if(key != -1) {
         if(key == ESC_KEY || key == 'q' || key == 'Q') {
             closed_ = true;

@@ -38,6 +38,13 @@ int main() try {
 
         // Select preset to load.
         int  inputOption = ob_smpl::getInputOption();
+        if(inputOption < 0) {
+            break;
+        }
+        if(inputOption >= static_cast<int>(presetLists->getCount())) {
+            std::cout << "Invalid preset index" << std::endl;
+            continue;
+        }
         auto presetName  = presetLists->getName(inputOption);
 
         // Load preset.

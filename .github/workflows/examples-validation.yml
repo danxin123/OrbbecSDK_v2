@@ -1,0 +1,264 @@
+name: Examples Validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - examples/**
+      - tests/examples_tests/**
+      - .github/workflows/examples-validation.yml
+
+jobs:
+  discover:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.export.outputs.matrix }}
+      has_matrix: ${{ steps.export.outputs.has_matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Generate manifest and matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/examples/discovery
+          python tests/examples_tests/generate_examples_manifest.py \
+            --workspace-root . \
+            --output reports/examples/discovery/examples_manifest.json \
+            --overrides tests/examples_tests/config/example_overrides.json
+          python tests/examples_tests/generate_ci_matrix.py \
+            --manifest reports/examples/discovery/examples_manifest.json \
+            --runner-pools tests/examples_tests/config/runner_pools.json \
+            --output-matrix reports/examples/discovery/examples_matrix.json \
+            --output-unassigned reports/examples/discovery/examples_unassigned.json
+
+      - name: Export matrix output
+        id: export
+        shell: bash
+        run: |
+          set -euo pipefail
+          MATRIX_JSON=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('reports/examples/discovery/examples_matrix.json').read_text(encoding='utf-8'))
+          print(json.dumps(payload, separators=(',', ':')))
+          PY
+          )
+          MATRIX_COUNT=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('reports/examples/discovery/examples_matrix.json').read_text(encoding='utf-8'))
+          print(len(payload))
+          PY
+          )
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          if [ "$MATRIX_COUNT" -gt 0 ]; then
+            echo "has_matrix=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_matrix=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summarize discovery
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = json.loads(Path('reports/examples/discovery/examples_manifest.json').read_text(encoding='utf-8'))
+          matrix = json.loads(Path('reports/examples/discovery/examples_matrix.json').read_text(encoding='utf-8'))
+          unassigned = json.loads(Path('reports/examples/discovery/examples_unassigned.json').read_text(encoding='utf-8'))
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## Examples Discovery\n')
+              summary.write(f"- Cases discovered: {manifest.get('case_count', 0)}\n")
+              summary.write(f"- Matrix jobs: {len(matrix)}\n")
+              summary.write(f"- Unassigned case-platform pairs: {len(unassigned)}\n")
+              if unassigned:
+                  summary.write('### Unassigned\n')
+                  for item in unassigned[:20]:
+                      summary.write(f"- {item['case_id']}: {', '.join(item['missing_platforms'])}\n")
+          PY
+
+      - name: Upload discovery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-discovery-${{ github.run_id }}
+          path: reports/examples/discovery/*
+          retention-days: 30
+
+  examples:
+    needs: discover
+    if: ${{ needs.discover.outputs.has_matrix == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    name: ${{ matrix.display_name }}
+    runs-on: ${{ fromJSON(matrix.runs_on) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Configure examples build on Linux
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build_examples \
+            -DOB_BUILD_EXAMPLES=ON \
+            -DOB_BUILD_TESTS=OFF \
+            -DOB_BUILD_TOOLS=OFF \
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build examples on Linux
+        if: runner.os != 'Windows'
+        shell: bash
+        run: cmake --build build_examples --parallel 4
+
+      - name: Configure examples build on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S . -B build_examples `
+            -DOB_BUILD_EXAMPLES=ON `
+            -DOB_BUILD_TESTS=OFF `
+            -DOB_BUILD_TOOLS=OFF `
+            -DOB_BUILD_DOCS=OFF
+
+      - name: Build examples on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake --build build_examples --config Release --parallel 4
+
+      - name: Run examples batch on Linux
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/examples/${{ matrix.job_id }}
+          python tests/examples_tests/generate_examples_manifest.py \
+            --workspace-root . \
+            --output reports/examples/${{ matrix.job_id }}/examples_manifest.json \
+            --overrides tests/examples_tests/config/example_overrides.json
+          python tests/examples_tests/run_examples_suite.py \
+            --manifest reports/examples/${{ matrix.job_id }}/examples_manifest.json \
+            --build-root build_examples \
+            --case-ids '${{ matrix.case_ids }}' \
+            --suite-name '${{ matrix.job_id }}' \
+            --pool-name '${{ matrix.pool_name }}' \
+            --platform '${{ matrix.platform }}' \
+            --output-dir reports/examples/${{ matrix.job_id }}
+
+      - name: Run examples batch on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path reports/examples/${{ matrix.job_id }} | Out-Null
+          python tests/examples_tests/generate_examples_manifest.py `
+            --workspace-root . `
+            --output reports/examples/${{ matrix.job_id }}/examples_manifest.json `
+            --overrides tests/examples_tests/config/example_overrides.json
+          python tests/examples_tests/run_examples_suite.py `
+            --manifest reports/examples/${{ matrix.job_id }}/examples_manifest.json `
+            --build-root build_examples `
+            --case-ids '${{ matrix.case_ids }}' `
+            --suite-name '${{ matrix.job_id }}' `
+            --pool-name '${{ matrix.pool_name }}' `
+            --platform '${{ matrix.platform }}' `
+            --output-dir reports/examples/${{ matrix.job_id }}
+
+      - name: Upload batch artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-results-${{ matrix.job_id }}
+          path: reports/examples/${{ matrix.job_id }}/**
+          retention-days: 30
+
+  aggregate:
+    needs:
+      - discover
+      - examples
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Download examples artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: examples-results-*
+          path: all_examples_results
+          merge-multiple: true
+
+      - name: Merge reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/examples/aggregate
+          python tests/examples_tests/merge_example_results.py \
+            --input-dir all_examples_results \
+            --output-dir reports/examples/aggregate \
+            --title 'Examples Aggregate Report'
+
+      - name: Publish examples junit
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: reports/examples/aggregate/junit.xml
+          check_name: Examples Aggregate Report
+          detailed_summary: true
+          include_passed: true
+          require_tests: false
+
+      - name: Upload aggregate artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-aggregate-${{ github.run_id }}
+          path: reports/examples/aggregate/*
+          retention-days: 30
+
+      - name: Summarize aggregate result
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result_path = Path('reports/examples/aggregate/results.json')
+          if not result_path.exists():
+              raise SystemExit(0)
+
+          payload = json.loads(result_path.read_text(encoding='utf-8'))
+          stats = payload.get('stats', {})
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## Examples Aggregate Summary\n')
+              summary.write(f"- Total: {stats.get('total', 0)}\n")
+              summary.write(f"- Passed: {stats.get('passed', 0)}\n")
+              summary.write(f"- Failed: {stats.get('failed', 0)}\n")
+              summary.write(f"- Skipped: {stats.get('skipped', 0)}\n")
+          PY

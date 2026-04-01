@@ -11,9 +11,15 @@
 namespace ob_smpl {
 char waitForKeyPressed(uint32_t timeout_ms = 0);
 
+char pollTestAutomationKey();
+
+bool testModeEnabled();
+
 uint64_t getNowTimesMs();
 
 int getInputOption();
+
+std::string resolveSaveOutputPath(const std::string &path);
 
 template <typename T> std::string toString(const T a_value, const int n = 6) {
     std::ostringstream out;

@@ -70,7 +70,12 @@ int main(void) try {
     }
 
     // Stop the Pipeline, no frame data will be generated
-    pipe.stop();
+    try {
+        pipe.stop();
+    }
+    catch(const ob::Error &e) {
+        std::cerr << "pipe.stop warning: " << e.what() << std::endl;
+    }
 
     return 0;
 }

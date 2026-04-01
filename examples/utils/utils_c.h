@@ -27,6 +27,20 @@ uint64_t ob_smpl_get_current_timestamp_ms(void);
 char ob_smpl_wait_for_key_press(uint32_t timeout_ms);
 
 /**
+ * @brief Returns whether example test automation mode is enabled.
+ *
+ * @return 1 if enabled, 0 otherwise.
+ */
+int ob_smpl_test_mode_enabled(void);
+
+/**
+ * @brief Poll the next scheduled automation key.
+ *
+ * Returns 0 when no automation key is currently due.
+ */
+char ob_smpl_test_poll_auto_key(void);
+
+/**
  * @brief Check if the device is a LiDAR device.
  *
  * @param device The device to check.
