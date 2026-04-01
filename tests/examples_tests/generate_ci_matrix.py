@@ -10,7 +10,7 @@ from examples_test_utils import dump_json, generate_matrix, load_json
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate CI matrix for examples tests")
     parser.add_argument("--manifest", required=True)
-    parser.add_argument("--runner-pools", required=True)
+    parser.add_argument("--runner-pools", default="scripts/runner/runner_pools.json")
     parser.add_argument("--output-matrix", required=True)
     parser.add_argument("--output-unassigned", required=True)
     parser.add_argument("--batch-size", type=int, default=6)

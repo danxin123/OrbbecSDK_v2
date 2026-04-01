@@ -20,7 +20,7 @@
    - 通过 `config/example_overrides.json` 对交互流程、超时、危险操作进行补充或覆盖。
 
 2. 调度层
-   - `generate_ci_matrix.py` 基于 manifest 和 `config/runner_pools.json` 生成 CI 矩阵。
+   - `generate_ci_matrix.py` 基于 manifest 和 `scripts/runner/runner_pools.json` 生成 CI 矩阵。
    - 每个 runner pool 声明 `platform`、`runs_on`、`device_models`、`device_series`、`capabilities`、`device_count`。
    - 调度器按平台和设备能力做匹配，并将 case 打包成批次，降低单个 job 时长。
 
@@ -102,7 +102,7 @@ HTML 报告按 case 展示：
 - `run_examples_suite.py`: 执行 examples 并产出单 job 报告
 - `merge_example_results.py`: 聚合多个 job 的报告
 - `config/example_overrides.json`: 特殊交互/危险 case 配置
-- `config/runner_pools.json`: CI runner 池定义
+- `scripts/runner/runner_pools.json`: SDK 全局 CI runner 池定义
 
 ## 本地使用方式
 

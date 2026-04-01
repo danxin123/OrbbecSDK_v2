@@ -6,38 +6,94 @@ on:
   workflow_dispatch:
 
 jobs:
-  device-health:
-    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+  discover-hw-runners:
+    runs-on: ubuntu-22.04
     outputs:
-      healthy: ${{ steps.health.outputs.healthy }}
+      matrix: ${{ steps.export.outputs.matrix }}
+      has_matrix: ${{ steps.export.outputs.has_matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Device health check
-        id: health
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Generate hw_full_test matrix from global runner pools
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x scripts/device_health_check.sh
-          if bash scripts/device_health_check.sh; then
-            echo "healthy=true" >> "$GITHUB_OUTPUT"
-            echo "DEVICE_HEALTH=OK" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reports/hw_discovery
+          python scripts/runner/generate_hw_full_test_matrix.py \
+            --runner-pools scripts/runner/runner_pools.json \
+            --platform linux_x86_64 \
+            --required-capabilities depth,color \
+            --output-matrix reports/hw_discovery/hw_matrix.json
+
+      - name: Export matrix output
+        id: export
+        shell: bash
+        run: |
+          set -euo pipefail
+          MATRIX_JSON=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('reports/hw_discovery/hw_matrix.json').read_text(encoding='utf-8'))
+          print(json.dumps(payload, separators=(',', ':')))
+          PY
+          )
+          MATRIX_COUNT=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('reports/hw_discovery/hw_matrix.json').read_text(encoding='utf-8'))
+          print(len(payload))
+          PY
+          )
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          if [ "$MATRIX_COUNT" -gt 0 ]; then
+            echo "has_matrix=true" >> "$GITHUB_OUTPUT"
           else
-            echo "healthy=false" >> "$GITHUB_OUTPUT"
-            echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
-            echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
+            echo "has_matrix=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Summarize discovery
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          matrix = json.loads(Path('reports/hw_discovery/hw_matrix.json').read_text(encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## HW Runner Discovery\n')
+              summary.write(f"- Matrix jobs: {len(matrix)}\n")
+              for item in matrix:
+                  summary.write(f"- {item['pool_name']} -> {item['platform']}\n")
+          PY
+
   cpp-tests:
-    needs: device-health
-    if: ${{ needs.device-health.outputs.healthy == 'true' }}
-    runs-on: [self-hosted, linux, sdk, usb, gemini-335]
+    needs: discover-hw-runners
+    if: ${{ needs.discover-hw-runners.outputs.has_matrix == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.discover-hw-runners.outputs.matrix) }}
+    name: ${{ matrix.display_name }}
+    runs-on: ${{ fromJSON(matrix.runs_on) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Device health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/device_health_check.sh
+          bash scripts/device_health_check.sh
 
       - name: Configure
         run: |
@@ -67,7 +123,7 @@ jobs:
       - name: Run non-destructive hardware test
         env:
           HARDWARE_AVAILABLE: "true"
-          DEVICE_TYPE: gemini-335
+          DEVICE_TYPE: ${{ matrix.pool_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -85,63 +141,26 @@ jobs:
         uses: mikepenz/action-junit-report@v5
         with:
           report_paths: reports/*.xml
-          check_name: Daily HW Smoke Test Report
+          check_name: Daily HW Smoke Test Report (${{ matrix.pool_name }})
           detailed_summary: true
           include_passed: true
           require_tests: true
-
-      - name: Summarize failed daily cases
-        if: always()
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import os
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-
-          entries = [
-              ("NoHW", Path("reports/nohw_junit.xml"), Path("reports/nohw.log")),
-              ("Hardware", Path("reports/hw_junit.xml"), Path("reports/hw.log")),
-          ]
-          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
-
-          with summary_path.open("a", encoding="utf-8") as summary:
-              summary.write("## Daily HW Smoke Failures\n")
-              for title, xml_path, log_path in entries:
-                  summary.write(f"### {title}\n")
-                  if not xml_path.exists():
-                      summary.write(f"- No JUnit report generated. Check {log_path.as_posix()}\n")
-                      continue
-                  failures = []
-                  for testcase in ET.parse(xml_path).getroot().iter("testcase"):
-                      if testcase.find("failure") is not None or testcase.find("error") is not None:
-                          suite = testcase.get("classname") or "unknown"
-                          name = testcase.get("name") or "unknown"
-                          failures.append(f"{suite}.{name}")
-                  if failures:
-                      for item in failures:
-                          summary.write(f"- {item} -> {log_path.as_posix()}\n")
-                  else:
-                      summary.write("- No failed test cases.\n")
-          PY
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-hw-reports-${{ github.run_id }}
+          name: daily-hw-reports-${{ matrix.pool_name }}-${{ github.run_id }}
           path: |
             reports/*.xml
             reports/*.log
           retention-days: 30
 
-  infra-summary:
-    needs: device-health
-    if: ${{ needs.device-health.outputs.healthy != 'true' }}
+  no-runner-summary:
+    needs: discover-hw-runners
+    if: ${{ needs.discover-hw-runners.outputs.has_matrix != 'true' }}
     runs-on: ubuntu-22.04
     steps:
-      - name: Report infra failure
+      - name: Report missing runner mapping
         run: |
-          echo "[HEALTH FAIL] Device infrastructure not ready." >> "$GITHUB_STEP_SUMMARY"
-          echo "[HEALTH FAIL] This is an INFRASTRUCTURE failure, not a test failure." >> "$GITHUB_STEP_SUMMARY"
-          echo "[HEALTH FAIL] Check device connections, power, and runner configuration." >> "$GITHUB_STEP_SUMMARY"
+          echo "No eligible runner pool found for hw_full_test in scripts/runner/runner_pools.json" >> "$GITHUB_STEP_SUMMARY"

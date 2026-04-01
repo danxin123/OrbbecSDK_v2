@@ -34,7 +34,7 @@ jobs:
             --overrides tests/examples_tests/config/example_overrides.json
           python tests/examples_tests/generate_ci_matrix.py \
             --manifest reports/examples/discovery/examples_manifest.json \
-            --runner-pools tests/examples_tests/config/runner_pools.json \
+            --runner-pools scripts/runner/runner_pools.json \
             --output-matrix reports/examples/discovery/examples_matrix.json \
             --output-unassigned reports/examples/discovery/examples_unassigned.json
 
