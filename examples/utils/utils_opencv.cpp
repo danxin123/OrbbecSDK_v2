@@ -109,7 +109,7 @@ std::string saveFrame(std::shared_ptr<const ob::Frame> frame, const std::string 
     return "";
 }
 
-const std::string defaultKeyMapPrompt = "'Esc': Exit Window, '?': Show Key Map";
+const std::string defaultKeyMapPrompt = "'Esc/Q': Exit Window, 'S': Save Frame, '?': Show Key Map";
 CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMode arrangeMode)
     : name_(std::move(name)),
       arrangeMode_(arrangeMode),
@@ -120,6 +120,8 @@ CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMod
       showSyncTimeInfo_(false),
       isWindowDestroyed_(false),
       alpha_(0.6f),
+      autoSaveEnabled_(true),
+      saveIndex_(0),
       showPrompt_(false) {
 
 #if defined(TO_DISABLE_OPENCV_LOG)
@@ -161,9 +163,38 @@ bool CVWindow::run() {
 
     int key = cv::waitKey(1);
     if(key != -1) {
-        if(key == ESC_KEY) {
+        if(key == ESC_KEY || key == 'q' || key == 'Q') {
             closed_ = true;
             srcFrameGroupsCv_.notify_all();
+        }
+        else if(key == 's' || key == 'S') {
+            if(autoSaveEnabled_) {
+                // Copy frames under lock, save outside to avoid blocking the pipeline
+                decltype(srcFrameGroups_) framesCopy;
+                {
+                    std::lock_guard<std::mutex> lock(srcFrameGroupsMtx_);
+                    framesCopy = srcFrameGroups_;
+                }
+                int savedCount = 0;
+                for(auto &groupItem: framesCopy) {
+                    for(auto &frame: groupItem.second) {
+                        if(!frame)
+                            continue;
+                        std::string baseName = frameTypeToSavePrefix(frame->getType()) + "_" + std::to_string(saveIndex_);
+                        auto        saved    = saveFrame(frame, baseName);
+                        if(!saved.empty()) {
+                            addLog("Saved: " + saved);
+                            savedCount++;
+                        }
+                    }
+                }
+                if(savedCount > 0) {
+                    saveIndex_++;
+                }
+                else {
+                    addLog("No frames to save");
+                }
+            }
         }
         else if(key == '1') {
             arrangeMode_ = ARRANGE_SINGLE;
@@ -256,6 +287,10 @@ void CVWindow::setKeyPrompt(const std::string &prompt) {
     prompt_ = defaultKeyMapPrompt + ", " + prompt;
     // Keep key prompt visible after custom prompt is set.
     showPrompt_ = true;
+}
+
+void CVWindow::setAutoSaveEnabled(bool enabled) {
+    autoSaveEnabled_ = enabled;
 }
 
 void CVWindow::addLog(const std::string &log) {

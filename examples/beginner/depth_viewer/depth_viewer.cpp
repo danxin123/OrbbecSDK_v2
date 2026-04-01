@@ -24,29 +24,6 @@ int main(void) try {
 
     // Create a window for rendering.
     ob_smpl::CVWindow win("Depth Viewer", 1280, 720, ob_smpl::ARRANGE_SINGLE);
-    win.setKeyPrompt("'S': Save depth frame, 'Esc': Exit");
-
-    uint32_t saveIndex = 0;
-
-    win.setKeyPressedCallback([&](int key) {
-        if(key == 's' || key == 'S') {
-            // Save latest depth frame
-            auto frameSet = pipe.waitForFrameset(100);
-            if(frameSet) {
-                auto depthFrameRaw = frameSet->getFrame(OB_FRAME_DEPTH);
-                if(depthFrameRaw) {
-                    auto        depthFrame = depthFrameRaw->as<ob::DepthFrame>();
-                    std::string baseName   = "depth_" + std::to_string(depthFrame->getWidth()) + "x" + std::to_string(depthFrame->getHeight()) + "_"
-                                           + std::to_string(saveIndex);
-                    auto saved = ob_smpl::saveFrame(depthFrame, baseName);
-                    if(!saved.empty()) {
-                        win.addLog("Saved: " + saved);
-                        saveIndex++;
-                    }
-                }
-            }
-        }
-    });
 
     while(win.run()) {
         auto frameSet = pipe.waitForFrameset(100);

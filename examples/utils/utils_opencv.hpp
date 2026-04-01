@@ -50,6 +50,21 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
 // @return The actual filename written, or "" on failure
 std::string saveFrame(std::shared_ptr<const ob::Frame> frame, const std::string &path);
 
+// Map a frame type to a short filename prefix for saving (e.g. OB_FRAME_DEPTH -> "depth").
+inline std::string frameTypeToSavePrefix(OBFrameType type) {
+    switch(type) {
+    case OB_FRAME_DEPTH: return "depth";
+    case OB_FRAME_COLOR:
+    case OB_FRAME_COLOR_LEFT:
+    case OB_FRAME_COLOR_RIGHT: return "color";
+    case OB_FRAME_IR:
+    case OB_FRAME_IR_LEFT:
+    case OB_FRAME_IR_RIGHT: return "ir";
+    case OB_FRAME_CONFIDENCE: return "confidence";
+    default: return "frame";
+    }
+}
+
 class CVWindow {
 public:
     // create a window with the specified name, width and height
@@ -87,6 +102,9 @@ public:
     // set the key prompt
     void setKeyPrompt(const std::string &prompt);
 
+    // enable or disable built-in save-on-S (default: enabled)
+    void setAutoSaveEnabled(bool enabled);
+
     // set the log message
     void addLog(const std::string &log);
 
@@ -108,6 +126,8 @@ private:
     uint64_t    logCreatedTime_;
 
     std::function<void(int)> keyPressedCallback_;
+    bool                     autoSaveEnabled_;
+    uint32_t                 saveIndex_;
 
 #ifdef OB_HAVE_OPENCV
     // --- OpenCV-mode private members ---

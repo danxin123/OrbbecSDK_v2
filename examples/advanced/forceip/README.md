@@ -8,6 +8,14 @@ This sample configures the IP address of a supported Ethernet device with the Gi
 - recover a device whose current IP is outside your local subnet
 - verify basic Ethernet device discovery and network configuration
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 335Le |
+| Gemini 435 Series | Gemini 435Le |
+| Femto Series |  Femto Mega, Femto Mega I |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

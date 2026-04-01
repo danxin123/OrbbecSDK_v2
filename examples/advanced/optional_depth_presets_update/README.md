@@ -8,6 +8,15 @@ This sample updates optional depth preset files on a supported device.
 - validate preset update workflows during manufacturing or testing
 - check the preset list before and after an update
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 330, Gemini 330L, Gemini 335, Gemini 335L, Gemini 335Le, Gemini 336, Gemini 336L, Gemini 335Lg |
+| Gemini 305 Series | Gemini 305 |
+| Gemini 340 Series | Gemini 345 |
+| Gemini 435 Series | Gemini 435Le |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

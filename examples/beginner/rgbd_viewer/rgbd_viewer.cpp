@@ -26,35 +26,6 @@ int main(void) try {
 
     // Create a window for rendering with overlay mode.
     ob_smpl::CVWindow win("RGBD Viewer", 1280, 720, ob_smpl::ARRANGE_OVERLAY);
-    win.setKeyPrompt("'S': Save frames, 'Esc': Exit");
-
-    uint32_t saveIndex = 0;
-
-    win.setKeyPressedCallback([&](int key) {
-        if(key == 's' || key == 'S') {
-            auto frameSet = pipe->waitForFrameset(100);
-            if(!frameSet) return;
-
-            auto aligned    = alignFilter->process(frameSet);
-            auto alignedSet = aligned ? aligned->as<ob::FrameSet>() : nullptr;
-            if(!alignedSet) return;
-
-            auto depthRaw = alignedSet->getFrame(OB_FRAME_DEPTH);
-            auto colorRaw = alignedSet->getFrame(OB_FRAME_COLOR);
-
-            if(depthRaw) {
-                auto baseName = "depth_" + std::to_string(saveIndex);
-                auto saved    = ob_smpl::saveFrame(depthRaw, baseName);
-                if(!saved.empty()) win.addLog("Saved: " + saved);
-            }
-            if(colorRaw) {
-                auto baseName = "color_" + std::to_string(saveIndex);
-                auto saved    = ob_smpl::saveFrame(colorRaw, baseName);
-                if(!saved.empty()) win.addLog("Saved: " + saved);
-            }
-            saveIndex++;
-        }
-    });
 
     while(win.run()) {
         auto frameSet = pipe->waitForFrameset(100);

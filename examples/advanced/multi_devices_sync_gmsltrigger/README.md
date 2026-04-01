@@ -8,6 +8,12 @@ This sample configures and starts a PWM trigger source for supported GMSL synchr
 - test PWM trigger control through `/dev/camsync`
 - use it together with the multi-device sync example on supported platforms
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 335Lg |
+
 ## Prerequisites
 
 - Linux on a supported NVIDIA Xavier or Orin platform

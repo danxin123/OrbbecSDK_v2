@@ -9,6 +9,12 @@ Use it when you want to understand confidence output and compare it with the cor
 - compare confidence output with depth output
 - validate depth-confidence pairing on supported hardware
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 435 Series | Gemini 435Le |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

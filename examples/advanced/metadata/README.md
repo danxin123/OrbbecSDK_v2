@@ -9,6 +9,15 @@ Use it when you need to inspect timestamps, exposure information, frame counters
 - debug timestamps and frame numbering
 - verify whether a specific metadata field is present on a device
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 330, Gemini 330L, Gemini 335, Gemini 335L, Gemini 335Le, Gemini 336, Gemini 336L, Gemini 335Lg |
+| Gemini 305 Series | Gemini 305 |
+| Gemini 340 Series | Gemini 345 |
+| Gemini 435 Series | Gemini 435Le |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

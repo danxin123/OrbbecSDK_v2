@@ -10,6 +10,12 @@ Use it when you want to debug with recorded data instead of a live device.
 - pause and resume playback during inspection
 - compare live behavior with offline replay behavior
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

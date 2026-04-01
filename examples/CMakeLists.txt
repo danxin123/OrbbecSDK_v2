@@ -43,14 +43,16 @@ add_subdirectory(beginner/imu)
 add_subdirectory(beginner/depth_viewer)
 add_subdirectory(beginner/record_playback)
 add_subdirectory(beginner/rgbd_viewer)
+add_subdirectory(beginner/camera_params)
+add_subdirectory(beginner/hot_plugin)
 
 # ============================================================================
 # Advanced examples
 # ============================================================================
-add_subdirectory(advanced/camera_params)
+
 add_subdirectory(advanced/forceip)
 add_subdirectory(advanced/optional_depth_presets_update)
-add_subdirectory(beginner/hot_plugin)
+
 add_subdirectory(advanced/preset)
 add_subdirectory(advanced/metadata)
 add_subdirectory(advanced/align_modes)
@@ -61,7 +63,7 @@ add_subdirectory(advanced/post_processing)
 add_subdirectory(advanced/hdr)
 add_subdirectory(advanced/laser_interleave)
 add_subdirectory(advanced/multi_devices_sync)
-add_subdirectory(advanced/save_to_disk)
+
 if(OB_BUILD_LINUX)
     add_subdirectory(advanced/multi_devices_sync_gmsltrigger)
 endif()

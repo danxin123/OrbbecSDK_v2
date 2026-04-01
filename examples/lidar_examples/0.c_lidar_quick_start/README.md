@@ -9,6 +9,12 @@ It saves the current LiDAR point cloud to a PLY file when you press a key.
 - verify LiDAR streaming with the C interface
 - save a quick sample point cloud to `LiDARPoints.ply`
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

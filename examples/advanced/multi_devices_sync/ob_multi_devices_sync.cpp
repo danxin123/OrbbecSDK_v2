@@ -256,6 +256,7 @@ int testMultiDeviceSync() {
 
         // Create a window for rendering and set the resolution of the window
         ob_smpl::CVWindow win("MultiDeviceSyncViewer", 1600, 900, ob_smpl::ARRANGE_GRID);
+        win.setAutoSaveEnabled(false);
 
         // set key prompt
         win.setKeyPrompt("'S': syncDevicesTime, 'T': software trigger");

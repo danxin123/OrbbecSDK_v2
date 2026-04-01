@@ -10,6 +10,12 @@ Use it when you need to inspect property ranges, confirm permissions, or adjust 
 - get the current value of a property
 - change device parameters from the command line
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

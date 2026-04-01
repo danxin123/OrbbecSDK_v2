@@ -10,6 +10,12 @@ It is the recommended way to capture a reusable LiDAR dataset for offline testin
 - monitor stream frame rate while recording
 - create repeatable input data for algorithm debugging
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

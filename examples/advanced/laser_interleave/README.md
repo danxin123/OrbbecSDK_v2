@@ -8,6 +8,12 @@ This sample demonstrates frame interleave with laser on/off sequences and lets y
 - compare depth and IR output under different laser states
 - learn how to use the `SequenceIdFilter`
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 330, Gemini 330L, Gemini 335, Gemini 335L, Gemini 335Le, Gemini 336, Gemini 336L, Gemini 335Lg |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

@@ -8,6 +8,21 @@ This C API sample enables the depth stream only and prints the distance of the c
 - read raw depth values and convert them to millimeters
 - use a simple C reference for depth-only applications
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 330, Gemini 330L, Gemini 335, Gemini 335L, Gemini 335Le, Gemini 336, Gemini 336L, Gemini 335Lg |
+| Gemini 305 Series | Gemini 305 |
+| Gemini 340 Series | Gemini 345, Gemini 345Lg |
+| Gemini 435 Series | Gemini 435Le |
+| Gemini 2 Series | Gemini 2, Gemini 2L, Gemini 215, Gemini 210 |
+| Femto Series | Femto Bolt, Femto Mega, Femto Mega I |
+| Astra Series | Astra 2 |
+| Astra Mini Series | Astra Mini Pro, Astra Mini S Pro |
+
+> Refer to the [Supported Devices and Firmware](https://github.com/orbbec/OrbbecSDK_v2?tab=readme-ov-file#supported-devices-and-firmware) section in the main README for more details.
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)

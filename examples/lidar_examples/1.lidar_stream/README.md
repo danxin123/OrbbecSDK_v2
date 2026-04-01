@@ -10,6 +10,12 @@ It is the best starting point when you want to understand what a connected LiDAR
 - study frame formats, timestamps, and valid point counts
 - use the sample as a reference for your own LiDAR application
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

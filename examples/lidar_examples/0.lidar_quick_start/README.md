@@ -9,6 +9,12 @@ It starts the default LiDAR stream and saves the current point cloud to a PLY fi
 - save a quick sample point cloud without building a full workflow
 - check the generated PLY file in a point-cloud viewer
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| LiDAR Series | dToF LiDAR Pulsar SL450, dToF LiDAR Pulsar ME450 |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../LiDAR_README.md](../../LiDAR_README.md)

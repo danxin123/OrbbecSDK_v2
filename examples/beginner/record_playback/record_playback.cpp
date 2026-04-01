@@ -80,6 +80,7 @@ void doRecord() {
     std::cout << "IMPORTANT: Always use ESC to stop! Otherwise, the bag file may be corrupted.\n" << std::endl;
 
     ob_smpl::CVWindow win("Recording", 1280, 720, ob_smpl::ARRANGE_GRID);
+    win.setAutoSaveEnabled(false);
 
     std::atomic<bool> isPaused{ false };
     win.setKeyPrompt("'S': Pause/Resume recording, 'Esc': Stop & save");

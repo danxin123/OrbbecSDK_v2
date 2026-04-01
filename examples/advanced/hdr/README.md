@@ -9,6 +9,12 @@ It shows the original depth and infrared frames together with the HDR-merged dep
 - compare original input frames with merged HDR depth output
 - understand how the SDK HDR merge filter is used in a real sample
 
+## Supported Devices
+
+| Device Series | Models |
+|---------------|--------|
+| Gemini 330 Series | Gemini 330, Gemini 330L, Gemini 335, Gemini 335L, Gemini 335Le, Gemini 336, Gemini 336L, Gemini 335Lg |
+
 ## Prerequisites
 
 - Build the examples from the repository root as described in [../../README.md](../../README.md)
