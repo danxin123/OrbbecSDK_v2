@@ -12,6 +12,10 @@
 
 #include <iostream>
 
+#ifdef OB_HAVE_OPENCV
+#include <opencv2/imgcodecs.hpp>
+#endif
+
 int main(void) try {
     auto config = std::make_shared<ob::Config>();
     config->enableVideoStream(OB_STREAM_DEPTH, OB_WIDTH_ANY, OB_HEIGHT_ANY, OB_FPS_ANY, OB_FORMAT_ANY);
@@ -26,6 +30,50 @@ int main(void) try {
 
     // Create a window for rendering with overlay mode.
     ob_smpl::CVWindow win("RGBD Viewer", 1280, 720, ob_smpl::ARRANGE_OVERLAY);
+    uint32_t          overlaySaveIndex = 0;
+    std::shared_ptr<ob::FrameSet> latestAlignedFrameSet;
+
+#ifdef OB_HAVE_OPENCV
+    win.setKeyPressedCallback([&](int key) {
+        if(key != 's' && key != 'S') {
+            return;
+        }
+        if(!latestAlignedFrameSet) {
+            win.addLog("No aligned frames available for RGBD overlay save");
+            return;
+        }
+
+        auto colorFrame = latestAlignedFrameSet->getFrame(OB_FRAME_COLOR);
+        auto depthFrame = latestAlignedFrameSet->getFrame(OB_FRAME_DEPTH);
+        if(!colorFrame || !depthFrame) {
+            win.addLog("Missing color/depth frame for RGBD overlay save");
+            return;
+        }
+
+        auto colorMat = ob_smpl::convertColorFrameToBGR(colorFrame);
+        auto depthMat = ob_smpl::renderDepth3D(depthFrame);
+        if(colorMat.empty() || depthMat.empty()) {
+            win.addLog("Failed to convert frame for RGBD overlay save");
+            return;
+        }
+
+        if(colorMat.size() != depthMat.size()) {
+            cv::resize(depthMat, depthMat, colorMat.size(), 0, 0, cv::INTER_NEAREST);
+        }
+
+        cv::Mat fused;
+        // Depth alpha is 50% to visually validate alignment with color content.
+        cv::addWeighted(colorMat, 0.5, depthMat, 0.5, 0.0, fused);
+
+        std::string path = ob_smpl::resolveSaveOutputPath("rgbd_alignment_overlay_" + std::to_string(overlaySaveIndex++) + ".png");
+        if(cv::imwrite(path, fused)) {
+            win.addLog("Saved: " + path);
+        }
+        else {
+            win.addLog("Failed to save RGBD overlay image");
+        }
+    });
+#endif
 
     while(win.run()) {
         auto frameSet = pipe->waitForFrameset(100);
@@ -43,6 +91,8 @@ int main(void) try {
         if(!alignedFrameSet) {
             continue;
         }
+
+        latestAlignedFrameSet = alignedFrameSet;
 
         // Push aligned frameset to display (CVWindow handles visualization)
         win.pushFramesToView(alignedFrameSet);

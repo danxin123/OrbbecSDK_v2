@@ -108,6 +108,16 @@
     ],
     "timeout_sec": 25
   },
+  "beginner/rgbd_viewer": {
+    "auto_keys": [
+      "S",
+      "S",
+      "ESC"
+    ],
+    "auto_key_initial_delay_ms": 2500,
+    "auto_key_interval_ms": 1400,
+    "timeout_sec": 25
+  },
   "c_examples/0.c_quick_start": {
     "auto_keys": [
       "ESC"

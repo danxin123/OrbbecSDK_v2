@@ -1,14 +1,14 @@
 {
   "pools": [
     {
-      "name": "linux-gemini-335",
+      "name": "linux-gemini-330",
       "platform": "linux_x86_64",
       "runs_on": [
         "self-hosted",
         "linux",
         "sdk",
         "usb",
-        "gemini-335"
+        "gemini-330"
       ],
       "device_series": [
         "Gemini 330 Series"
@@ -21,7 +21,10 @@
         "Gemini 335Le",
         "Gemini 336",
         "Gemini 336L",
-        "Gemini 335Lg"
+        "Gemini 335Lg",
+        "Gemini 305",
+        "Gemini 345",
+        "Gemini 435Le"
       ],
       "capabilities": [
         "depth",
@@ -36,14 +39,14 @@
       "allow_destructive": false
     },
     {
-      "name": "windows-gemini-335",
+      "name": "windows-gemini-330",
       "platform": "windows_x64",
       "runs_on": [
         "self-hosted",
         "windows",
         "sdk",
         "usb",
-        "gemini-335"
+        "gemini-330"
       ],
       "device_series": [
         "Gemini 330 Series"
@@ -56,7 +59,10 @@
         "Gemini 335Le",
         "Gemini 336",
         "Gemini 336L",
-        "Gemini 335Lg"
+        "Gemini 335Lg",
+          "Gemini 305",
+        "Gemini 345",
+        "Gemini 435Le"
       ],
       "capabilities": [
         "depth",
@@ -70,8 +76,9 @@
       "priority": 10,
       "allow_destructive": false
     },
+    
     {
-      "name": "linux-arm64-gemini-335",
+      "name": "linux-arm64-gemini-330",
       "platform": "linux_arm64",
       "runs_on": [
         "self-hosted",
@@ -79,7 +86,7 @@
         "arm64",
         "sdk",
         "usb",
-        "gemini-335"
+        "gemini-330"
       ],
       "device_series": [
         "Gemini 330 Series"
@@ -92,7 +99,10 @@
         "Gemini 335Le",
         "Gemini 336",
         "Gemini 336L",
-        "Gemini 335Lg"
+        "Gemini 335Lg",
+        "Gemini 305",
+        "Gemini 345",
+        "Gemini 435Le"
       ],
       "capabilities": [
         "depth",
@@ -107,20 +117,116 @@
       "allow_destructive": false
     },
     {
-      "name": "linux-femto-bolt",
+      "name": "windows-gemini-2",
+      "platform": "windows_x64",
+      "runs_on": [
+        "self-hosted",
+        "windows",
+        "x64",
+        "sdk",
+        "usb",
+        "gemini-2"
+      ],
+      "device_series": [
+        "Gemini 2 Series"
+      ],
+      "device_models": [
+        "Gemini 2",
+        "Gemini 2L",
+        "Gemini 215",
+        "Astra 2"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "preset",
+        "frame_interleave"
+      ],
+      "device_count": 1,
+      "priority": 5,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-gemini-2",
+      "platform": "linux_x86_64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "x86_64",
+        "sdk",
+        "usb",
+        "gemini-2"
+      ],
+      "device_series": [
+        "Gemini 2 Series"
+      ],
+      "device_models": [
+        "Gemini 2",
+        "Gemini 2L",
+        "Gemini 215",
+        "Astra 2"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "preset",
+        "frame_interleave"
+      ],
+      "device_count": 1,
+      "priority": 5,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-arm64-gemini-2",
+      "platform": "linux_arm64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "arm64",
+        "sdk",
+        "usb",
+        "gemini-2"
+      ],
+      "device_series": [
+        "Gemini 2 Series"
+      ],
+      "device_models": [
+        "Gemini 2",
+        "Gemini 2L",
+        "Gemini 215",
+        "Astra 2"
+      ],
+      "capabilities": [
+        "depth",
+        "color",
+        "imu",
+        "preset",
+        "frame_interleave"
+      ],
+      "device_count": 1,
+      "priority": 5,
+      "allow_destructive": false
+    },
+    {
+      "name": "linux-femto",
       "platform": "linux_x86_64",
       "runs_on": [
         "self-hosted",
         "linux",
         "sdk",
         "usb",
-        "femto-bolt"
+        "femto-bolt",
+        "femto-mega"
       ],
       "device_series": [
-        "Femto Series"
-      ],
+            "Femto Series"
+        ],
       "device_models": [
-        "Femto Bolt"
+        "Femto Bolt",
+        "Femto Mega",
+        "Femto Mega I"
       ],
       "capabilities": [
         "depth",
@@ -133,20 +239,24 @@
       "allow_destructive": false
     },
     {
-      "name": "windows-femto-bolt",
+      "name": "windows-femto",
       "platform": "windows_x64",
       "runs_on": [
         "self-hosted",
         "windows",
         "sdk",
         "usb",
-        "femto-bolt"
+        "femto-bolt",
+        "femto-mega",
+        "femto-mega-i"
       ],
       "device_series": [
         "Femto Series"
       ],
       "device_models": [
-        "Femto Bolt"
+        "Femto Bolt"    ,
+        "Femto Mega",       
+        "Femto Mega I"
       ],
       "capabilities": [
         "depth",
@@ -181,6 +291,7 @@
       "priority": 20,
       "allow_destructive": false
     },
+
     {
       "name": "linux-multi-device",
       "platform": "linux_x86_64",
@@ -229,7 +340,9 @@
         "Gemini 330 Series"
       ],
       "device_models": [
-        "Gemini 335Lg"
+        "Gemini 335Lg",
+        "Gemini 345Lg",
+        "Gemini 305g"
       ],
       "capabilities": [
         "depth",
@@ -240,6 +353,35 @@
       "device_count": 2,
       "priority": 20,
       "allow_destructive": false
+    },
+     {
+      "name": "linux-arm64-astra-mini",
+      "platform": "linux_arm64",
+      "runs_on": [
+        "self-hosted",
+        "linux",
+        "arm64",
+        "sdk",
+        "usb",
+        "astra-mini"
+      ],
+      "device_series": [
+        "Astra Mini Series"
+      ],
+      "device_models": [
+        "Astra mini pro",
+        "Astra mini S pro "
+
+      ],
+      "capabilities": [
+        "depth",
+        "color"
+
+      ],
+      "device_count": 1,
+      "priority": 5,
+      "allow_destructive": false
     }
+
   ]
 }

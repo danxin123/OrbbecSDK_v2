@@ -92,6 +92,70 @@ cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapI
     return result;
 }
 
+cv::Mat convertColorFrameToBGR(std::shared_ptr<const ob::Frame> colorFrame) {
+    if(!colorFrame) {
+        return cv::Mat();
+    }
+    auto videoFrame = colorFrame->as<const ob::VideoFrame>();
+    if(!videoFrame) {
+        return cv::Mat();
+    }
+
+    cv::Mat outMat;
+    switch(videoFrame->getFormat()) {
+    case OB_FORMAT_MJPG: {
+        cv::Mat rawMat(1, videoFrame->getDataSize(), CV_8UC1, videoFrame->getData());
+        outMat = cv::imdecode(rawMat, 1);
+    } break;
+    case OB_FORMAT_NV21: {
+        cv::Mat rawMat(videoFrame->getHeight() * 3 / 2, videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_YUV2BGR_NV21);
+    } break;
+    case OB_FORMAT_YUYV:
+    case OB_FORMAT_YUY2: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC2, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_YUV2BGR_YUY2);
+    } break;
+    case OB_FORMAT_BGR: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
+        outMat = rawMat.clone();
+    } break;
+    case OB_FORMAT_RGB: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_RGB2BGR);
+    } break;
+    case OB_FORMAT_RGBA: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC4, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_RGBA2BGR);
+    } break;
+    case OB_FORMAT_BGRA: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC4, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_BGRA2BGR);
+    } break;
+    case OB_FORMAT_UYVY: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC2, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_YUV2BGR_UYVY);
+    } break;
+    case OB_FORMAT_I420: {
+        cv::Mat rawMat(videoFrame->getHeight() * 3 / 2, videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_YUV2BGR_I420);
+    } break;
+    case OB_FORMAT_Y8: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
+        cv::cvtColor(rawMat, outMat, cv::COLOR_GRAY2BGR);
+    } break;
+    case OB_FORMAT_Y16: {
+        cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_16UC1, videoFrame->getData());
+        cv::Mat gray8;
+        rawMat.convertTo(gray8, CV_8UC1, 255.0 / 65535.0);
+        cv::cvtColor(gray8, outMat, cv::COLOR_GRAY2BGR);
+    } break;
+    default:
+        break;
+    }
+    return outMat;
+}
+
 static std::string replaceExtension(const std::string &path, const std::string &newExt) {
     auto dot = path.rfind('.');
     if(dot != std::string::npos) {
@@ -514,57 +578,7 @@ cv::Mat CVWindow::visualize(std::shared_ptr<const ob::Frame> frame) {
     case OB_FRAME_COLOR_LEFT:
     case OB_FRAME_COLOR_RIGHT: {
         auto videoFrame = frame->as<const ob::VideoFrame>();
-        switch(videoFrame->getFormat()) {
-        case OB_FORMAT_MJPG: {
-            cv::Mat rawMat(1, videoFrame->getDataSize(), CV_8UC1, videoFrame->getData());
-            rstMat = cv::imdecode(rawMat, 1);
-        } break;
-        case OB_FORMAT_NV21: {
-            cv::Mat rawMat(videoFrame->getHeight() * 3 / 2, videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_YUV2BGR_NV21);
-        } break;
-        case OB_FORMAT_YUYV:
-        case OB_FORMAT_YUY2: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC2, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_YUV2BGR_YUY2);
-        } break;
-        case OB_FORMAT_BGR: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_BGR2RGB);
-        } break;
-        case OB_FORMAT_RGB: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC3, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_RGB2BGR);
-        } break;
-        case OB_FORMAT_RGBA: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC4, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_RGBA2BGR);
-        } break;
-        case OB_FORMAT_BGRA: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC4, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_BGRA2RGB);
-        } break;
-        case OB_FORMAT_UYVY: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC2, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_YUV2BGR_UYVY);
-        } break;
-        case OB_FORMAT_I420: {
-            cv::Mat rawMat(videoFrame->getHeight() * 3 / 2, videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_YUV2BGR_I420);
-        } break;
-        case OB_FORMAT_Y8: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_8UC1, videoFrame->getData());
-            cv::cvtColor(rawMat, rstMat, cv::COLOR_GRAY2BGR);
-        } break;
-        case OB_FORMAT_Y16: {
-            cv::Mat rawMat(videoFrame->getHeight(), videoFrame->getWidth(), CV_16UC1, videoFrame->getData());
-            cv::Mat gray8;
-            rawMat.convertTo(gray8, CV_8UC1, 255.0 / 65535.0);
-            cv::cvtColor(gray8, rstMat, cv::COLOR_GRAY2BGR);
-        } break;
-        default:
-            break;
-        }
+        rstMat          = convertColorFrameToBGR(frame);
         if(showSyncTimeInfo_ && !rstMat.empty()) {
             drawInfo(rstMat, videoFrame);
         }

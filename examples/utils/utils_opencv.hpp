@@ -40,6 +40,11 @@ typedef enum {
 // @param colormapId  OpenCV colormap id (default: cv::COLORMAP_JET)
 // @return BGR cv::Mat with 3D lighting effect
 cv::Mat renderDepth3D(std::shared_ptr<const ob::Frame> depthFrame, int colormapId = cv::COLORMAP_JET);
+
+// Convert a color frame to BGR cv::Mat for custom visualization/saving.
+// @param colorFrame  The color frame to convert
+// @return BGR cv::Mat, empty if unsupported format
+cv::Mat convertColorFrameToBGR(std::shared_ptr<const ob::Frame> colorFrame);
 #endif
 
 // Save a video frame to disk as PNG via the SDK's built-in FrameSaveHelper.
