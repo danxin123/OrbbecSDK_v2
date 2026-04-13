@@ -182,10 +182,10 @@ CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMod
       closed_(false),
       showInfo_(true),
       showSyncTimeInfo_(false),
-      isWindowDestroyed_(false),
       alpha_(0.6f),
       autoSaveEnabled_(true),
       saveIndex_(0),
+      isWindowDestroyed_(false),
       showPrompt_(false) {
 
 #if defined(TO_DISABLE_OPENCV_LOG)
