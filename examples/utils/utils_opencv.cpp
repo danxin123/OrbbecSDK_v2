@@ -183,6 +183,7 @@ CVWindow::CVWindow(std::string name, uint32_t width, uint32_t height, ArrangeMod
       showInfo_(true),
       showSyncTimeInfo_(false),
       alpha_(0.6f),
+      logCreatedTime_(0),
       autoSaveEnabled_(true),
       saveIndex_(0),
       isWindowDestroyed_(false),
