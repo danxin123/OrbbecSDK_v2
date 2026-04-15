@@ -158,7 +158,8 @@ cv::Mat convertColorFrameToBGR(std::shared_ptr<const ob::Frame> colorFrame) {
 
 static std::string replaceExtension(const std::string &path, const std::string &newExt) {
     auto dot = path.rfind('.');
-    if(dot != std::string::npos) {
+    auto slash = path.find_last_of("\\/");
+    if(dot != std::string::npos && (slash == std::string::npos || dot > slash)) {
         return path.substr(0, dot) + newExt;
     }
     return path + newExt;
