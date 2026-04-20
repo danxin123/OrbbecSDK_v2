@@ -1647,7 +1647,6 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
     /// Test case: 3d to 3d.
     OBPoint3f   src      = { 100.0f, 200.0f, 300.0f };
     OBExtrinsic identity = {};
-    // Prepare local state for the next check.
     identity.rot[0]   = 1.0f;
     identity.rot[4]   = 1.0f;
     identity.rot[8]   = 1.0f;
@@ -1655,6 +1654,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
     identity.trans[1] = 0.0f;
     identity.trans[2] = 0.0f;
 
+    // Identity extrinsic: output should equal input
     OBPoint3f dst = {};
     bool      ok  = ob::CoordinateTransformHelper::transformation3dto3d(src, identity, &dst);
     ASSERT_TRUE(ok);
@@ -1662,7 +1662,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_01_3d_to_3d) {
     EXPECT_NEAR(dst.y, src.y, 1e-3f);
     EXPECT_NEAR(dst.z, src.z, 1e-3f);
 
-    // Prepare local state for the next check.
+    // Known translation: output = input + translation
     OBExtrinsic withTrans = identity;
     withTrans.trans[0]    = 10.0f;
     withTrans.trans[1]    = 20.0f;
@@ -1689,7 +1689,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_02_2d_depth_to_3d) {
     identity.rot[4]      = 1.0f;
     identity.rot[8]      = 1.0f;
 
-    // TODO
+    // Image center (cx, cy) + identity extrinsic → 3D point at (0, 0, depth)
     OBPoint2f pixel   = { 320.0f, 240.0f };
     OBPoint3f point3d = {};
     bool      ok      = ob::CoordinateTransformHelper::transformation2dto3d(pixel, 1000.0f, intrinsic, identity, &point3d);
@@ -1716,7 +1716,7 @@ TEST_F(TC_CPP_20_CoordTransform, TC_CPP_20_03_3d_to_2d) {
     identity.rot[4]      = 1.0f;
     identity.rot[8]      = 1.0f;
 
-    // TODO - add more cases with different intrinsics, distortion, and extrinsics
+    // Point at (0, 0, 1000) with no distortion → projects to principal point (cx, cy)
     OBPoint3f src   = { 0.0f, 0.0f, 1000.0f };
     OBPoint2f pixel = {};
     bool      ok    = ob::CoordinateTransformHelper::transformation3dto2d(src, intrinsic, distortion, identity, &pixel);
@@ -1926,8 +1926,9 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_01_exception_type_info) {
     catch(const ob::Error &e) {
         EXPECT_NE(e.what(), nullptr);
         EXPECT_GT(std::strlen(e.what()), 0u);
-        // Prepare local state for the next check.
-        // Prepare local state for the next check.
+        EXPECT_NE(e.getFunction(), nullptr);
+        EXPECT_GT(std::strlen(e.getFunction()), 0u);
+        EXPECT_NE(e.getExceptionType(), OB_EXCEPTION_TYPE_UNKNOWN);
     }
     catch(const std::exception &e) {
         // Validate expected conditions for this step.
@@ -1942,14 +1943,14 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_02_invalid_value_exception) {
     auto      frame = ob_create_video_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 0, 0, 0, &error);
     // Prepare local state for the next check.
     if(error) {
-        auto exType = ob_error_get_exception_type(error);
-        // Prepare local state for the next check.
-        (void)exType;
+        EXPECT_EQ(ob_error_get_exception_type(error), OB_EXCEPTION_TYPE_INVALID_VALUE);
         ob_delete_error(error);
         error = nullptr;
     }
     if(frame) {
         ob_delete_frame(frame, &error);
+        if(error)
+            ob_delete_error(error);
     }
 }
 
@@ -1962,9 +1963,8 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_03_wrong_api_sequence) {
         // Validate expected conditions for this step.
         EXPECT_EQ(frames, nullptr);
     }
-    catch(const ob::Error &) {
-        // Expected
-        SUCCEED();
+    catch(const ob::Error &e) {
+        EXPECT_EQ(e.getExceptionType(), OB_EXCEPTION_TYPE_WRONG_API_CALL_SEQUENCE);
     }
 }
 
@@ -1977,8 +1977,8 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_06_filter_null_frame) {
         filter->process(nullptr);
         // If it doesn't throw, also acceptable
     }
-    catch(const ob::Error &) {
-        SUCCEED();
+    catch(const ob::Error &e) {
+        EXPECT_NE(e.getExceptionType(), OB_EXCEPTION_TYPE_UNKNOWN);
     }
     catch(const std::exception &) {
         SUCCEED();
@@ -1987,7 +1987,6 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_06_filter_null_frame) {
 
 TEST_F(TC_CPP_24_Error, TC_CPP_24_07_all_exception_types) {
     /// Test case: all exception types.
-    // Prepare local state for the next check.
     std::vector<OBExceptionType> types = {
         OB_EXCEPTION_TYPE_UNKNOWN,
         OB_EXCEPTION_TYPE_CAMERA_DISCONNECTED,
@@ -1998,11 +1997,48 @@ TEST_F(TC_CPP_24_Error, TC_CPP_24_07_all_exception_types) {
         OB_EXCEPTION_TYPE_IO,
         OB_EXCEPTION_TYPE_MEMORY,
         OB_EXCEPTION_TYPE_UNSUPPORTED_OPERATION,
+        OB_EXCEPTION_TYPE_ACCESS_DENIED,
     };
-    // Prepare local state for the next check.
+
+    // Verify no duplicate enum values
     std::sort(types.begin(), types.end());
     auto dup = std::adjacent_find(types.begin(), types.end());
     EXPECT_EQ(dup, types.end()) << "Duplicate exception type found";
+
+    // Verify exception types actually triggered in TC_CPP_24_01~06 cover known types
+    std::set<OBExceptionType> triggeredTypes;
+
+    // TC_CPP_24_01/02: invalid filter name / zero-size frame → INVALID_VALUE
+    try {
+        ob::Filter(ob_create_filter("TotallyInvalidFilter", nullptr));
+    }
+    catch(const ob::Error &e) {
+        triggeredTypes.insert(e.getExceptionType());
+    }
+
+    ob_error *error = nullptr;
+    auto      frame = ob_create_video_frame(OB_FRAME_DEPTH, OB_FORMAT_Y16, 0, 0, 0, &error);
+    if(error) {
+        triggeredTypes.insert(ob_error_get_exception_type(error));
+        ob_delete_error(error);
+        error = nullptr;
+    }
+    if(frame) {
+        ob_delete_frame(frame, &error);
+        if(error)
+            ob_delete_error(error);
+    }
+
+    // TC_CPP_24_03: waitForFrameset without start → WRONG_API_CALL_SEQUENCE
+    try {
+        ob::Pipeline pipeline;
+        pipeline.waitForFrameset(100);
+    }
+    catch(const ob::Error &e) {
+        triggeredTypes.insert(e.getExceptionType());
+    }
+
+    EXPECT_FALSE(triggeredTypes.empty()) << "No exception types were triggered";
 }
 
 // ============================================================
