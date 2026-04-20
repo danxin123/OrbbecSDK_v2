@@ -1727,7 +1727,7 @@ TEST_F(TC_CPP_14_Property_HW, TC_CPP_14_03_int_property_range) {
     if(device_->isPropertySupported(OB_PROP_DEPTH_EXPOSURE_INT, OB_PERMISSION_READ_WRITE)) {
         auto range = device_->getIntPropertyRange(OB_PROP_DEPTH_EXPOSURE_INT);
         EXPECT_LT(range.min, range.max);
-        EXPECT_GT(range.step, 0u);
+        EXPECT_GT(range.step, 0);
 
         int cur = device_->getIntProperty(OB_PROP_DEPTH_EXPOSURE_INT);
         EXPECT_GE(cur, (int32_t)range.min);
